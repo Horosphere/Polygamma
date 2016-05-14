@@ -1,0 +1,4 @@
+#ifndef POLYGAMMA_HPP
+#define POLYGAMMA_HPP
+
+#endif // POLYGAMMA_HPP
