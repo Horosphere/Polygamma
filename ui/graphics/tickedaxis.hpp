@@ -3,15 +3,19 @@
 
 #include <QWidget>
 
-class TickedAxis : public QWidget
+namespace pg
+{
+
+class TickedAxis final: public QWidget
 {
 	Q_OBJECT
 public:
 	explicit TickedAxis(QWidget *parent = 0);
 
-signals:
+Q_SIGNALS:
 
-public slots:
+public Q_SLOTS:
 };
 
+}
 #endif // TICKEDAXIS_HPP

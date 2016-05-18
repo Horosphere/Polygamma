@@ -1,16 +1,20 @@
 #ifndef PANELWAVEFORM_HPP
 #define PANELWAVEFORM_HPP
 
+#include "panelbase.hpp"
 
-class PanelWaveform : public QObject
+namespace pg
+{
+
+class PanelWaveform final: public PanelBase
 {
 	Q_OBJECT
 public:
-	explicit PanelWaveform(QObject *parent = 0);
+	explicit PanelWaveform(QString title, QWidget* parent = 0);
 
-signals:
-
-public slots:
+private:
+	Waveform* waveform;
 };
 
+}
 #endif // PANELWAVEFORM_HPP

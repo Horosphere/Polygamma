@@ -25,9 +25,11 @@ public:
 	explicit Viewport2(QWidget *parent = 0);
 	virtual ~Viewport2();
 
-	void setDragging(bool b)
+	void setDragging(bool dragX, bool dragY)
 	{
-		isDraggable = b;
+		isDraggable = dragX || dragY;
+		isDraggableX = dragX;
+		isDraggableY = dragY;
 		dragFacX = length(rangeX) / width();
 		dragFacY = length(rangeY) / height();
 	}
@@ -49,6 +51,11 @@ public:
 		maxRangeX = Interval<double>(x0, x1);
 		maxRangeY = Interval<double>(y0, y1);
 	}
+	void setMinimumSpan(double x, double y)
+	{
+		minSpanX = x;
+		minSpanY = y;
+	}
 
 protected:
 
@@ -68,7 +75,11 @@ protected:
 
 Q_SIGNALS:
 
+	void rangeXChanged(Interval<double>);
+	void rangeYChanged(Interval<double>);
 public Q_SLOTS:
+	void onRangeXChanged(Interval<double>);
+	void onRangeYChanged(Interval<double>);
 
 private:
 
@@ -79,6 +90,8 @@ private:
 	double zoomFacX;
 	double zoomFacY;
 	bool isDraggable;
+	bool isDraggableX;
+	bool isDraggableY;
 	bool isZoomable;
 
 	double minSpanX, minSpanY;

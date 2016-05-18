@@ -3,6 +3,8 @@
 
 #include "viewport2.hpp"
 
+#include "../../math/audio.hpp"
+
 namespace pg
 {
 
@@ -12,8 +14,13 @@ class Waveform final: public Viewport2
 public:
 	Waveform(QWidget* parent = 0);
 
+	void setChannel(Audio::Channel const* const channel);
+
 protected:
 	void paintEvent(QPaintEvent*);
+
+private:
+	Audio::Channel const* channel;
 };
 
 }

@@ -12,7 +12,8 @@ pg::Viewport2::Viewport2(QWidget *parent) : QWidget(parent),
 	rangeX(0.0, 1.0), rangeY(0.0, 1.0),
 	dragFacX(0.0), dragFacY(0.0),
 	zoomFacX(1.0), zoomFacY(1.0),
-	isDraggable(false), isZoomable(false),
+	isDraggable(false), isDraggableX(false), isDraggableY(false),
+	isZoomable(false),
 
 	minSpanX(0.5), minSpanY(0.5),
 	maxRangeX(0.0,1.0), maxRangeY(0.0,1.0),
@@ -38,7 +39,7 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 {
 	if (dragging)
 	{
-		if (dragFacX != 0.0) // Dragging on X enabled
+		if (isDraggableX) // Dragging on X enabled
 		{
 			rangeX += (dragPos.x() - event->pos().x()) * dragFacX;
 			if (rangeX.begin < maxRangeX.begin)
@@ -46,7 +47,7 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 			else if (rangeX.end > maxRangeX.end)
 				rangeX += maxRangeX.end - rangeX.end;
 		}
-		if (dragFacY != 0.0) // Dragging on Y enabled
+		if (isDraggableY) // Dragging on Y enabled
 		{
 			rangeY += (dragPos.y() - event->pos().y()) * dragFacY;
 			if (rangeY.begin < maxRangeY.begin)
@@ -60,6 +61,8 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 			dragPos = event->pos();
 			event->accept();
 			repaint();
+			Q_EMIT rangeXChanged(rangeX);
+			Q_EMIT rangeYChanged(rangeY);
 		}
 	}
 }
@@ -120,5 +123,16 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 	{
 		event->accept();
 		repaint();
+		Q_EMIT rangeXChanged(rangeX);
+		Q_EMIT rangeYChanged(rangeY);
 	}
+}
+
+void pg::Viewport2::onRangeXChanged(Interval<double> range)
+{
+	rangeX = range;
+}
+void pg::Viewport2::onRangeYChanged(Interval<double> range)
+{
+	rangeY = range;
 }

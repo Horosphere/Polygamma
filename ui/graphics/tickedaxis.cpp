@@ -1,6 +1,6 @@
 #include "tickedaxis.hpp"
 
-TickedAxis::TickedAxis(QWidget *parent) : QWidget(parent)
+pg::TickedAxis::TickedAxis(QWidget *parent) : QWidget(parent)
 {
 
 }

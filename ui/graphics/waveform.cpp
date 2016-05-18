@@ -5,22 +5,46 @@
 
 #include <QDebug>
 
-pg::Waveform::Waveform(QWidget* parent): Viewport2(parent)
+pg::Waveform::Waveform(QWidget* parent): Viewport2(parent),
+	channel(nullptr)
 {
-	setMinimumSize(400,400);
-	setDragging(true);
-	setZoomFac(1.1, 1.1);
-	setMaximumRange(-0.5, 1.5, -0.5, 1.5);
+	setDragging(true, false);
+	setZoomFac(1.1, 1.0);
+	setMaximumRange(0.0, 1.0, -1.0, 1.0);
+	setMinimumSpan(4.0, 0.0);
+
+
+}
+void pg::Waveform::setChannel(Audio::Channel const* const channel)
+{
+	this->channel = channel;
+	rangeX = Interval<double>(0.0, channel->getNSamples());
 }
 
 void pg::Waveform::paintEvent(QPaintEvent*)
 {
-
 	QPainter painter(this);
-	QRect bar = rect();
-	bar.setLeft(axialToRasterX(0.25));
-	bar.setRight(axialToRasterX(0.75));
-	bar.setTop(axialToRasterY(0.25));
-	bar.setBottom(axialToRasterY(0.75));
-	painter.fillRect(bar, Qt::black);
+	painter.fillRect(rect(), Qt::black); // Background
+
+	// Decides drawing mode. If the avaliable pixel per sample is less than
+	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform
+	if (true || width() < length(rangeX))
+	{
+		for (int x = 0; x < width(); ++x)
+		{
+			std::size_t sampleId = (std::size_t) rasterToAxialX((double)x);
+			if (sampleId >= channel->getNSamples())
+				sampleId = channel->getNSamples() - 1;
+			real sample = (*channel)[sampleId];
+			int y = (int)((1.0 - sample) * height() / 2);
+			painter.drawLine(QPoint(x, height() / 2), QPoint(x, y));
+		}
+
+	}
+	else
+	{
+		painter.setRenderHint(QPainter::Antialiasing);
+
+	}
+
 }

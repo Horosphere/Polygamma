@@ -2,16 +2,33 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
+#include <QStatusBar>
+#include <QMenuBar>
 
-class MainWindow : public QMainWindow
+namespace pg
+{
+
+class MainWindow final: public QMainWindow
 {
 	Q_OBJECT
 public:
-	explicit MainWindow(QWidget *parent = 0);
+	explicit MainWindow(QWidget* parent = 0);
 
-signals:
 
-public slots:
+public Q_SLOTS:
+
+private Q_SLOTS:
+	void onFileImport();
+	void onEditSummon();
+
+private:
+	// UI Elements
+
+	// Menu actions
+	QAction* actionFileImport;
+	QAction* actionEditSummon;
+	// Handlers
 };
 
+}
 #endif // MAINWINDOW_HPP
