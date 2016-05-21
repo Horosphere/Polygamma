@@ -34,8 +34,6 @@ private:
 	QVBoxLayout* mainLayout;
 	Waveform** waveform;
 
-private Q_SLOTS:
-	void onIntervalChanged(Interval<double>);
 };
 
 }

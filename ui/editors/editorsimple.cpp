@@ -56,19 +56,15 @@ void pg::EditorSimple::updateAudioFormat()
 		waveform[i]->setChannel(&audio[i]);
 		mainLayout->addWidget(waveform[i]);
 	}
-	connect(waveform[0], &Waveform::rangeXChanged, this, &EditorSimple::onIntervalChanged);
 	for (std::size_t i = 1; i< audio.getNChannels(); ++i)
 	{
-		connect(waveform[0], &Waveform::rangeXChanged, waveform[i], &Waveform::onRangeXChanged);
+		connect(waveform[0], &Waveform::rangeXChanged,
+				waveform[i], &Waveform::setRangeX);
 	}
 
 
 }
 
-void pg::EditorSimple::onIntervalChanged(Interval<double> i)
-{
-	qDebug() << i.begin << ", " << i.end;
-}
 
 bool pg::EditorSimple::saveAs(QString* const error)
 {

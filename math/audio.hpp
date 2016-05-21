@@ -51,7 +51,7 @@ struct Audio
 			return data[index];
 		}
 
-		inline double getNSamples() const
+		inline std::size_t getNSamples() const
 		{
 			return nSamples;
 		}

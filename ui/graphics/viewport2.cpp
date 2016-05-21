@@ -6,17 +6,18 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+#include <QGraphicsView>
+
 #include <QDebug>
 
 pg::Viewport2::Viewport2(QWidget *parent) : QWidget(parent),
-	rangeX(0.0, 1.0), rangeY(0.0, 1.0),
+	rangeX(0, width()), rangeY(0, height()),
 	dragFacX(0.0), dragFacY(0.0),
 	zoomFacX(1.0), zoomFacY(1.0),
 	isDraggable(false), isDraggableX(false), isDraggableY(false),
 	isZoomable(false),
 
-	minSpanX(0.5), minSpanY(0.5),
-	maxRangeX(0.0,1.0), maxRangeY(0.0,1.0),
+	maxRangeX(0, width()), maxRangeY(0, height()),
 	dragging(false)
 {
 
@@ -41,19 +42,13 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 	{
 		if (isDraggableX) // Dragging on X enabled
 		{
-			rangeX += (dragPos.x() - event->pos().x()) * dragFacX;
-			if (rangeX.begin < maxRangeX.begin)
-				rangeX += maxRangeX.begin - rangeX.begin;
-			else if (rangeX.end > maxRangeX.end)
-				rangeX += maxRangeX.end - rangeX.end;
+			rangeX = translate(rangeX, maxRangeX,
+							   (int64_t)((dragPos.x() - event->pos().x()) * dragFacX));
 		}
 		if (isDraggableY) // Dragging on Y enabled
 		{
-			rangeY += (dragPos.y() - event->pos().y()) * dragFacY;
-			if (rangeY.begin < maxRangeY.begin)
-				rangeY += maxRangeY.begin - rangeY.begin;
-			else if (rangeY.end > maxRangeY.end)
-				rangeY += maxRangeY.end - rangeY.end;
+			rangeY = translate(rangeY, maxRangeY,
+							   (int64_t)((dragPos.y() - event->pos().y()) * dragFacY));
 		}
 
 		if (isDraggable)
@@ -80,28 +75,23 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 	{
 		if (zoomFacX != 1.0) // Zoom enabled
 		{
-			double axialX = rasterToAxialX(event->x());
+			int64_t axialX = rasterToAxialX(event->x());
 			double fac = std::pow(zoomFacX, steps);
-			if (length(rangeX) * fac < minSpanX)
+			if (length(rangeX) * fac > width())
 			{
-				rangeX.begin = axialX - minSpanX * 0.5;
-				rangeX.end = axialX - minSpanX * 0.5;
+				rangeX = scale(rangeX, fac, axialX);
+				dragFacX = length(rangeX) / (double) width();
 			}
-			else rangeX = scale(rangeX, fac, axialX);
-			dragFacX = length(rangeX) / width();
 		}
 		if (zoomFacY != 1.0)
 		{
-			double axialY = rasterToAxialY(event->y());
+			int64_t axialY = rasterToAxialY(event->y());
 			double fac = std::pow(zoomFacY, steps);
-			if (length(rangeX) * fac < minSpanX)
+			if (length(rangeX) * fac > height())
 			{
-				rangeY.begin = axialY - minSpanY * 0.5;
-				rangeY.end = axialY - minSpanY * 0.5;
-			}
-			else
 				rangeY = scale(rangeY, fac, axialY);
-			dragFacY = length(rangeY) / height();
+				dragFacY = length(rangeY) / (double) height();
+			}
 		}
 	}
 	else
@@ -110,13 +100,13 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 		{
 			double fac = std::pow(zoomFacX, steps);
 			rangeX = scale(rangeX, maxRangeX, fac, rasterToAxialX(event->x()));
-			dragFacX = length(rangeX) / width();
+			dragFacX = length(rangeX) / (double)width();
 		}
 		if (zoomFacY != 1.0)
 		{
 			double fac = std::pow(zoomFacY, steps);
 			rangeY = scale(rangeY, maxRangeY, fac, rasterToAxialY(event->y()));
-			dragFacY = length(rangeY) / height();
+			dragFacY = length(rangeY) / (double)height();
 		}
 	}
 	if (isZoomable)
@@ -127,12 +117,37 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 		Q_EMIT rangeYChanged(rangeY);
 	}
 }
+void pg::Viewport2::resizeEvent(QResizeEvent* event)
+{
+	dragFacX = length(rangeX) / (double)width();
+	dragFacY = length(rangeY) / (double)height();
 
-void pg::Viewport2::onRangeXChanged(Interval<double> range)
+	// Recalculate ranges
+	if (event->oldSize().isValid())
+	{
+	int64_t resultXLen = length(rangeX) * event->size().width()
+			/ event->oldSize().width();
+	int64_t resultYLen = length(rangeX) * event->size().height()
+			/ event->oldSize().height();
+
+	if (resultXLen > length(maxRangeX))
+		rangeX = maxRangeX;
+	else rangeX.end = rangeX.begin + resultXLen;
+	if (resultYLen > length(maxRangeY))
+		rangeY = maxRangeY;
+	else rangeY.end = rangeY.begin + resultYLen;
+	}
+	this->QWidget::resizeEvent(event);
+
+}
+
+void pg::Viewport2::setRangeX(Interval<int64_t> range)
 {
 	rangeX = range;
+	repaint();
 }
-void pg::Viewport2::onRangeYChanged(Interval<double> range)
+void pg::Viewport2::setRangeY(Interval<int64_t> range)
 {
 	rangeY = range;
+	repaint();
 }

@@ -2,6 +2,7 @@
 #define INTERVAL_HPP
 
 #include <cassert>
+#include <algorithm>
 
 namespace pg
 {
@@ -16,6 +17,10 @@ namespace pg
 template<typename R>
 struct Interval
 {
+	/**
+	 * The default construct shall never be called unless we are allocating new
+	 * memory.
+	 */
 	Interval()
 	{
 	}
@@ -40,7 +45,12 @@ struct Interval
 };
 
 template<typename R> Interval<R>
+translate(Interval<R> const&, Interval<R> const& limits, R);
+
+template<typename R, typename Fac> Interval<R>
 /**
+ * @warning If typename R is an unsigned integer, centre must be within the
+ *      interval.
  * @brief scale Scales the given interval with respect to centre and ratio fac.
  * @param fac The ratio of scaling.
  * @param centre The centre of scaling. If this point is contained in the
@@ -48,10 +58,12 @@ template<typename R> Interval<R>
  * fac.
  * @returns The scaled interval.
  */
-scale(Interval<R> const&, R fac, R centre);
+scale(Interval<R> const&, Fac fac, R centre);
 
-template<typename R> Interval<R>
-scale(Interval<R> const&, Interval<R> const& limits, R fac, R centre);
+// If typename R is an unsigned integer,
+// Centre must be within the interval which must be within the limits
+template<typename R, typename Fac> Interval<R>
+scale(Interval<R> const&, Interval<R> const& limits, Fac fac, R centre);
 
 template<typename R> R length(Interval<R> const&);
 
@@ -60,34 +72,44 @@ template<typename R> R length(Interval<R> const&);
 // Implementations
 
 template<typename R> inline pg::Interval<R>
-pg::scale(Interval<R> const& interval, R fac, R centre)
+pg::translate(Interval<R> const& interval, Interval<R> const& bound, R val)
 {
-	return Interval<R>((interval.begin - centre) * fac + centre,
-					(interval.end - centre) * fac + centre);
+	if (val > bound.end - interval.end)
+		return Interval<R>(bound.end - length(interval), bound.end);
+	if (val < bound.begin - interval.begin)
+		return Interval<R>(bound.begin, bound.begin + length(interval));
+
+	return Interval<R>(interval.begin + val, interval.end + val);
 }
 
-template<typename R> inline pg::Interval<R>
-pg::scale(Interval<R> const& interval, Interval<R> const& limits,
-		  R fac, R centre)
+template<typename R, typename Fac> inline pg::Interval<R>
+pg::scale(Interval<R> const& interval, Fac fac, R centre)
 {
-	Interval<R> scaled = scale(interval, fac, centre);
-	if (scaled.begin < limits.begin)
+	return Interval<R>((R)((interval.begin - centre) * fac) + centre,
+					(R)((interval.end - centre) * fac) + centre);
+}
+
+template<typename R, typename Fac> inline pg::Interval<R>
+pg::scale(Interval<R> const& interval, Interval<R> const& limits,
+		  Fac fac, R centre)
+{
+	// The std::min here is introduced to prevent overflow
+	// Overflow on left
+	if (centre - limits.begin < (centre - interval.begin) * fac)
 	{
-		scaled.end += limits.begin - scaled.begin;
-		scaled.begin = limits.begin;
-		if (scaled.end <= limits.end)
-			return scaled;
-		else return limits;
+		return Interval<R>(limits.begin, limits.begin
+						   + std::min((R)(length(interval) * fac), length(limits)));
 	}
-	else if (scaled.end > limits.end)
+	// Overflow on right
+	if (limits.end - centre < (interval.end - centre) * fac)
 	{
-		scaled.begin += limits.end - scaled.end;
-		scaled.end = limits.end;
-		if (scaled.begin >= limits.begin)
-			return scaled;
-		else return limits;
+		return Interval<R>(limits.end
+						  - std::min((R)(length(interval) * fac), length(limits)),
+						  limits.end);
 	}
-	else return scaled;
+	// Nothing happens
+	return scale(interval, fac, centre);
+
 }
 
 template<typename R> inline R

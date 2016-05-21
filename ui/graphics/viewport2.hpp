@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+#include <QDebug>
+
 #include "../../math/interval.hpp"
 
 namespace pg
@@ -25,13 +27,13 @@ public:
 	explicit Viewport2(QWidget *parent = 0);
 	virtual ~Viewport2();
 
-	void setDragging(bool dragX, bool dragY)
+	void setDragging(bool dragX, bool dragY) noexcept
 	{
 		isDraggable = dragX || dragY;
 		isDraggableX = dragX;
 		isDraggableY = dragY;
-		dragFacX = length(rangeX) / width();
-		dragFacY = length(rangeY) / height();
+		dragFacX = length(rangeX) / (double)width();
+		dragFacY = length(rangeY) / (double)height();
 	}
 
 	/**
@@ -40,46 +42,42 @@ public:
 	 * @param x The coefficient in the x direction. Must be >= 1.
 	 * @param y The coefficient in the y direction. Must be >= 1.
 	 */
-	void setZoomFac(double x, double y)
+	void setZoomFac(double x, double y) noexcept
 	{
 		assert(x >= 1.0 && y >= 1.0);
 		zoomFacX = x; zoomFacY = y;
 		isZoomable = zoomFacX != 1.0 || zoomFacY != 1.0;
 	}
-	void setMaximumRange(double x0, double x1, double y0, double y1)
+	void setMaximumRange(int64_t x0, int64_t x1, int64_t y0, int64_t y1) noexcept
 	{
-		maxRangeX = Interval<double>(x0, x1);
-		maxRangeY = Interval<double>(y0, y1);
-	}
-	void setMinimumSpan(double x, double y)
-	{
-		minSpanX = x;
-		minSpanY = y;
+		maxRangeX = Interval<int64_t>(x0, x1);
+		maxRangeY = Interval<int64_t>(y0, y1);
 	}
 
 protected:
 
 	// The following methods convert raster coordinates to axial coordinates
-	double rasterToAxialX(double) const noexcept;
-	double axialToRasterX(double) const noexcept;
-	double rasterToAxialY(double) const noexcept;
-	double axialToRasterY(double) const noexcept;
+	int64_t rasterToAxialX(int) const noexcept;
+	int axialToRasterX(int64_t) const noexcept;
+	int64_t rasterToAxialY(int) const noexcept;
+	int axialToRasterY(int64_t) const noexcept;
 
 	// Events (Inherited from QWidget)
-	virtual void mousePressEvent(QMouseEvent*);
-	virtual void mouseMoveEvent(QMouseEvent*);
-	virtual void mouseReleaseEvent(QMouseEvent*);
-	virtual void wheelEvent(QWheelEvent*);
+	virtual void   mousePressEvent( QMouseEvent*) override;
+	virtual void    mouseMoveEvent( QMouseEvent*) override;
+	virtual void mouseReleaseEvent( QMouseEvent*) override;
+	virtual void        wheelEvent( QWheelEvent*) override;
+	virtual void       resizeEvent(QResizeEvent*) override;
 
-	Interval<double> rangeX, rangeY;
+	Interval<int64_t> rangeX, rangeY;
 
 Q_SIGNALS:
+	void rangeXChanged(Interval<int64_t>);
+	void rangeYChanged(Interval<int64_t>);
 
-	void rangeXChanged(Interval<double>);
-	void rangeYChanged(Interval<double>);
 public Q_SLOTS:
-	void onRangeXChanged(Interval<double>);
-	void onRangeYChanged(Interval<double>);
+	void setRangeX(Interval<int64_t>);
+	void setRangeY(Interval<int64_t>);
 
 private:
 
@@ -94,8 +92,7 @@ private:
 	bool isDraggableY;
 	bool isZoomable;
 
-	double minSpanX, minSpanY;
-	Interval<double> maxRangeX, maxRangeY;
+	Interval<int64_t> maxRangeX, maxRangeY;
 
 	// Dynamic variables
 	QPoint dragPos;
@@ -106,21 +103,21 @@ private:
 
 // Implementations
 
-inline double pg::Viewport2::rasterToAxialX(double v) const noexcept
+inline int64_t pg::Viewport2::rasterToAxialX(int v) const noexcept
 {
-	return v / width() * (rangeX.end - rangeX.begin) + rangeX.begin;
+	return v * length(rangeX) / width() + rangeX.begin;
 }
-inline double pg::Viewport2::axialToRasterX(double v) const noexcept
+inline int pg::Viewport2::axialToRasterX(int64_t v) const noexcept
 {
-	return (v - rangeX.begin) / (rangeX.end - rangeX.begin) * width();
+	return (int)((v - rangeX.begin) * width() / length(rangeX));
 }
-inline double pg::Viewport2::rasterToAxialY(double v) const noexcept
+inline int64_t pg::Viewport2::rasterToAxialY(int v) const noexcept
 {
-	return v / height() * (rangeY.end - rangeY.begin) + rangeY.begin;
+	return v * length(rangeY) / width() + rangeY.begin;
 }
-inline double pg::Viewport2::axialToRasterY(double v) const noexcept
+inline int pg::Viewport2::axialToRasterY(int64_t v) const noexcept
 {
-	return (v - rangeY.begin) / (rangeY.end - rangeY.begin) * height();
+	return (int)((v - rangeY.begin) * height() / length(rangeY));
 }
 
 #endif // VIEWPORT2_HPP
