@@ -22,6 +22,6 @@ Q_SIGNALS:
 public Q_SLOTS:
 };
 
-}
+} // namespace pg
 
 #endif // EDITOR_HPP

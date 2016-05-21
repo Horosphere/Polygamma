@@ -23,5 +23,7 @@ private:
 	Audio::Channel const* channel;
 };
 
-}
+} // namespace pg
+
+
 #endif // WAVEFORM_HPP

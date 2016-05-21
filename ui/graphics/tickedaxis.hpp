@@ -17,5 +17,6 @@ Q_SIGNALS:
 public Q_SLOTS:
 };
 
-}
+} // namespace pg
+
 #endif // TICKEDAXIS_HPP

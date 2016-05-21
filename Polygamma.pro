@@ -43,7 +43,8 @@ HEADERS += \
     ui/graphics/waveform.hpp \
     core/configuration.hpp \
     ui/editors/editor.hpp \
-    ui/editors/editorsimple.hpp
+    ui/editors/editorsimple.hpp \
+    ui/ui.hpp
 
 # No forms. All UIs are constructed by code.
 FORMS +=

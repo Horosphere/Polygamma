@@ -44,5 +44,7 @@ private:
 
 };
 
-}
+} // namespace pg
+
+
 #endif // PANELBASE_HPP

@@ -11,9 +11,7 @@ namespace pg
 typedef double real;
 typedef std::complex<real> complex;
 
-constexpr std::size_t const AUDIO_CHUNK_SIZE = 8192;
-
-}
+} // namespace pg
 
 
 #endif // POLYGAMMA_HPP

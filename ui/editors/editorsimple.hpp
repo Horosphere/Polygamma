@@ -36,5 +36,6 @@ private:
 
 };
 
-}
+} // namespace pg
+
 #endif // EDITORSIMPLE_HPP

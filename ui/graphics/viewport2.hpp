@@ -15,9 +15,8 @@ namespace pg
 /**
  * @brief The Viewport2 class is the base class for editors in Polygamma. It
  * allows navigation by MMB + drag (pan) and scroll (zoom). Viewport2 stores the
- * "view" in two \ref pg::Interval<double> objects which represent the
- * "view coordinate". The burden of converting the view coordinate to raster
- * coordinate lies on the subclasses.
+ * "view" in two \ref pg::Interval<int64_t> objects which represent the
+ * "view coordinate"
  */
 class Viewport2 : public QWidget
 {
@@ -99,7 +98,8 @@ private:
 	bool dragging;
 };
 
-}
+} // namespace pg
+
 
 // Implementations
 

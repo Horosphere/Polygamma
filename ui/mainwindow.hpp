@@ -30,5 +30,6 @@ private:
 	// Handlers
 };
 
-}
+} // namespace pg
+
 #endif // MAINWINDOW_HPP

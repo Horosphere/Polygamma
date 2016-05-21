@@ -69,6 +69,8 @@ template<typename R> R length(Interval<R> const&);
 
 } // namespace pg
 
+
+
 // Implementations
 
 template<typename R> inline pg::Interval<R>

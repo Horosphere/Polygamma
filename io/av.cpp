@@ -79,9 +79,6 @@ template<typename Value> inline pg::real pg::dequantise(Value value)
 	if (typeid(Value) == typeid(int32_t))
 		return value / 2147483648.0;
 
-	if (value != value) return 0.0;
-	if (value > 1.0) return 1.0;
-	if (value < 1.0) return -1.0;
 	// Floating point types
 	return (real) value;
 }
@@ -148,17 +145,6 @@ pg::readAVInternal(AVFormatContext* const formatContext,
 					// below.
 					if (planar)
 					{
-						Value* samples = (Value*) frame->extended_data[0];
-						// The following piece of code is duplicated 4 times.
-						for (int channel = 0; channel < frame->channels; ++channel)
-							for (std::size_t i = 0; i < chunkSamples; ++i)
-							{
-								channels[channel][length + i]
-									= dequantise(samples[i * frame->channels + channel]);
-							}
-					}
-					else
-					{
 						for (int channel = 0; channel < frame->channels; ++channel)
 						{
 							Value* samples = (Value*) frame->extended_data[channel];
@@ -168,6 +154,17 @@ pg::readAVInternal(AVFormatContext* const formatContext,
 									= dequantise(samples[i]);
 							}
 						}
+					}
+					else
+					{
+						Value* samples = (Value*) frame->extended_data[0];
+						// The following piece of code is duplicated 4 times.
+						for (int channel = 0; channel < frame->channels; ++channel)
+							for (std::size_t i = 0; i < chunkSamples; ++i)
+							{
+								channels[channel][length + i]
+									= dequantise(samples[i * frame->channels + channel]);
+							}
 					}
 					length += (std::size_t) frame->nb_samples;
 				}
@@ -214,25 +211,24 @@ pg::readAVInternal(AVFormatContext* const formatContext,
 			// below.
 			if (planar)
 			{
-				Value* samples = (Value*) frame->data[0];
-				// The following piece of code is duplicated 4 times.
+				for (int channel = 0; channel < frame->channels; ++channel)
+				{
+					Value* samples = (Value*) frame->extended_data[channel];
+					for (int i = 0; i < frame->nb_samples; ++i)
+					{
+						channels[channel][length + i] = dequantise(samples[i]);
+					}
+				}
+			}
+			else
+			{
+				Value* samples = (Value*) frame->extended_data[0];
 				for (int channel = 0; channel < frame->channels; ++channel)
 					for (std::size_t i = 0; i < chunkSamples; ++i)
 					{
 						channels[channel][length + i]
 							= dequantise(samples[i * frame->channels + channel]);
 					}
-			}
-			else
-			{
-				for (int channel = 0; channel < frame->channels; ++channel)
-				{
-					Value* samples = (Value*) frame->data[channel];
-					for (int i = 0; i < frame->nb_samples; ++i)
-					{
-						channels[channel][length + i] = dequantise(samples[i]);
-					}
-				}
 			}
 			length += (std::size_t) frame->nb_samples;
 		}
@@ -242,6 +238,7 @@ pg::readAVInternal(AVFormatContext* const formatContext,
 	{
 		(*audio)[i] = Audio::Channel(length, channels[i]);
 	}
+
 
 	// Monitors performance
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()
@@ -272,6 +269,8 @@ bool pg::readAV(char const fileName[], Audio* const audio,
 	}
 
 	// Finding audio channels
+	// TODO: After video becomes supported, no error will be thrown if the file
+	// has no audio stream.
 	AVCodec* codec = nullptr;
 	int streamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
 										  -1, -1, &codec, 0);
@@ -287,7 +286,7 @@ bool pg::readAV(char const fileName[], Audio* const audio,
 	if (avcodec_open2(codecContext, codecContext->codec, nullptr))
 	{
 		avformat_close_input(&formatContext);
-		*error = std::string("Could not open the codec");
+		*error = std::string("Unable to open codec");
 		return false;
 	}
 	std::cout << "[IO]Found audio stream with the following information:"

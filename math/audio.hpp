@@ -96,5 +96,6 @@ private:
 	std::size_t nChannels;
 	Channel* data;
 };
-}
+
+} // namespace pg
 #endif // AUDIO_HPP

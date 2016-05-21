@@ -22,6 +22,8 @@ pg::EditorSimple* pg::EditorSimple::fromFile(QWidget* const parent,
 	EditorSimple* editor = new EditorSimple(parent);
 	editor->audio = std::move(audio);
 	editor->updateAudioFormat();
+
+	editor->setWindowTitle("Waveform");
 	return editor;
 }
 
