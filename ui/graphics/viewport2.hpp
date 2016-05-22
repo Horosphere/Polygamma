@@ -52,6 +52,12 @@ public:
 		maxRangeX = Interval<int64_t>(x0, x1);
 		maxRangeY = Interval<int64_t>(y0, y1);
 	}
+	// Does not redraw
+	void maximise()
+	{
+		rangeX = maxRangeX;
+		rangeY = maxRangeY;
+	}
 
 protected:
 

@@ -29,7 +29,9 @@ SOURCES += main.cpp \
     ui/graphics/waveform.cpp \
     ui/graphics/viewport2.cpp \
     ui/editors/editor.cpp \
-    ui/editors/editorsimple.cpp
+    ui/editors/editorsimple.cpp \
+    ui/ui.cpp \
+    math/fourier.cpp
 
 HEADERS += \
     ui/mainwindow.hpp \
@@ -44,7 +46,8 @@ HEADERS += \
     core/configuration.hpp \
     ui/editors/editor.hpp \
     ui/editors/editorsimple.hpp \
-    ui/ui.hpp
+    ui/ui.hpp \
+    math/fourier.hpp
 
 # No forms. All UIs are constructed by code.
 FORMS +=

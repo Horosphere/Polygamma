@@ -19,27 +19,21 @@ void pg::Waveform::setChannel(Audio::Channel const* const channel)
 	this->channel = channel;
 	setMaximumRange(0, ((int64_t) channel->getNSamples() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
 					0, height());
+	maximise();
 }
 
 void pg::Waveform::paintEvent(QPaintEvent*)
 {
+	static QPen penWave(QColor(127,127,255),1);
+	static QPen penCore(QColor(200,200,255),1);
+
 	QPainter painter(this);
 	painter.fillRect(rect(), Qt::black); // Background
-	QRect square = rect();
-	square.setLeft(axialToRasterX(44100));
-	square.setTop(20);
-	square.setBottom(height() - 20);
-	square.setRight(axialToRasterX(88200));
-	painter.fillRect(square, Qt::red);
 
 	// Decides drawing mode. If the avaliable pixel per sample is less than
 	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform
-	if (width() < length(rangeX) * UI_SAMPLE_DISPLAY_WIDTH)
+	if (width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX))
 	{
-		QPainter outer(this);
-		outer.setPen(QColor(0,127,255));
-		QPainter inner(this);
-		inner.setPen(QColor(255,255,255));
 
 		for (int x = 0; x < width(); ++x)
 		{
@@ -47,21 +41,33 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 					UI_SAMPLE_DISPLAY_WIDTH;
 			std::size_t sampleEnd = (std::size_t) rasterToAxialX(x + 1) /
 					UI_SAMPLE_DISPLAY_WIDTH;
+			real minAbs = 0.0;
 			real maxAbs = 0.0;
-			real averageAbs = 0.0;
+			real averageMin = 0.0;
+			real averageMax = 0.0;
 			for (std::size_t s = sampleStart; s < sampleEnd; ++s)
 			{
-				real abs = std::abs((*channel)[s]);
-				maxAbs = std::max(maxAbs, abs);
-				averageAbs += abs;
+				real sample = (*channel)[s];
+				if (sample > 0.0)
+				{
+					maxAbs = std::max(sample, maxAbs);
+					averageMax += maxAbs;
+				}
+				else
+				{
+					minAbs = std::min(sample, minAbs);
+					averageMin += minAbs;
+				}
 			}
-			averageAbs /= (real) (sampleEnd - sampleStart);
-			int lengthM = (int)(maxAbs * 0.5 * height());
-			int lengthA = (int)(averageAbs * 0.5 * height());
-			outer.drawLine(x, height() / 2 - lengthM,
-						   x, height() / 2 + lengthM);
-			inner.drawLine(x, height() / 2 - lengthA,
-						   x, height() / 2 + lengthA);
+			real invSpan = 1.0 / (sampleEnd - sampleStart);
+			averageMax *= invSpan;
+			averageMin *= invSpan;
+			painter.setPen(penWave);
+			painter.drawLine(x, height() / 2 - (int)(maxAbs * 0.5 * height()),
+						   x, height() / 2 - (int)(minAbs * 0.5 * height()));
+			painter.setPen(penCore);
+			painter.drawLine(x, height() / 2 - (int)(averageMax * 0.5 * height()),
+						   x, height() / 2 - (int)(averageMin * 0.5 * height()));
 		}
 
 	}
@@ -69,7 +75,7 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 	{
 		painter.setRenderHint(QPainter::Antialiasing);
 		QPainter painterWave(this);
-		painterWave.setPen(QColor(0,127,255));
+		painterWave.setPen(penWave);
 		std::size_t sampleStart = (std::size_t) rasterToAxialX(0) /
 				UI_SAMPLE_DISPLAY_WIDTH;
 		std::size_t sampleEnd = (std::size_t) rasterToAxialX(width()) /

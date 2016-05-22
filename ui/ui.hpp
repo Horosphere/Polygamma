@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <QPen>
+
 namespace pg
 {
 
@@ -21,6 +23,7 @@ namespace pg
  *     plotting audio.
  */
 constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 32;
+
 
 } // namespace pg
 #endif // UI_HPP
