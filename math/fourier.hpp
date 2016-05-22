@@ -7,6 +7,17 @@ namespace pg
 {
 
 
+void windowRect(real* const window, std::size_t length);
+/**
+ * This function is not responsible for any allocation.
+ * @brief windowGaussian Generates a Gaussian window of length.
+ * @param[out] window The output. window should be pre allocated. The peak will
+ *     be located at window[length / 2].
+ * @param[in] length The length of window.
+ * @param[in] sigma The sigma value for the distribution. Must be <= 0.5
+ */
+void windowGaussian(real* const window, std::size_t length,
+					real sigma);
 /**
  * Implemented using fft algorithms. This function is not responsible for any
  * allocation and padding.
@@ -34,7 +45,7 @@ void dft(complex* const spectrum, real const* const signal, std::size_t length);
  *     latter is considered to be the zero.
  * @param[in] start The interval [start,end[ of the spectrogram will be
  *     computed, with everything else left untouched.
- *     start and end should satisfy 0 <= start <= end < length
+ *     start and end should satisfy 0 <= start < end < length
  * @param[in] end See \ref start.
  * @param integrand Temporary memory allocated with size 2 * windowRadius
  */
