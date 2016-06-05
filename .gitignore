@@ -1,6 +1,7 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
-
+debug/
+release/
+.ycm_extra_conf.py
+.color_coded
 *~
 *.autosave
 *.a
@@ -17,8 +18,6 @@
 *.qm
 .#*
 *.*#
-core
-!core/
 tags
 .DS_Store
 *.debug
@@ -69,5 +68,3 @@ Thumbs.db
 # --------
 *.dll
 *.exe
-
-

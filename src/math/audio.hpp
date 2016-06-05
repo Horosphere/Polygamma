@@ -42,18 +42,22 @@ struct Audio
 			return *this;
 		}
 
-		inline real& operator[](std::size_t index)
+		inline real& operator[](std::size_t index) noexcept
 		{
 			return data[index];
 		}
-		inline real operator[](std::size_t index) const
+		inline real operator[](std::size_t index) const noexcept
 		{
 			return data[index];
 		}
 
-		inline std::size_t getNSamples() const
+		inline std::size_t getNSamples() const noexcept
 		{
 			return nSamples;
+		}
+		inline real* getData() const noexcept
+		{
+			return data;
 		}
 
 	private:

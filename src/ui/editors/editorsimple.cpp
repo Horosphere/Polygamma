@@ -4,6 +4,7 @@
 #include <QDebug>
 
 #include "../../io/av.hpp"
+#include "../../math/fourier.hpp"
 
 pg::EditorSimple* pg::EditorSimple::fromFile(QWidget* const parent,
 											 QString* const error)
@@ -28,7 +29,7 @@ pg::EditorSimple* pg::EditorSimple::fromFile(QWidget* const parent,
 }
 
 pg::EditorSimple::EditorSimple(QWidget *parent) : Editor(parent),
-	mainLayout(new QVBoxLayout), waveform(nullptr)
+	mainLayout(new QVBoxLayout), waveform(nullptr), spectrogram(nullptr)
 {
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setLayout(mainLayout);
@@ -37,6 +38,8 @@ pg::EditorSimple::EditorSimple(QWidget *parent) : Editor(parent),
 pg::EditorSimple::~EditorSimple()
 {
 	delete[] waveform;
+	delete[] spectrogram;
+	delete[] window;
 }
 
 void pg::EditorSimple::updateAudioFormat()
@@ -49,19 +52,32 @@ void pg::EditorSimple::updateAudioFormat()
 		delete child;
 	}
 	delete[] waveform;
+	delete[] spectrogram;
+	delete[] window;
+
+	// Temp window with radius 512
+	window = new real[1024];
+	windowGaussian(window, 1024, 0.3);
+	windowRadius = 512;
 
 	// Re-allocate waveform
 	waveform = new Waveform*[audio.getNChannels()];
+	spectrogram = new Spectrogram*[audio.getNChannels()];
 	for (std::size_t i = 0; i < audio.getNChannels(); ++i)
 	{
 		waveform[i] = new Waveform(this);
 		waveform[i]->setChannel(&audio[i]);
+		spectrogram[i] = new Spectrogram(this);
+		spectrogram[i]->setChannel(&audio[i], window, windowRadius);
 		mainLayout->addWidget(waveform[i]);
+		mainLayout->addWidget(spectrogram[i]);
 	}
 	for (std::size_t i = 1; i< audio.getNChannels(); ++i)
 	{
 		connect(waveform[0], &Waveform::rangeXChanged,
 				waveform[i], &Waveform::setRangeX);
+		connect(waveform[0], &Waveform::rangeXChanged,
+				spectrogram[i], &Waveform::setRangeX);
 	}
 
 
