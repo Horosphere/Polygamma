@@ -6,6 +6,7 @@
 
 #include "editor.hpp"
 #include "../graphics/waveform.hpp"
+#include "../graphics/spectrogram.hpp"
 #include "../../math/audio.hpp"
 
 namespace pg
@@ -33,6 +34,10 @@ private:
 	// UI
 	QVBoxLayout* mainLayout;
 	Waveform** waveform;
+	Spectrogram** spectrogram;
+
+	real* window;
+	std::size_t windowRadius;
 
 };
 

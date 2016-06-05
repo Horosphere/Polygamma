@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 {
 	av_register_all();
 	using namespace pg;
+
 	QApplication application(argc, argv);
 	MainWindow window;
 	window.show();

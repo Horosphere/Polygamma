@@ -78,7 +78,7 @@ void pg::dstft(complex* const* const spectrogram,
 			   std::size_t p, std::size_t q,
 			   real* const integrand)
 {
-	assert(start <= end);
+	assert(p <= q);
 	/*
 	 * Let length be n, start be sp, end be sq, and windowRadius be r. Let the
 	 * signal be represented as A[0..n[, the spectrogram be S[0..n[[0..2r[,
