@@ -1,4 +1,4 @@
-#include "panelbase.hpp"
+#include "PanelBase.hpp"
 
 #include <QMenu>
 #include <QMainWindow>

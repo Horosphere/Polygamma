@@ -1,4 +1,4 @@
-#include "spectrogram.hpp"
+#include "Spectrogram.hpp"
 
 #include <cmath>
 #include <QPainter>

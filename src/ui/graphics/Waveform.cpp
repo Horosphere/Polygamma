@@ -1,4 +1,4 @@
-#include "waveform.hpp"
+#include "Waveform.hpp"
 
 #include <QPaintEvent>
 #include <QPainter>

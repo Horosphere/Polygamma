@@ -1,10 +1,10 @@
-#ifndef SPECTROGRAM_HPP
-#define SPECTROGRAM_HPP
+#ifndef _POLYGAMMA_UI_GRAPHICS_SPECTROGRAM_HPP__
+#define _POLYGAMMA_UI_GRAPHICS_SPECTROGRAM_HPP__
 
 #include <QPixmap>
 
-#include "viewport2.hpp"
-#include "../../math/audio.hpp"
+#include "Viewport2.hpp"
+#include "../../math/Audio.hpp"
 
 namespace pg
 {
@@ -35,4 +35,5 @@ private:
 
 } // namespace pg
 
-#endif // SPECTROGRAM_HPP
+#endif // !_POLYGAMMA_UI_GRAPHICS_SPECTROGRAM_HPP__
+

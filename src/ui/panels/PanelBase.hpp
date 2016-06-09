@@ -1,5 +1,5 @@
-#ifndef PANELBASE_HPP
-#define PANELBASE_HPP
+#ifndef _POLYGAMMA_UI_PANELS_PANELBASE_HPP__
+#define _POLYGAMMA_UI_PANELS_PANELBASE_HPP__
 
 #include <QActionGroup>
 #include <QDockWidget>
@@ -47,4 +47,5 @@ private:
 } // namespace pg
 
 
-#endif // PANELBASE_HPP
+#endif // !_POLYGAMMA_UI_PANELS_PANELBASE_HPP__
+

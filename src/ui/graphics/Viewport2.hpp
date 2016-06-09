@@ -1,13 +1,11 @@
-#ifndef VIEWPORT2_HPP
-#define VIEWPORT2_HPP
+#ifndef _POLYGAMMA_UI_GRAPHICS_VIEWPORT2_HPP__
+#define _POLYGAMMA_UI_GRAPHICS_VIEWPORT2_HPP__
 
 #include <cassert>
 
 #include <QWidget>
 
-#include <QDebug>
-
-#include "../../math/interval.hpp"
+#include "../../math/Interval.hpp"
 
 namespace pg
 {
@@ -126,4 +124,5 @@ inline int pg::Viewport2::axialToRasterY(int64_t v) const noexcept
 	return (int)((v - rangeY.begin) * height() / length(rangeY));
 }
 
-#endif // VIEWPORT2_HPP
+#endif // !_POLYGAMMA_UI_GRAPHICS_VIEWPORT2_HPP__
+

@@ -1,5 +1,5 @@
-#ifndef POLYGAMMA_HPP
-#define POLYGAMMA_HPP
+#ifndef _POLYGAMMA_CORE_POLYGAMMA_HPP__
+#define _POLYGAMMA_CORE_POLYGAMMA_HPP__
 
 #include <complex>
 
@@ -14,4 +14,5 @@ typedef std::complex<real> complex;
 } // namespace pg
 
 
-#endif // POLYGAMMA_HPP
+#endif // !_POLYGAMMA_CORE_POLYGAMMA_HPP__
+

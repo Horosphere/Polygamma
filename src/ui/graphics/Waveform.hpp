@@ -1,9 +1,9 @@
-#ifndef WAVEFORM_HPP
-#define WAVEFORM_HPP
+#ifndef _POLYGAMMA_UI_GRAPHICS_WAVEFORM_HPP__
+#define _POLYGAMMA_UI_GRAPHICS_WAVEFORM_HPP__
 
-#include "viewport2.hpp"
+#include "Viewport2.hpp"
 
-#include "../../math/audio.hpp"
+#include "../../math/Audio.hpp"
 
 namespace pg
 {
@@ -26,4 +26,5 @@ private:
 } // namespace pg
 
 
-#endif // WAVEFORM_HPP
+#endif // !_POLYGAMMA_UI_GRAPHICS_WAVEFORM_HPP__
+

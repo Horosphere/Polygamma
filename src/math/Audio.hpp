@@ -1,7 +1,7 @@
-#ifndef AUDIO_HPP
-#define AUDIO_HPP
+#ifndef _POLYGAMMA_MATH_AUDIO_HPP__
+#define _POLYGAMMA_MATH_AUDIO_HPP__
 
-#include "../core/polygamma.hpp"
+#include "../core/Polygamma.hpp"
 
 namespace pg
 {
@@ -102,4 +102,5 @@ private:
 };
 
 } // namespace pg
-#endif // AUDIO_HPP
+#endif // !_POLYGAMMA_MATH_AUDIO_HPP__
+

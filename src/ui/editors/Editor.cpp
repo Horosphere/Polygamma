@@ -1,4 +1,4 @@
-#include "editor.hpp"
+#include "Editor.hpp"
 
 pg::Editor::Editor(QWidget *parent) : PanelBase(parent)
 {

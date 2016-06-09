@@ -1,9 +1,9 @@
-#ifndef IO_H
-#define IO_H
+#ifndef _POLYGAMMA_IO_AV_HPP__
+#define _POLYGAMMA_IO_AV_HPP__
 
 #include <string>
 
-#include "../math/audio.hpp"
+#include "../math/Audio.hpp"
 
 namespace pg
 {
@@ -20,4 +20,5 @@ bool readAV(char const fileName[], Audio* const audio, std::string* const error)
 } // namespace pg
 
 
-#endif // IO_H
+#endif // !_POLYGAMMA_IO_AV_HPP__
+

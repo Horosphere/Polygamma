@@ -1,9 +1,9 @@
-#ifndef EDITOR_HPP
-#define EDITOR_HPP
+#ifndef _POLYGAMMA_UI_EDITORS_EDITOR_HPP__
+#define _POLYGAMMA_UI_EDITORS_EDITOR_HPP__
 
 #include <QString>
 
-#include "../panels/panelbase.hpp"
+#include "../panels/PanelBase.hpp"
 
 namespace pg
 {
@@ -24,4 +24,5 @@ public Q_SLOTS:
 
 } // namespace pg
 
-#endif // EDITOR_HPP
+#endif // !_POLYGAMMA_UI_EDITORS_EDITOR_HPP__
+

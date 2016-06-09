@@ -1,12 +1,12 @@
-#include "mainwindow.hpp"
+#include "MainWindow.hpp"
 
-#include <QFileDialog>
-#include <QDir>
-#include <QVBoxLayout>
-#include <QMessageBox>
 #include <QDebug>
+#include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QVBoxLayout>
 
-#include "editors/editorsimple.hpp"
+#include "editors/EditorSimple.hpp"
 #include "../io/av.hpp"
 
 pg::MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),

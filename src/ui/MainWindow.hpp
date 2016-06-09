@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_HPP
-#define MAINWINDOW_HPP
+#ifndef _POLYGAMMA_UI_MAINWINDOW_HPP__
+#define _POLYGAMMA_UI_MAINWINDOW_HPP__
 
 #include <QMainWindow>
 #include <QStatusBar>
@@ -32,4 +32,5 @@ private:
 
 } // namespace pg
 
-#endif // MAINWINDOW_HPP
+#endif // !_POLYGAMMA_UI_MAINWINDOW_HPP__
+

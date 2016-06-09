@@ -1,4 +1,4 @@
-#include "editorsimple.hpp"
+#include "EditorSimple.hpp"
 
 #include <QFileDialog>
 #include <QDebug>

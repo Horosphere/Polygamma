@@ -1,5 +1,5 @@
-#ifndef INTERVAL_HPP
-#define INTERVAL_HPP
+#ifndef _POLYGAMMA_MATH_INTERVAL_HPP__
+#define _POLYGAMMA_MATH_INTERVAL_HPP__
 
 #include <cassert>
 #include <algorithm>
@@ -120,4 +120,5 @@ pg::length(Interval<R> const& interval)
 	return interval.end - interval.begin;
 }
 
-#endif // INTERVAL_HPP
+#endif // !_POLYGAMMA_MATH_INTERVAL_HPP__
+

@@ -1,5 +1,5 @@
-#ifndef UI_HPP
-#define UI_HPP
+#ifndef _POLYGAMMA_UI_UI_HPP__
+#define _POLYGAMMA_UI_UI_HPP__
 
 #include <cstdint>
 
@@ -26,4 +26,5 @@ constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 32;
 
 
 } // namespace pg
-#endif // UI_HPP
+#endif // !_POLYGAMMA_UI_UI_HPP__
+

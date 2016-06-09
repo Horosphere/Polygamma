@@ -1,5 +1,5 @@
-#ifndef FOURIER_HPP
-#define FOURIER_HPP
+#ifndef _POLYGAMMA_MATH_FOURIER_HPP__
+#define _POLYGAMMA_MATH_FOURIER_HPP__
 
 #include "../core/polygamma.hpp"
 
@@ -57,4 +57,5 @@ void dstft(complex* const* const spectrogram,
 
 } // namespace pg
 
-#endif // FOURIER_HPP
+#endif // !_POLYGAMMA_MATH_FOURIER_HPP__
+

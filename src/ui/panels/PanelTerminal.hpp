@@ -1,11 +1,11 @@
-#ifndef PANELTERMINAL_HPP
-#define PANELTERMINAL_HPP
+#ifndef _POLYGAMMA_UI_PANELS_PANELTERMINAL_HPP__
+#define _POLYGAMMA_UI_PANELS_PANELTERMINAL_HPP__
 
 #include <string>
 #include <QPlainTextEdit>
 #include <QTextEdit>
 
-#include "panelbase.hpp"
+#include "PanelBase.hpp"
 
 namespace pg
 {
@@ -49,4 +49,5 @@ private:
 
 } // namespace pg
 
-#endif // PANELTERMINAL_HPP
+#endif // !_POLYGAMMA_UI_PANELS_PANELTERMINAL_HPP__
+

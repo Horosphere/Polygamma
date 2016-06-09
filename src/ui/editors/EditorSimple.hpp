@@ -1,13 +1,13 @@
-#ifndef EDITORSIMPLE_HPP
-#define EDITORSIMPLE_HPP
+#ifndef _POLYGAMMA_UI_EDITORS_EDITORSIMPLE_HPP__
+#define _POLYGAMMA_UI_EDITORS_EDITORSIMPLE_HPP__
 
 #include <QFile>
 #include <QVBoxLayout>
 
-#include "editor.hpp"
-#include "../graphics/waveform.hpp"
-#include "../graphics/spectrogram.hpp"
-#include "../../math/audio.hpp"
+#include "Editor.hpp"
+#include "../graphics/Waveform.hpp"
+#include "../graphics/Spectrogram.hpp"
+#include "../../math/Audio.hpp"
 
 namespace pg
 {
@@ -43,4 +43,5 @@ private:
 
 } // namespace pg
 
-#endif // EDITORSIMPLE_HPP
+#endif // !_POLYGAMMA_UI_EDITORS_EDITORSIMPLE_HPP__
+

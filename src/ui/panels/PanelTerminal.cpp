@@ -1,4 +1,4 @@
-#include "panelterminal.hpp"
+#include "PanelTerminal.hpp"
 
 #include <QVBoxLayout>
 #include <QKeyEvent>

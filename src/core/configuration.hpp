@@ -1,11 +1,10 @@
-#ifndef CONFIGURATION_HPP
-#define CONFIGURATION_HPP
+#ifndef _POLYGAMMA_CORE_CONFIGURATION_HPP__
+#define _POLYGAMMA_CORE_CONFIGURATION_HPP__
 
-// TODO: Implement configuration without Qt
 
 namespace pg
 {
 
 } // namespace pg
 
-#endif // CONFIGURATION_HPP
+#endif // !_POLYGAMMA_CORE_CONFIGURATION_HPP__

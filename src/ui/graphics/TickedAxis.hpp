@@ -1,5 +1,5 @@
-#ifndef TICKEDAXIS_HPP
-#define TICKEDAXIS_HPP
+#ifndef _POLYGAMMA_UI_GRAPHICS_TICKEDAXIS_HPP__
+#define _POLYGAMMA_UI_GRAPHICS_TICKEDAXIS_HPP__
 
 #include <QWidget>
 
@@ -19,4 +19,5 @@ public Q_SLOTS:
 
 } // namespace pg
 
-#endif // TICKEDAXIS_HPP
+#endif // !_POLYGAMMA_UI_GRAPHICS_TICKEDAXIS_HPP__
+
