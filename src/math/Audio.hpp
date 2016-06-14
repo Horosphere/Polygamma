@@ -1,7 +1,7 @@
 #ifndef _POLYGAMMA_MATH_AUDIO_HPP__
 #define _POLYGAMMA_MATH_AUDIO_HPP__
 
-#include "../core/Polygamma.hpp"
+#include "../core/polygamma.hpp"
 
 namespace pg
 {

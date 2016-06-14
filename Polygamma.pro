@@ -1,7 +1,7 @@
 TARGET = Polygamma
 
 LIBS += -lavcodec -lavformat -lavutil -lswscale \
-	-lboost_thread
+	-lboost_thread 
 	
 QT += core gui
 QT += widgets
@@ -43,37 +43,40 @@ UI_DIR      = $${DESTDIR}/.ui
 
 # Auto-generated. Do not edit. All changes will be undone
 HEADERS += \
+	src/core/Kernel.hpp\
 	src/core/polygamma.hpp\
 	src/core/configuration.hpp\
+	src/core/Command.hpp\
 	src/io/av.hpp\
-	src/math/interval.hpp\
-	src/math/audio.hpp\
+	src/math/Audio.hpp\
+	src/math/Interval.hpp\
 	src/math/fourier.hpp\
 	src/ui/ui.hpp\
-	src/ui/mainwindow.hpp\
-	src/ui/editors/editorsimple.hpp\
-	src/ui/editors/editor.hpp\
-	src/ui/graphics/viewport2.hpp\
-	src/ui/graphics/waveform.hpp\
-	src/ui/graphics/tickedaxis.hpp\
-	src/ui/graphics/spectrogram.hpp\
-	src/ui/panels/panelbase.hpp\
-	src/ui/panels/panelterminal.hpp
+	src/ui/MainWindow.hpp\
+	src/ui/Terminal.hpp\
+	src/ui/editors/Editor.hpp\
+	src/ui/editors/EditorSimple.hpp\
+	src/ui/graphics/Viewport2.hpp\
+	src/ui/graphics/Waveform.hpp\
+	src/ui/graphics/TickedAxis.hpp\
+	src/ui/graphics/Spectrogram.hpp\
+	src/ui/panels/PanelBase.hpp
 SOURCES += \
 	src/main.cpp\
+	src/core/Kernel.cpp\
 	src/io/av.cpp\
+	src/math/Audio.cpp\
 	src/math/fourier.cpp\
-	src/math/audio.cpp\
-	src/ui/mainwindow.cpp\
+	src/ui/MainWindow.cpp\
 	src/ui/ui.cpp\
-	src/ui/editors/editorsimple.cpp\
-	src/ui/editors/editor.cpp\
-	src/ui/graphics/viewport2.cpp\
-	src/ui/graphics/spectrogram.cpp\
-	src/ui/graphics/waveform.cpp\
-	src/ui/graphics/tickedaxis.cpp\
-	src/ui/panels/panelbase.cpp\
-	src/ui/panels/panelterminal.cpp
+	src/ui/Terminal.cpp\
+	src/ui/editors/EditorSimple.cpp\
+	src/ui/editors/Editor.cpp\
+	src/ui/graphics/TickedAxis.cpp\
+	src/ui/graphics/Spectrogram.cpp\
+	src/ui/graphics/Viewport2.cpp\
+	src/ui/graphics/Waveform.cpp\
+	src/ui/panels/PanelBase.cpp
 # Auto-generated end
 
 # No forms. All UIs are constructed by code.

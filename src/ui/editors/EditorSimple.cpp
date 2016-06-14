@@ -86,6 +86,8 @@ void pg::EditorSimple::updateAudioFormat()
 
 bool pg::EditorSimple::saveAs(QString* const error)
 {
+	(void) error;
+
 	// Will write the file to disk.
 	return true;
 }

@@ -5,6 +5,8 @@
 #include <QStatusBar>
 #include <QMenuBar>
 
+#include "../core/Kernel.hpp"
+
 namespace pg
 {
 
@@ -12,7 +14,8 @@ class MainWindow final: public QMainWindow
 {
 	Q_OBJECT
 public:
-	explicit MainWindow(QWidget* parent = 0);
+	explicit MainWindow(Kernel* const, QWidget* parent = 0);
+	~MainWindow();
 
 
 public Q_SLOTS:
@@ -24,10 +27,8 @@ private Q_SLOTS:
 private:
 	// UI Elements
 
-	// Menu actions
-	QAction* actionFileImport;
-	QAction* actionEditSummon;
 	// Handlers
+	Kernel* kernel;
 };
 
 } // namespace pg

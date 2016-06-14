@@ -1,11 +1,13 @@
+// main.cpp
+
+#include <thread>
 #include <QApplication>
-#include <QDebug>
 
 extern "C"
 {
 #include <libavformat/avformat.h>
 }
-#include "ui/mainwindow.hpp"
+#include "ui/MainWindow.hpp"
 
 /*
  * Main entry for Polygamma.
@@ -15,10 +17,14 @@ extern "C"
 int main(int argc, char* argv[])
 {
 	av_register_all();
-	using namespace pg;
+
+	// Launch the Kernel
+	pg::Kernel kernel;
+	std::thread threadKernel(&pg::Kernel::start, &kernel);
+	threadKernel.detach();
 
 	QApplication application(argc, argv);
-	MainWindow window;
+	pg::MainWindow window(&kernel);
 	window.show();
 
 	return application.exec();
