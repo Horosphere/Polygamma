@@ -3,7 +3,7 @@
 #include <thread>
 #include <iostream>
 
-pg::Kernel::Kernel()
+pg::Kernel::Kernel(): config()
 {
 }
 pg::Kernel::~Kernel()
@@ -24,5 +24,4 @@ void pg::Kernel::start()
 		}
 		std::this_thread::yield(); // Avoids busy waiting
 	}
-	std::cout << "Kernel terminated\n";
 }

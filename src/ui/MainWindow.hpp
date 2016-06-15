@@ -15,8 +15,9 @@ class MainWindow final: public QMainWindow
 	Q_OBJECT
 public:
 	explicit MainWindow(Kernel* const, QWidget* parent = 0);
-	~MainWindow();
 
+protected:
+	virtual void closeEvent(QCloseEvent*) override;
 
 public Q_SLOTS:
 

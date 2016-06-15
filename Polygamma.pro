@@ -45,7 +45,7 @@ UI_DIR      = $${DESTDIR}/.ui
 HEADERS += \
 	src/core/Kernel.hpp\
 	src/core/polygamma.hpp\
-	src/core/configuration.hpp\
+	src/core/Configuration.hpp\
 	src/core/Command.hpp\
 	src/io/av.hpp\
 	src/math/Audio.hpp\
@@ -54,6 +54,7 @@ HEADERS += \
 	src/ui/ui.hpp\
 	src/ui/MainWindow.hpp\
 	src/ui/Terminal.hpp\
+	src/ui/util/SyntaxHighlighterPython.hpp\
 	src/ui/editors/Editor.hpp\
 	src/ui/editors/EditorSimple.hpp\
 	src/ui/graphics/Viewport2.hpp\
@@ -64,12 +65,14 @@ HEADERS += \
 SOURCES += \
 	src/main.cpp\
 	src/core/Kernel.cpp\
+	src/core/Configuration.cpp\
 	src/io/av.cpp\
 	src/math/Audio.cpp\
 	src/math/fourier.cpp\
 	src/ui/MainWindow.cpp\
 	src/ui/ui.cpp\
 	src/ui/Terminal.cpp\
+	src/ui/util/SyntaxHighlighterPython.cpp\
 	src/ui/editors/EditorSimple.cpp\
 	src/ui/editors/Editor.cpp\
 	src/ui/graphics/TickedAxis.cpp\
@@ -78,6 +81,8 @@ SOURCES += \
 	src/ui/graphics/Waveform.cpp\
 	src/ui/panels/PanelBase.cpp
 # Auto-generated end
+
+RESOURCES += resources/Polygamma.qrc
 
 # No forms. All UIs are constructed by code.
 FORMS +=

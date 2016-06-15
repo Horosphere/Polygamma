@@ -7,6 +7,8 @@
 #include <QFont>
 #include <QDebug>
 
+#include "util/SyntaxHighlighterPython.hpp"
+
 pg::TerminalLog::TerminalLog(QWidget* parent): QPlainTextEdit(parent)
 {
 	setReadOnly(true);
@@ -15,6 +17,8 @@ pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent)
 {
 	// Required for detecting key combinations
 	setFocusPolicy(Qt::StrongFocus);
+
+	new SyntaxHighlighterPython(document());
 }
 
 void pg::TerminalLog::onLogUpdate(QString log)
@@ -25,7 +29,7 @@ void pg::TerminalLog::onLogUpdate(QString log)
 void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 {
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
-			event->modifiers() == Qt::ShiftModifier)
+	        event->modifiers() == Qt::ShiftModifier)
 	{
 		Q_EMIT execute(Command(document()->toPlainText().toStdString()));
 		this->document()->setPlainText("");
@@ -63,7 +67,7 @@ pg::Terminal::Terminal(Kernel* const kernel,
 	connect(input, &TerminalInput::execute,
 	        this, &Terminal::onExecution);
 	connect(this, &Terminal::logUpdate,
-			log, &TerminalLog::onLogUpdate, Qt::QueuedConnection);
+	        log, &TerminalLog::onLogUpdate, Qt::QueuedConnection);
 
 	// Default
 	setBaseSize(QSize(300,500));

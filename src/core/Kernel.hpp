@@ -6,6 +6,7 @@
 #include <boost/signals2.hpp>
 
 #include "Command.hpp"
+#include "Configuration.hpp"
 
 namespace pg
 {
@@ -55,6 +56,7 @@ public:
 	 */
 	void pushCommand(Command const&);
 
+	Configuration config;
 private:
 
 	/**

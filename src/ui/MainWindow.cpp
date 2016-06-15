@@ -1,10 +1,13 @@
 #include "MainWindow.hpp"
 
 #include <iostream>
+
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
+#include <QCloseEvent>
+#include <QResource>
 
 #include "Terminal.hpp"
 #include "editors/EditorSimple.hpp"
@@ -15,7 +18,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
                            QWidget* parent): QMainWindow(parent),
 	kernel(kernel)
 {
-
+	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
 	               QMainWindow::AnimatedDocks |
 	               QMainWindow::AllowTabbedDocks |
@@ -48,9 +51,11 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	connect(actionEditSummon, &QAction::triggered,
 	        this, &MainWindow::onEditSummon);
 }
-pg::MainWindow::~MainWindow()
+
+void pg::MainWindow::closeEvent(QCloseEvent* event)
 {
 	kernel->halt();
+	QMainWindow::closeEvent(event);
 }
 
 void pg::MainWindow::onFileImport()
