@@ -10,6 +10,7 @@
 #include <QResource>
 
 #include "Terminal.hpp"
+#include "DialogPreferences.hpp"
 #include "editors/EditorSimple.hpp"
 
 #include "../io/av.hpp"
@@ -27,14 +28,19 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	setWindowTitle(tr("Polygamma"));
 
 	// Menus
+	// Menu File
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
-	QAction* actionFileImport = new QAction("Import", this);
+	QAction* actionFileImport = new QAction(tr("Import"), this);
 	actionFileImport->setEnabled(false); // Temporarily disabled for debugging.
 	menuFile->addAction(actionFileImport);
+	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
 	QAction* actionEditSummon = new QAction("Summon", this);
 	menuEdit->addAction(actionEditSummon);
+	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
+	menuEdit->addAction(actionEditPreferences);
 
+	// Central
 	QWidget* centralWidget = new QWidget(this);
 	setCentralWidget(centralWidget);
 	centralWidget->setMinimumSize(400, 400);
@@ -50,6 +56,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	        this, &MainWindow::onFileImport);
 	connect(actionEditSummon, &QAction::triggered,
 	        this, &MainWindow::onEditSummon);
+	connect(actionEditPreferences, &QAction::triggered,
+			this, &MainWindow::onEditPreferences);
 }
 
 void pg::MainWindow::closeEvent(QCloseEvent* event)
@@ -74,4 +82,10 @@ void pg::MainWindow::onEditSummon()
 {
 	Terminal* terminal = new Terminal(kernel, this);
 	terminal->show();
+}
+
+void pg::MainWindow::onEditPreferences()
+{
+	DialogPreferences* dp = new DialogPreferences(kernel, this);
+	dp->show();
 }

@@ -24,6 +24,7 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void onFileImport();
 	void onEditSummon();
+	void onEditPreferences();
 
 private:
 	// UI Elements

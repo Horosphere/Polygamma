@@ -51,10 +51,12 @@ HEADERS += \
 	src/math/Audio.hpp\
 	src/math/Interval.hpp\
 	src/math/fourier.hpp\
+	src/ui/DialogPreferences.hpp\
 	src/ui/ui.hpp\
 	src/ui/MainWindow.hpp\
 	src/ui/Terminal.hpp\
 	src/ui/util/SyntaxHighlighterPython.hpp\
+	src/ui/util/ColourButton.hpp\
 	src/ui/editors/Editor.hpp\
 	src/ui/editors/EditorSimple.hpp\
 	src/ui/graphics/Viewport2.hpp\
@@ -72,7 +74,9 @@ SOURCES += \
 	src/ui/MainWindow.cpp\
 	src/ui/ui.cpp\
 	src/ui/Terminal.cpp\
+	src/ui/DialogPreferences.cpp\
 	src/ui/util/SyntaxHighlighterPython.cpp\
+	src/ui/util/ColourButton.cpp\
 	src/ui/editors/EditorSimple.cpp\
 	src/ui/editors/Editor.cpp\
 	src/ui/graphics/TickedAxis.cpp\

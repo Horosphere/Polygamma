@@ -3,10 +3,15 @@
 
 #include <cstdint>
 
-#include <QPen>
+#include <QColor>
+
+#include "../core/Configuration.hpp"
 
 namespace pg
 {
+
+QColor abgrToQColor(Configuration::Colour32);
+Configuration::Colour32 qColorToABGR(QColor);
 
 /**
  * Polygamma implements audio display using fixed-point floating points. The
@@ -26,5 +31,24 @@ constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 32;
 
 
 } // namespace pg
+
+// Implementations
+
+inline QColor
+pg::abgrToQColor(Configuration::Colour32 c)
+{
+	// & has lower precedence compared to >>
+	return QColor(c & 0xFF, c >> 8 & 0xFF, c >> 16 & 0xFF, c >> 24);
+}
+
+inline pg::Configuration::Colour32
+pg::qColorToABGR(QColor c)
+{
+	return (c.red() & 0xFF) |
+	       (c.green() & 0xFF) << 8 |
+	       (c.blue() & 0xFF) << 16 |
+	       (c.alpha() & 0xFf) << 24;
+}
+
 #endif // !_POLYGAMMA_UI_UI_HPP__
 

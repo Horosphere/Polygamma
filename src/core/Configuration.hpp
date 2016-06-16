@@ -9,16 +9,19 @@ namespace pg
 
 struct Configuration final
 {
+	/**
+	 * Colour stored in the format
+	 * 0xAARRGGBB
+	 */
 	typedef uint32_t Colour32;
 	/**
 	 * @brief Sets the configuration to its default values.
 	 */
 	Configuration();
 
-		
-	std::string uiLanguage;
-
-	Colour32 uiBaseColour;
+	// The naming of the configurations must be consistent with
+	// ui/DialogPreferences.hpp.
+	Colour32 uiColourBG;
 	Colour32 uiTerminalBG;
 };
 /**
