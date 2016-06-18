@@ -5,14 +5,19 @@ An open source audio editing software.
 ## Building
 
 ###### Dependencies
-Polygamma uses Qt 5.6.0 and QMake 3.0. Check that it is the case using `qmake --version`.
-Polygamma dependes on `libavcodec, libavformat, libavutil, libswscale, libboost`. 
+Polygamma dependes on `Qt5.6.0, avcodec, avformat, avutil, swscale, boost`.
 
 ###### Compilation
-Using QMake,
+It is best to do an out of source build at `build/` directory. Create a
+subdirectory `build` and run
 ```
-qmake .
-make release
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+If `cmake` is unable to find `Qt5Widgets`, try feeding it the following option:
+```
+-DQt5Widgets_DIR = <directory containing Qt5WidgetsConfig.cmake>
 ```
 ## Developing
 

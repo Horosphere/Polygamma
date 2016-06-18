@@ -1,6 +1,8 @@
 #ifndef _POLYGAMMA_CORE_KERNEL_HPP__
 #define _POLYGAMMA_CORE_KERNEL_HPP__
 
+#include <atomic>
+
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
@@ -65,7 +67,7 @@ private:
 	boost::lockfree::spsc_queue<Command, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> commandQueue;
 	boost::signals2::signal<void (std::string)> signalLog;
 
-	bool running;
+	std::atomic_bool running;
 };
 
 } // namespace pg
