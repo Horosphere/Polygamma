@@ -2,8 +2,8 @@ bin
 build
 *.pyc
 *.swp
-.color_coded
-.formatGen
-.ycm_extra_conf.py
-logo.xcf
 makescript
+
+# Hidden files
+.*
+!/.gitignore

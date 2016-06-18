@@ -21,4 +21,5 @@ If `cmake` is unable to find `Qt5Widgets`, try feeding it the following option:
 ```
 ## Developing
 
-The `update.py` script is used to add source and header files in `src/` to `Polygamma.pro`.
+The script `update.py` is used to introduce new source files or new QObject
+headers to `CMakeLists.txt`.
