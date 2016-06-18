@@ -23,7 +23,10 @@ pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent)
 
 void pg::TerminalLog::onLogUpdate(QString log)
 {
-	appendPlainText(log);
+	moveCursor(QTextCursor::End);
+	insertPlainText(log);
+	moveCursor(QTextCursor::End);
+	
 }
 
 void pg::TerminalInput::keyPressEvent(QKeyEvent* event)

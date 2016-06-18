@@ -1,7 +1,8 @@
 #include "Kernel.hpp"
 
-#include <thread>
 #include <iostream>
+#include <thread>
+#include <sstream>
 
 #include <Python.h>
 #include <boost/python.hpp>
@@ -22,7 +23,7 @@ std::string pg::pythonTraceBack(boost::python::error_already_set const& error)
 
 	using namespace boost::python;
 	std::string result = "";
-	
+
 	PyObject* exType;
 	PyObject* value;
 	PyObject* traceBack;
@@ -46,47 +47,45 @@ pg::Kernel::Kernel(): config()
 	dictMain = moduleMain.attr("__dict__");
 
 	// Redirects Python stdout and stderr streams to the terminal
-	struct RedirectorOut
+	class Redirector
 	{
-		boost::signals2::signal<void (std::string)>* signal;
-		bool newLine;
-
+	public:
+		Redirector(boost::signals2::signal<void (std::string)>* signal,
+		           std::string prepend):
+			signal(signal), prepend(prepend), newLine(true)
+		{
+		}
 		void write(std::string const& str)
 		{
+			if (str == "") return;
+			std::string result;
+			std::stringstream ss(str);
+			std::string item;
+			std::getline(ss, item, '\n');
 			if (newLine)
-				signal->operator()("[Out] " + str);
-			else
-				signal->operator()(str);
+				result += prepend;
+			result += item;
+			while (std::getline(ss, item, '\n'))
+				result += '\n' + prepend + item;
 
-			newLine = str == "\n";
+			newLine = str.back() == '\n';
+			if (newLine) result += '\n';
+			
+			signal->operator()(result);
 		}
-	} redirectorOut;
-	struct RedirectorErr
-	{
+	private:
 		boost::signals2::signal<void (std::string)>* signal;
+		std::string prepend;
 		bool newLine;
+	};
+	dictMain["Redirector"] = boost::python::class_<Redirector>("Redirector",
+	                         boost::python::no_init)
+	                         .def("write", &Redirector::write);
+	boost::python::import("sys").attr("stdout") =
+		Redirector(&signalLog, "[Out] ");
+	boost::python::import("sys").attr("stderr") =
+		Redirector(&signalLog, "[Err] ");;
 
-		void write(std::string const& str)
-		{
-			if (newLine)
-				signal->operator()("[Err] " + str);
-			else
-				signal->operator()(str);
-
-			newLine = str == "\n";
-		}
-	} redirectorErr;
-	redirectorOut.signal = redirectorErr.signal = &signalLog;
-	redirectorOut.newLine = redirectorErr.newLine = true;	
-	dictMain["RedirectorOut"] = boost::python::class_<RedirectorOut>("RedirectorOut",
-	                         boost::python::init<>())
-	                         .def("write", &RedirectorOut::write);
-	dictMain["RedirectorErr"] = boost::python::class_<RedirectorErr>("RedirectorErr",
-	                         boost::python::init<>())
-	                         .def("write", &RedirectorErr::write);
-	boost::python::import("sys").attr("stdout") = redirectorOut;
-	boost::python::import("sys").attr("stderr") = redirectorErr;
-	
 
 }
 pg::Kernel::~Kernel()
@@ -104,19 +103,19 @@ void pg::Kernel::start()
 		while (commandQueue.pop(command))
 		{
 			// Emits the command back to the log listerners for testing purposes
-			signalLog("\n>> " + command.str);
-			
+			signalLog(">> " + command.str + "\n");
+
 			try
 			{
 				boost::python::object ignored =
-					boost::python::exec(command.str.c_str(), dictMain);
+				    boost::python::exec(command.str.c_str(), dictMain);
 			}
 			catch (boost::python::error_already_set& error)
 			{
 				signalLog(pythonTraceBack(error));
 			}
 
-			
+
 		}
 		std::this_thread::yield(); // Avoids busy waiting
 	}
