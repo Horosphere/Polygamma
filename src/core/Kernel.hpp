@@ -3,9 +3,10 @@
 
 #include <atomic>
 
+#include <Python.h>
 #include <boost/lockfree/spsc_queue.hpp>
-#include <boost/optional.hpp>
 #include <boost/signals2.hpp>
+#include <boost/python.hpp>
 
 #include "Command.hpp"
 #include "Configuration.hpp"
@@ -68,6 +69,10 @@ private:
 	boost::signals2::signal<void (std::string)> signalLog;
 
 	std::atomic_bool running;
+
+	// Python
+	boost::python::object moduleMain;
+	boost::python::object dictMain;
 };
 
 } // namespace pg

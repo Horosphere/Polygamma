@@ -7,3 +7,4 @@ makescript
 # Hidden files
 .*
 !/.gitignore
+!/.formatGen

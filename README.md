@@ -5,7 +5,8 @@ An open source audio editing software.
 ## Building
 
 ###### Dependencies
-Polygamma dependes on `Qt5.6.0, avcodec, avformat, avutil, swscale, boost`.
+Polygamma dependes on Python 3.5, Boost 1.61, avcodec, avformat, avutil,
+and swscale. Boost.Python must be compiled with Python 3 support.
 
 ###### Compilation
 It is best to do an out of source build at `build/` directory. Create a

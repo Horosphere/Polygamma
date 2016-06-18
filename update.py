@@ -1,24 +1,22 @@
 # Author: Horosphere
 # Execute this script each time you add a new source file in src/ to
-# update CMakeLists.txt
+# update CMakeLists.txt, or each time you add a new QObject header file.
 
-import os, sys
-
-os.chdir(os.path.dirname(os.path.realpath(__file__)));
-
-# dir_qObject must reside in dir_source
 dir_qObject = "src/ui"
 dir_source = "src"
 fileName = "CMakeLists.txt"
 
 signature_begin = "# Auto-generated. Do not edit. All changes will be undone\n"
 signature_end = "# Auto-generated end\n"
-autoGen_qObject_begin = "set(QObjectHeaders\n"
 autoGen_source_begin = "set(SourceFiles\n"
+autoGen_source_end = "   )\n"
+autoGen_qObject_begin = "set(QObjectHeaders\n"
+autoGen_qObject_end = "   )\n"
 autoGen_padding = "    "
-autoGen_end = "   )\n"
 
+import os, sys
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)));
 cMakeFile = [] # Lines of CMakeLists.txt
 iBegin = -1 # Indices corresponding to auto-generated sections
 iEnd = -1
@@ -41,26 +39,28 @@ if iBegin == -1 or iEnd == -1 or iBegin > iEnd:
 
 del cMakeFile[iBegin + 1: iEnd]
 
+print("Source files:")
 autoGen = autoGen_source_begin
 truncation = len("./" + dir_source)
-# Scan src/ directory recursively to gather source files
-for root, subdirs, files in os.walk("./" + dir_source): # The root string has length 5
+# Scans source directory recursively to gather source files
+for root, subdirs, files in os.walk("./" + dir_source):
     for name in files:
         f = str(os.path.join(root, name))[truncation:]
         if not f.endswith(('.cpp', '.c', '.cxx', '.cc')): continue
-        print("Source: " + f)
+        print(f)
         autoGen += autoGen_padding + dir_source + f + "\n"
-autoGen += autoGen_end + autoGen_qObject_begin
+autoGen += autoGen_source_end + autoGen_qObject_begin
 
+print("\nQObject files:")
 truncation = len("./" + dir_qObject)
-# Scan src/ directory recursively to gather source files
-for root, subdirs, files in os.walk("./" + dir_qObject): # The root string has length 5
+# Scans QObject  directory recursively to gather QObject files
+for root, subdirs, files in os.walk("./" + dir_qObject):
     for name in files:
         f = str(os.path.join(root, name))[truncation:]
         if not f.endswith(('.hpp', '.h', '.hxx', '.hh')): continue
-        print("QObject: " + f)
+        print(f)
         autoGen += autoGen_padding + dir_qObject + f + "\n"
-autoGen += autoGen_end
+autoGen += autoGen_qObject_end
 
 cMakeFile.insert(iBegin + 1, autoGen)
 
