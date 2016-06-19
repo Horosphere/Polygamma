@@ -50,9 +50,13 @@ Q_SIGNALS:
 	// QString.
 	void logUpdate(QString);
 
+protected:
+	virtual void closeEvent(QCloseEvent*) override;
+
 private Q_SLOTS:
 
 	void onExecution(Command const&);
+
 private:
 	/**
 	 * @brief Called when the log has been updated. This slot is connected to

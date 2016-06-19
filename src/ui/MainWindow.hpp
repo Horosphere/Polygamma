@@ -5,6 +5,7 @@
 #include <QStatusBar>
 #include <QMenuBar>
 
+#include "Terminal.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -27,10 +28,12 @@ private Q_SLOTS:
 	void onEditPreferences();
 
 private:
-	// UI Elements
-
 	// Handlers
 	Kernel* kernel;
+
+	// UI Elements
+	Terminal* terminal;
+
 };
 
 } // namespace pg

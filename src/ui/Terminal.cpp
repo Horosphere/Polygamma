@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QFont>
 #include <QDebug>
+#include <QCloseEvent>
 
 #include "util/SyntaxHighlighterPython.hpp"
 
@@ -79,6 +80,11 @@ pg::Terminal::Terminal(Kernel* const kernel,
 	setFont(font);
 }
 
+void pg::Terminal::closeEvent(QCloseEvent* event)
+{
+	this->hide();
+	event->ignore();
+}
 void pg::Terminal::onExecution(Command const& c)
 {
 	kernel->pushCommand(c);

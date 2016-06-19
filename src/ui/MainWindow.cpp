@@ -17,7 +17,7 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel,
                            QWidget* parent): QMainWindow(parent),
-	kernel(kernel)
+	kernel(kernel), terminal(new Terminal(kernel, this))
 {
 	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
@@ -80,7 +80,6 @@ void pg::MainWindow::onFileImport()
 }
 void pg::MainWindow::onEditSummon()
 {
-	Terminal* terminal = new Terminal(kernel, this);
 	terminal->show();
 }
 

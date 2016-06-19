@@ -14,29 +14,30 @@ namespace pg
  *	library.
  * @brief Produces a traceback string of the python exception.
  */
-std::string pythonTraceBack(boost::python::error_already_set const& error);
+std::string pythonTraceBack();
 } // namespace pg
 
-std::string pg::pythonTraceBack(boost::python::error_already_set const& error)
+std::string pg::pythonTraceBack()
 {
-	(void) error;
-
 	using namespace boost::python;
-	std::string result = "";
 
 	PyObject* exType;
 	PyObject* value;
 	PyObject* traceBack;
 	PyErr_Fetch(&exType, &value, &traceBack);
-	object objectExType(handle<>(borrowed(exType)));
-	object objectValue(handle<>(borrowed(value)));
-	object objectTraceBack(handle<>(borrowed(traceBack)));
-	object moduleTraceBack = import("traceback");
-	object lines = moduleTraceBack.attr("format_exception")(objectExType, objectValue, objectTraceBack);
-
+	// Needed to prevent exception from being thrown.
+	PyErr_NormalizeException(&exType, &value, &traceBack);
+	// This is the Python3 way to do it;
+	object oExType(handle<>(borrowed(exType)));
+	object oValue(handle<>(borrowed(value)));
+	object oTraceBack(handle<>(borrowed(traceBack)));
+	object lines = import("traceback").attr("format_exception")
+		(oExType, oValue, oTraceBack);
+	std::string result;
 	for (int i = 0; i < len(lines); ++i)
-		result.append(extract<std::string>(lines[i])());
+		result += extract<std::string>(lines[i])();
 
+	// PyErr_Restore(exType, value, traceBack);
 	return result;
 }
 
@@ -110,11 +111,10 @@ void pg::Kernel::start()
 				boost::python::object ignored =
 				    boost::python::exec(command.str.c_str(), dictMain);
 			}
-			catch (boost::python::error_already_set& error)
+			catch (boost::python::error_already_set const&)
 			{
-				signalLog(pythonTraceBack(error));
+				signalLog(pythonTraceBack());
 			}
-
 
 		}
 		std::this_thread::yield(); // Avoids busy waiting
