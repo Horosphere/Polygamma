@@ -7,7 +7,7 @@
 #include <QLineEdit>
 
 #include "Terminal.hpp"
-#include "util/LineEditCommand.hpp"
+#include "mainWindowAccessories.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg

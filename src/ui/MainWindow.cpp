@@ -37,7 +37,9 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	menuFile->addAction(actionFileImport);
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
-	QAction* actionEditSummon = new QAction("Summon", this);
+	CommandAction* actionEditSummon = new CommandAction(Command("print('summon')"), "Summon", this);
+	connect(actionEditSummon, &CommandAction::execute,
+			terminal, &Terminal::onExecute);
 	menuEdit->addAction(actionEditSummon);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
@@ -66,8 +68,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	{
 		this->terminal->show();
 	});
-	// Each QAction* action[menu][name] field in class MainWindow
-	// corresponds to a method void on[menu][name]() or a lambda of MainWindow.
+
+	// Menu actions
 	connect(actionEditPreferences, &QAction::triggered,
 	        this, [this]()
 	{
