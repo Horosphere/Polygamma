@@ -25,6 +25,9 @@ std::string pg::pythonTraceBack()
 	PyObject* value;
 	PyObject* traceBack;
 	PyErr_Fetch(&exType, &value, &traceBack);
+	// This can happen if the user entered print(
+	if (exType == nullptr || value == nullptr || traceBack == nullptr)
+		return "Unknown Error\n";
 	// Needed to prevent exception from being thrown.
 	PyErr_NormalizeException(&exType, &value, &traceBack);
 	// This is the Python3 way to do it;
