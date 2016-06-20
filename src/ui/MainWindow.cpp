@@ -1,23 +1,25 @@
 #include "MainWindow.hpp"
 
-#include <iostream>
-
+#include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
+#include <QFont>
 #include <QMessageBox>
-#include <QVBoxLayout>
-#include <QCloseEvent>
+#include <QPushButton>
 #include <QResource>
+#include <QVBoxLayout>
 
-#include "Terminal.hpp"
 #include "DialogPreferences.hpp"
+#include "Terminal.hpp"
 #include "editors/EditorSimple.hpp"
 
 #include "../io/av.hpp"
 
+
 pg::MainWindow::MainWindow(Kernel* const kernel,
                            QWidget* parent): QMainWindow(parent),
-	kernel(kernel), terminal(new Terminal(kernel, this))
+	kernel(kernel), terminal(new Terminal(kernel, this)),
+	lineEditCommand(new LineEditCommand), lineEditLog(new QLineEdit)
 {
 	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
@@ -25,7 +27,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	               QMainWindow::AllowTabbedDocks |
 	               QMainWindow::GroupedDragging);
 	//setTabPosition(Qt::RightDockWidgetArea, QTabWidget::East);
-	setWindowTitle(tr("Polygamma"));
+	setWindowTitle("Polygamma");
 
 	// Menus
 	// Menu File
@@ -39,25 +41,79 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	menuEdit->addAction(actionEditSummon);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
+	// Menu end
 
 	// Central
 	QWidget* centralWidget = new QWidget(this);
 	setCentralWidget(centralWidget);
-	centralWidget->setMinimumSize(400, 400);
 	QVBoxLayout* layoutMain = new QVBoxLayout(centralWidget);
 	(void) layoutMain;
 
+	// Status bar
+	statusBar()->addPermanentWidget(lineEditCommand, 1);
+	lineEditLog->setReadOnly(true);
+	statusBar()->addPermanentWidget(lineEditLog, 1);
+	QPushButton* buttonTerminal = new QPushButton;
+	buttonTerminal->setIcon(QIcon(":/terminal.png"));
+	buttonTerminal->setFixedSize(QSize(25,25));
+	buttonTerminal->setIconSize(QSize(25,25));
+	statusBar()->addPermanentWidget(buttonTerminal);
 	statusBar()->show();
 
 	// Connects the GUI.
+	connect(buttonTerminal, &QPushButton::clicked,
+	        this, [this]()
+	{
+		this->terminal->show();
+	});
 	// Each QAction* action[menu][name] field in class MainWindow
-	// corresponds to a method void on[menu][name] of MainWindow.
-	connect(actionFileImport, &QAction::triggered,
-	        this, &MainWindow::onFileImport);
-	connect(actionEditSummon, &QAction::triggered,
-	        this, &MainWindow::onEditSummon);
+	// corresponds to a method void on[menu][name]() or a lambda of MainWindow.
 	connect(actionEditPreferences, &QAction::triggered,
-			this, &MainWindow::onEditPreferences);
+	        this, [this]()
+	{
+		(new DialogPreferences(this->kernel, this))->show();
+	});
+
+	// Connects the kernel's stdout and stderr to the corresponding signals of
+	// this class
+	kernel->registerStdOutListener([this](std::string str)
+	{
+		Q_EMIT stdOutFlush(QString::fromStdString(str));
+	});
+	kernel->registerStdErrListener([this](std::string str)
+	{
+		Q_EMIT stdErrFlush(QString::fromStdString(str));
+	});
+	connect(this, &MainWindow::stdOutFlush,
+	        terminal->log, &TerminalLog::onStdOutFlush, Qt::QueuedConnection);
+	connect(this, &MainWindow::stdErrFlush,
+	        terminal->log, &TerminalLog::onStdErrFlush, Qt::QueuedConnection);
+	// Command line
+	connect(lineEditCommand, &LineEditCommand::execute,
+	        terminal, &Terminal::onExecute);
+	connect(this, &MainWindow::stdOutFlush,
+	        this, [this](QString const& str)
+	{
+		QStringList lines = str.split('\n', QString::SkipEmptyParts);
+		if (lines.isEmpty()) return;
+		lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
+		lineEditLog->setText(lines.takeLast());
+	}, Qt::QueuedConnection);
+	connect(this, &MainWindow::stdErrFlush,
+	        this, [this](QString const& str)
+	{
+		QStringList lines = str.split('\n', QString::SkipEmptyParts);
+		if (lines.isEmpty()) return;
+		lineEditLog->setText(lines.takeLast());
+		lineEditLog->setStyleSheet(lineEditLog_stylesheetErr);
+	}, Qt::QueuedConnection);
+
+	updateUIElements();
+
+	// Set default states
+	lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
+	centralWidget->setMinimumSize(400, 100);
+	terminal->setBaseSize(QSize(300, 500));
 }
 
 void pg::MainWindow::closeEvent(QCloseEvent* event)
@@ -78,13 +134,17 @@ void pg::MainWindow::onFileImport()
 	}
 	addDockWidget(Qt::LeftDockWidgetArea, editor);
 }
-void pg::MainWindow::onEditSummon()
-{
-	terminal->show();
-}
 
-void pg::MainWindow::onEditPreferences()
+void pg::MainWindow::updateUIElements()
 {
-	DialogPreferences* dp = new DialogPreferences(kernel, this);
-	dp->show();
+	// Load
+	QFont fontMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	lineEditCommand->setFont(fontMonospace);
+	lineEditLog->setFont(fontMonospace);
+	lineEditLog_stylesheetOut = QString("color: white; background-color: black");
+	lineEditLog_stylesheetErr = QString("color: white; background-color: #220000");
+
+	// Unload
+	terminal->log->setFont(fontMonospace);
+	terminal->input->setFont(fontMonospace);
 }

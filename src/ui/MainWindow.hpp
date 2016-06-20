@@ -4,8 +4,10 @@
 #include <QMainWindow>
 #include <QStatusBar>
 #include <QMenuBar>
+#include <QLineEdit>
 
 #include "Terminal.hpp"
+#include "util/LineEditCommand.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -20,12 +22,19 @@ public:
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
 
-public Q_SLOTS:
+Q_SIGNALS:
+	// These signals are called in the Kernel thread, so connecting them requires
+	// a queued connection.
+	void stdOutFlush(QString);
+	void stdErrFlush(QString);
 
 private Q_SLOTS:
+	// Currently deprecation does not work well with qt.
+	// [[deprecated("Example method for summoning editor")]]
 	void onFileImport();
-	void onEditSummon();
-	void onEditPreferences();
+
+	// Triggered upon configuration change
+	void updateUIElements();
 
 private:
 	// Handlers
@@ -33,6 +42,10 @@ private:
 
 	// UI Elements
 	Terminal* terminal;
+	LineEditCommand* lineEditCommand;
+	QLineEdit* lineEditLog;
+	QString lineEditLog_stylesheetOut;
+	QString lineEditLog_stylesheetErr;
 
 };
 

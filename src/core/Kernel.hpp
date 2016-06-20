@@ -35,23 +35,33 @@ public:
 	Kernel& operator=(Kernel const&) = delete;
 
 	/**
+	 * @warning Do not let this function execute concurrently in several threads.
 	 * @brief Starts the Kernel event loop. This should be ran in a different
 	 *	thread.
 	 */
 	void start();
 	/**
+	 * This function can be called multiple times.
 	 * @brief Sets a flag that halts the Kernel.
 	 */
 	void halt();
 
 	/**
-	 * @brief Register a callback to receive the console output of the kernel.
+	 * @brief Register a callback to receive the stdout output of the kernel.
 	 * @tparam Listener A function that accepts (std::string).
 	 * @param listener Listener::operator()(std::string) will be called
 	 *	occasionally.
 	 */
 	template<typename Listener> void
-	registerLogListener(Listener const& listener);
+	registerStdOutListener(Listener const& listener);
+	/**
+	 * @brief Register a callback to receive the stdout output of the kernel.
+	 * @tparam Listener A function that accepts (std::string).
+	 * @param listener Listener::operator()(std::string) will be called
+	 *	occasionally.
+	 */
+	template<typename Listener> void
+	registerStdErrListener(Listener const& listener);
 
 	/**
 	 * This function shall be called from only one thread.
@@ -66,7 +76,8 @@ private:
 	 * Concurrent event queue
 	 */
 	boost::lockfree::spsc_queue<Command, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> commandQueue;
-	boost::signals2::signal<void (std::string)> signalLog;
+	boost::signals2::signal<void (std::string)> signalOut;
+	boost::signals2::signal<void (std::string)> signalErr;
 
 	std::atomic_bool running;
 
@@ -87,9 +98,14 @@ pg::Kernel::halt()
 }
 
 template<typename Listener> inline void
-pg::Kernel::registerLogListener(Listener const& func)
+pg::Kernel::registerStdOutListener(Listener const& listener)
 {
-	signalLog.connect(func);
+	signalOut.connect(listener);
+}
+template<typename Listener> inline void
+pg::Kernel::registerStdErrListener(Listener const& listener)
+{
+	signalErr.connect(listener);
 }
 
 inline void

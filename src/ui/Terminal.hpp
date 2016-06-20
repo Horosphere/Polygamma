@@ -1,9 +1,9 @@
 #ifndef _POLYGAMMA_UI_TERMINAL_HPP__
 #define _POLYGAMMA_UI_TERMINAL_HPP__
 
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QPlainTextEdit>
-#include <QKeyEvent>
 #include <QString>
 
 #include "../core/Kernel.hpp"
@@ -13,16 +13,16 @@
 namespace pg
 {
 
-class TerminalLog final: public QPlainTextEdit
+class TerminalLog final: public QTextEdit
 {
 	Q_OBJECT
 public:
 	explicit TerminalLog(QWidget* parent = 0);
 
-private Q_SLOTS:
-	void onLogUpdate(QString);
+public Q_SLOTS:
+	void onStdOutFlush(QString);
+	void onStdErrFlush(QString);
 
-	friend class Terminal;
 };
 class TerminalInput final: public QPlainTextEdit
 {
@@ -46,16 +46,20 @@ public:
 	explicit Terminal(Kernel* const, QWidget* parent = 0);
 
 Q_SIGNALS:
-	// Called by void onLogUpdate(std::string) and converts std::string to
-	// QString.
+	/**
+	 * @brief Receive the updated log from the Kernel. This signal is emitted in
+	 * the Kernel thread, so all connections to it must be queued.
+	 */
 	void logUpdate(QString);
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
 
 private Q_SLOTS:
-
-	void onExecution(Command const&);
+	/**
+	 * Sends a command to the Kernel.
+	 */
+	void onExecute(Command const&);
 
 private:
 	/**
@@ -68,6 +72,8 @@ private:
 	TerminalLog* log;
 	TerminalInput* input;
 	Kernel* kernel;
+
+	friend class MainWindow;
 };
 
 } // namespace pg

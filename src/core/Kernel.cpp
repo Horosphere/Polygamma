@@ -32,12 +32,12 @@ std::string pg::pythonTraceBack()
 	object oValue(handle<>(borrowed(value)));
 	object oTraceBack(handle<>(borrowed(traceBack)));
 	object lines = import("traceback").attr("format_exception")
-		(oExType, oValue, oTraceBack);
+	               (oExType, oValue, oTraceBack);
 	std::string result;
 	for (int i = 0; i < len(lines); ++i)
 		result += extract<std::string>(lines[i])();
 
-	// PyErr_Restore(exType, value, traceBack);
+	PyErr_Restore(exType, value, traceBack);
 	return result;
 }
 
@@ -71,7 +71,7 @@ pg::Kernel::Kernel(): config()
 
 			newLine = str.back() == '\n';
 			if (newLine) result += '\n';
-			
+
 			signal->operator()(result);
 		}
 	private:
@@ -83,10 +83,9 @@ pg::Kernel::Kernel(): config()
 	                         boost::python::no_init)
 	                         .def("write", &Redirector::write);
 	boost::python::import("sys").attr("stdout") =
-		Redirector(&signalLog, "[Out] ");
+	    Redirector(&signalOut, "[Out] ");
 	boost::python::import("sys").attr("stderr") =
-		Redirector(&signalLog, "[Err] ");;
-
+	    Redirector(&signalErr, "[Err] ");
 
 }
 pg::Kernel::~Kernel()
@@ -103,9 +102,6 @@ void pg::Kernel::start()
 		Command command;
 		while (commandQueue.pop(command))
 		{
-			// Emits the command back to the log listerners for testing purposes
-			signalLog(">> " + command.str + "\n");
-
 			try
 			{
 				boost::python::object ignored =
@@ -113,9 +109,9 @@ void pg::Kernel::start()
 			}
 			catch (boost::python::error_already_set const&)
 			{
-				signalLog(pythonTraceBack());
+				signalErr(pythonTraceBack());
+				PyErr_Clear();
 			}
-
 		}
 		std::this_thread::yield(); // Avoids busy waiting
 	}

@@ -10,10 +10,26 @@
 
 #include "util/SyntaxHighlighterPython.hpp"
 
-pg::TerminalLog::TerminalLog(QWidget* parent): QPlainTextEdit(parent)
+// Terminal Log
+pg::TerminalLog::TerminalLog(QWidget* parent): QTextEdit(parent)
 {
 	setReadOnly(true);
 }
+
+void pg::TerminalLog::onStdOutFlush(QString str)
+{
+	moveCursor(QTextCursor::End);
+	insertHtml("<span style=\"color:#000000;\">" + str.replace('\n', "<br>") + "</span>");
+	moveCursor(QTextCursor::End);
+}
+void pg::TerminalLog::onStdErrFlush(QString str)
+{
+	moveCursor(QTextCursor::End);
+	insertHtml("<span style=\"color:#FF0000;\">" + str.replace('\n', "<br>") + "</span>");
+	moveCursor(QTextCursor::End);
+}
+
+// Terminal Input
 pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent)
 {
 	// Required for detecting key combinations
@@ -22,16 +38,9 @@ pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent)
 	new SyntaxHighlighterPython(document());
 }
 
-void pg::TerminalLog::onLogUpdate(QString log)
-{
-	moveCursor(QTextCursor::End);
-	insertPlainText(log);
-	moveCursor(QTextCursor::End);
-	
-}
-
 void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 {
+	// Shift + Enter executes the command
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
 	        event->modifiers() == Qt::ShiftModifier)
 	{
@@ -44,6 +53,7 @@ void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 	}
 }
 
+// Terminal
 pg::Terminal::Terminal(Kernel* const kernel,
                        QWidget* parent): QMainWindow(parent),
 	log(new TerminalLog), input(new TerminalInput),
@@ -63,21 +73,8 @@ pg::Terminal::Terminal(Kernel* const kernel,
 	menuFile->addAction(actionLoadScript);
 
 	// Signals
-	auto logListener = [this](std::string c)
-	{
-		this->onLogUpdate(c);
-	};
-	kernel->registerLogListener(logListener);
 	connect(input, &TerminalInput::execute,
-	        this, &Terminal::onExecution);
-	connect(this, &Terminal::logUpdate,
-	        log, &TerminalLog::onLogUpdate, Qt::QueuedConnection);
-
-	// Default
-	setBaseSize(QSize(300,500));
-
-	QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-	setFont(font);
+	        this, &Terminal::onExecute);
 }
 
 void pg::Terminal::closeEvent(QCloseEvent* event)
@@ -85,12 +82,9 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 	this->hide();
 	event->ignore();
 }
-void pg::Terminal::onExecution(Command const& c)
+void pg::Terminal::onExecute(Command const& command)
 {
-	kernel->pushCommand(c);
+		log->onStdOutFlush(QString::fromStdString(">> " + command.str + "\n"));
+		this->kernel->pushCommand(command);
 }
 
-void pg::Terminal::onLogUpdate(std::string c)
-{
-	Q_EMIT logUpdate(QString::fromStdString(c));
-}
