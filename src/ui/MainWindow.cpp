@@ -141,12 +141,16 @@ void pg::MainWindow::updateUIElements()
 {
 	// Load
 	QFont fontMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	int const tabWidth = 4 * QFontMetrics(fontMonospace).width(' ');
+
+	// Apply
 	lineEditCommand->setFont(fontMonospace);
 	lineEditLog->setFont(fontMonospace);
 	lineEditLog_stylesheetOut = QString("color: white; background-color: black");
 	lineEditLog_stylesheetErr = QString("color: white; background-color: #220000");
 
-	// Unload
 	terminal->log->setFont(fontMonospace);
+	terminal->log->setTabStopWidth(tabWidth);
 	terminal->input->setFont(fontMonospace);
+	terminal->input->setTabStopWidth(tabWidth);
 }

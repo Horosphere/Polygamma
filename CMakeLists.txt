@@ -40,6 +40,7 @@ set(QtResources resources/Polygamma.qrc)
 set(SourceFiles
     src/main.cpp
     src/core/Kernel.cpp
+    src/core/python.cpp
     src/core/Configuration.cpp
     src/io/av.cpp
     src/math/Audio.cpp

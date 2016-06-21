@@ -84,7 +84,7 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 }
 void pg::Terminal::onExecute(Command const& command)
 {
-		log->onStdOutFlush(QString::fromStdString(">> " + command.str + "\n"));
+		log->onStdOutFlush(QString::fromStdString("<b>>></b> " + command.str + "\n"));
 		this->kernel->pushCommand(command);
 }
 

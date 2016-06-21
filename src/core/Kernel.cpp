@@ -2,53 +2,17 @@
 
 #include <iostream>
 #include <thread>
+#include <chrono>
 #include <sstream>
 
-#include <Python.h>
-#include <boost/python.hpp>
-
-namespace pg
+pg::Kernel::Kernel(): config(),
+	moduleMain(boost::python::import("__main__")),
+	dictMain(boost::python::extract<boost::python::dict>(
+	               moduleMain.attr("__dict__")))
 {
-/**
- * @warning This function is not pure and uses global functions from the python
- *	library.
- * @brief Produces a traceback string of the python exception.
- */
-std::string pythonTraceBack();
-} // namespace pg
-
-std::string pg::pythonTraceBack()
-{
-	using namespace boost::python;
-
-	PyObject* exType;
-	PyObject* value;
-	PyObject* traceBack;
-	PyErr_Fetch(&exType, &value, &traceBack);
-	// This can happen if the user entered print(
-	if (exType == nullptr || value == nullptr || traceBack == nullptr)
-		return "Unknown Error\n";
-	// Needed to prevent exception from being thrown.
-	PyErr_NormalizeException(&exType, &value, &traceBack);
-	// This is the Python3 way to do it;
-	object oExType(handle<>(borrowed(exType)));
-	object oValue(handle<>(borrowed(value)));
-	object oTraceBack(handle<>(borrowed(traceBack)));
-	object lines = import("traceback").attr("format_exception")
-	               (oExType, oValue, oTraceBack);
-	std::string result;
-	for (int i = 0; i < len(lines); ++i)
-		result += extract<std::string>(lines[i])();
-
-	PyErr_Restore(exType, value, traceBack);
-	return result;
-}
-
-pg::Kernel::Kernel(): config()
-{
-	Py_Initialize();
-	moduleMain = boost::python::import("__main__");
-	dictMain = moduleMain.attr("__dict__");
+	// Sets the Kernel variable in the Polygamma module. The Kernel can be
+	// accessed in python with pg.kernel.
+	boost::python::import("pg").attr("kernel") = boost::ref(*this);
 
 	// Redirects Python stdout and stderr streams to the terminal
 	class Redirector
@@ -90,11 +54,11 @@ pg::Kernel::Kernel(): config()
 	boost::python::import("sys").attr("stderr") =
 	    Redirector(&signalErr, "[Err] ");
 
+	// Expose the Kernel to Python
+
 }
 pg::Kernel::~Kernel()
 {
-	// Boost.Python does not allow this
-	// Py_Finalize();
 }
 
 void pg::Kernel::start()
@@ -107,8 +71,11 @@ void pg::Kernel::start()
 		{
 			try
 			{
-				boost::python::object ignored =
-				    boost::python::exec(command.str.c_str(), dictMain);
+				using namespace boost::python;
+
+				object result = eval(command.str.c_str(), dictMain);
+				if (!result.is_none())
+					signalOut(extract<std::string>(str(result))());
 			}
 			catch (boost::python::error_already_set const&)
 			{
@@ -117,5 +84,6 @@ void pg::Kernel::start()
 			}
 		}
 		std::this_thread::yield(); // Avoids busy waiting
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }

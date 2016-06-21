@@ -17,6 +17,7 @@ extern "C"
 int main(int argc, char* argv[])
 {
 	av_register_all();
+	pg::initPython();
 
 	// Launch the Kernel
 	pg::Kernel kernel;

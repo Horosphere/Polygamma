@@ -3,13 +3,13 @@
 
 #include <atomic>
 
-#include <Python.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/signals2.hpp>
-#include <boost/python.hpp>
 
 #include "Command.hpp"
 #include "Configuration.hpp"
+#include "polygamma.hpp"
+#include "python.hpp"
 
 namespace pg
 {
@@ -70,6 +70,8 @@ public:
 	void pushCommand(Command const&);
 
 	Configuration config;
+
+	std::size_t nBuffers() const;
 private:
 
 	/**
@@ -83,7 +85,7 @@ private:
 
 	// Python
 	boost::python::object moduleMain;
-	boost::python::object dictMain;
+	boost::python::dict dictMain;
 };
 
 } // namespace pg
@@ -114,5 +116,10 @@ pg::Kernel::pushCommand(Command const& command)
 	commandQueue.push(command);
 }
 
+inline std::size_t
+pg::Kernel::nBuffers() const
+{
+	return 0;
+}
 
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

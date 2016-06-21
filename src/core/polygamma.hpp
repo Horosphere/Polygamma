@@ -2,6 +2,7 @@
 #define _POLYGAMMA_CORE_POLYGAMMA_HPP__
 
 #include <complex>
+#include <string>
 
 namespace pg
 {
@@ -11,8 +12,17 @@ namespace pg
 typedef double real;
 typedef std::complex<real> complex;
 
+std::string about();
+
 } // namespace pg
 
+// Implementations
+
+inline std::string pg::about()
+{
+	return "Polygamma 0.0.1\n"
+	       "Author: Horosphere\n";
+}
 
 #endif // !_POLYGAMMA_CORE_POLYGAMMA_HPP__
 
