@@ -29,9 +29,6 @@ Q_SIGNALS:
 	void stdErrFlush(QString);
 
 private Q_SLOTS:
-	// Currently deprecation does not work well with qt.
-	// [[deprecated("Example method for summoning editor")]]
-	void onFileImport();
 
 	// Triggered upon configuration change
 	void updateUIElements();

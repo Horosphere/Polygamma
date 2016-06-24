@@ -11,9 +11,6 @@
 
 #include "DialogPreferences.hpp"
 #include "Terminal.hpp"
-#include "editors/EditorSimple.hpp"
-
-#include "../io/av.hpp"
 
 
 pg::MainWindow::MainWindow(Kernel* const kernel,
@@ -122,19 +119,6 @@ void pg::MainWindow::closeEvent(QCloseEvent* event)
 {
 	kernel->halt();
 	QMainWindow::closeEvent(event);
-}
-
-void pg::MainWindow::onFileImport()
-{
-	QString error = QString();
-	EditorSimple* editor = EditorSimple::fromFile(this, &error);
-	if (!editor)
-	{
-		if (error.isNull()) return; // The user did not choose a file.
-		QMessageBox::critical(this, tr("Error"), error, QMessageBox::NoButton);
-		return;
-	}
-	addDockWidget(Qt::LeftDockWidgetArea, editor);
 }
 
 void pg::MainWindow::updateUIElements()

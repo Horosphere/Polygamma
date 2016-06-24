@@ -5,11 +5,21 @@
 #include <chrono>
 #include <sstream>
 
-pg::Kernel::Kernel(): config(),
-	moduleMain(boost::python::import("__main__")),
-	dictMain(boost::python::extract<boost::python::dict>(
-	               moduleMain.attr("__dict__")))
+pg::Kernel::Kernel(): config()
 {
+	// Loads a Buffer for experimental reason
+	real** channels = new real*[1];
+	channels[0] = new real[3];
+	Buffer* buffer = new BufferSingular(channels, 1, 3);
+	delete[] channels;
+	buffers.push_back(buffer);
+	
+	// Must be placed here instead of the initialiser list to avoid crashing.
+	moduleMain = boost::python::import("__main__");
+	dictMain = boost::python::extract<boost::python::dict>(
+			moduleMain.attr("__dict__"));
+
+	std::cout << "Kernel starting..." << std::endl;
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
 	// accessed in python with pg.kernel.
 	boost::python::import("pg").attr("kernel") = boost::ref(*this);
@@ -54,11 +64,13 @@ pg::Kernel::Kernel(): config(),
 	boost::python::import("sys").attr("stderr") =
 	    Redirector(&signalErr, "[Err] ");
 
-	// Expose the Kernel to Python
 
 }
 pg::Kernel::~Kernel()
 {
+	// Releases all buffers
+	for (auto const& buffer: buffers)
+		delete buffer;
 }
 
 void pg::Kernel::start()

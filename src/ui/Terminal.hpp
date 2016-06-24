@@ -35,6 +35,14 @@ protected:
 
 Q_SIGNALS:
 	void execute(Command);
+
+private Q_SLOTS:
+	void onPreserveInputToggled(bool);
+
+private:
+	bool preserveInput;
+
+	friend class Terminal;
 };
 
 class Terminal final: public QMainWindow

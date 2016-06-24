@@ -42,8 +42,7 @@ set(SourceFiles
     src/core/Kernel.cpp
     src/core/python.cpp
     src/core/Configuration.cpp
-    src/io/av.cpp
-    src/math/Audio.cpp
+    src/core/Buffer.cpp
     src/math/fourier.cpp
     src/ui/mainWindowAccessories.cpp
     src/ui/MainWindow.cpp
@@ -52,13 +51,6 @@ set(SourceFiles
     src/ui/DialogPreferences.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
     src/ui/util/ColourButton.cpp
-    src/ui/editors/EditorSimple.cpp
-    src/ui/editors/Editor.cpp
-    src/ui/graphics/TickedAxis.cpp
-    src/ui/graphics/Spectrogram.cpp
-    src/ui/graphics/Viewport2.cpp
-    src/ui/graphics/Waveform.cpp
-    src/ui/panels/PanelBase.cpp
    )
 set(QObjectHeaders
     src/ui/DialogPreferences.hpp
@@ -68,13 +60,6 @@ set(QObjectHeaders
     src/ui/Terminal.hpp
     src/ui/util/SyntaxHighlighterPython.hpp
     src/ui/util/ColourButton.hpp
-    src/ui/editors/Editor.hpp
-    src/ui/editors/EditorSimple.hpp
-    src/ui/graphics/Viewport2.hpp
-    src/ui/graphics/Waveform.hpp
-    src/ui/graphics/TickedAxis.hpp
-    src/ui/graphics/Spectrogram.hpp
-    src/ui/panels/PanelBase.hpp
    )
 # Auto-generated end
 

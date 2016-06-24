@@ -1,8 +1,6 @@
 #ifndef _POLYGAMMA_CORE_KERNEL_HPP__
 #define _POLYGAMMA_CORE_KERNEL_HPP__
 
-#include <atomic>
-
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/signals2.hpp>
 
@@ -10,6 +8,8 @@
 #include "Configuration.hpp"
 #include "polygamma.hpp"
 #include "python.hpp"
+#include "Buffer.hpp"
+#include "../singular/BufferSingular.hpp"
 
 namespace pg
 {
@@ -69,9 +69,9 @@ public:
 	 */
 	void pushCommand(Command const&);
 
-	Configuration config;
+	std::vector<Buffer*> getBuffers();
 
-	std::size_t nBuffers() const;
+	Configuration config;
 private:
 
 	/**
@@ -82,6 +82,9 @@ private:
 	boost::signals2::signal<void (std::string)> signalErr;
 
 	std::atomic_bool running;
+
+	// Buffers
+	std::vector<Buffer*> buffers;
 
 	// Python
 	boost::python::object moduleMain;
@@ -116,10 +119,9 @@ pg::Kernel::pushCommand(Command const& command)
 	commandQueue.push(command);
 }
 
-inline std::size_t
-pg::Kernel::nBuffers() const
+inline std::vector<pg::Buffer*>
+pg::Kernel::getBuffers()
 {
-	return 0;
+	return buffers;
 }
-
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

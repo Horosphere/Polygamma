@@ -1,5 +1,6 @@
 // main.cpp
 
+#include <iostream>
 #include <thread>
 #include <QApplication>
 
@@ -23,6 +24,7 @@ int main(int argc, char* argv[])
 	pg::Kernel kernel;
 	std::thread threadKernel(&pg::Kernel::start, &kernel);
 	threadKernel.detach();
+
 
 	QApplication application(argc, argv);
 	pg::MainWindow window(&kernel);

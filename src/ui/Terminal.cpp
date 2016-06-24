@@ -30,7 +30,8 @@ void pg::TerminalLog::onStdErrFlush(QString str)
 }
 
 // Terminal Input
-pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent)
+pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent),
+	preserveInput(true)
 {
 	// Required for detecting key combinations
 	setFocusPolicy(Qt::StrongFocus);
@@ -42,15 +43,20 @@ void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 {
 	// Shift + Enter executes the command
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
-	        event->modifiers() == Qt::ShiftModifier)
+	    event->modifiers() == Qt::ShiftModifier)
 	{
 		Q_EMIT execute(Command(document()->toPlainText().toStdString()));
-		this->document()->setPlainText("");
+		if (!preserveInput)
+			this->document()->setPlainText("");
 	}
 	else
 	{
 		QPlainTextEdit::keyPressEvent(event);
 	}
+}
+void pg::TerminalInput::onPreserveInputToggled(bool checked)
+{
+	preserveInput = checked;
 }
 
 // Terminal
@@ -69,12 +75,18 @@ pg::Terminal::Terminal(Kernel* const kernel,
 
 	// Menues
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
-	QAction* actionLoadScript = new QAction("Load Script...", this);
+	QAction* actionLoadScript = new QAction(tr("Load Script..."), this);
 	menuFile->addAction(actionLoadScript);
+	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
+	QAction* actionPreserveInput = new QAction(tr("Preserve Input"), this);
+	actionPreserveInput->setCheckable(true);
+	menuEdit->addAction(actionPreserveInput);
 
 	// Signals
 	connect(input, &TerminalInput::execute,
 	        this, &Terminal::onExecute);
+	connect(actionPreserveInput, &QAction::toggled,
+	        input, &TerminalInput::onPreserveInputToggled);
 }
 
 void pg::Terminal::closeEvent(QCloseEvent* event)
@@ -84,7 +96,7 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 }
 void pg::Terminal::onExecute(Command const& command)
 {
-		log->onStdOutFlush(QString::fromStdString("<b>>></b> " + command.str + "\n"));
-		this->kernel->pushCommand(command);
+	log->onStdOutFlush(QString::fromStdString("<b>>></b> " + command.str + "\n"));
+	this->kernel->pushCommand(command);
 }
 
