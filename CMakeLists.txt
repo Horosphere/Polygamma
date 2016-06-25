@@ -21,7 +21,7 @@ if (${PYTHONLIBS_FOUND})
 endif()
 
 # Boost
-find_package(Boost 1.61.0 COMPONENTS thread python3 REQUIRED)
+find_package(Boost 1.61.0 COMPONENTS thread timer python3 REQUIRED)
 if (${Boost_FOUND})
 	include_directories(${Boost_INCLUDE_DIRS})
 	link_directories(${Boost_LIBRARY_DIR})
@@ -39,6 +39,7 @@ set(QtResources resources/Polygamma.qrc)
 # Auto-generated. Do not edit. All changes will be undone
 set(SourceFiles
     src/main.cpp
+    src/singular/BufferSingular.cpp
     src/core/Kernel.cpp
     src/core/python.cpp
     src/core/Configuration.cpp
@@ -51,6 +52,11 @@ set(SourceFiles
     src/ui/DialogPreferences.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
     src/ui/util/ColourButton.cpp
+    src/ui/editors/EditorSingular.cpp
+    src/ui/editors/Editor.cpp
+    src/ui/graphics/Viewport2.cpp
+    src/ui/graphics/Waveform.cpp
+    src/ui/panels/Panel.cpp
    )
 set(QObjectHeaders
     src/ui/DialogPreferences.hpp
@@ -60,6 +66,11 @@ set(QObjectHeaders
     src/ui/Terminal.hpp
     src/ui/util/SyntaxHighlighterPython.hpp
     src/ui/util/ColourButton.hpp
+    src/ui/editors/Editor.hpp
+    src/ui/editors/EditorSingular.hpp
+    src/ui/graphics/Viewport2.hpp
+    src/ui/graphics/Waveform.hpp
+    src/ui/panels/Panel.hpp
    )
 # Auto-generated end
 

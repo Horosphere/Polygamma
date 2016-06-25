@@ -15,8 +15,9 @@
 	layout##name->setAlignment(Qt::AlignTop);\
 	page##name->setLayout(layout##name)
 
-pg::DialogPreferences::DialogPreferences(Kernel* const kernel, QWidget* parent):
-	QDialog(parent), kernel(kernel),
+pg::DialogPreferences::DialogPreferences(Configuration* const config,
+		QWidget* parent):
+	QDialog(parent), config(config),
 	// Various options:
 	uiColourBG(new ColourButton),
 	uiTerminalBG(new ColourButton)
@@ -60,12 +61,12 @@ void pg::DialogPreferences::closeEvent(QCloseEvent* event)
 }
 void pg::DialogPreferences::onReload()
 {
-	uiColourBG->onColourChanged(abgrToQColor(kernel->config.uiColourBG));
-	uiTerminalBG->onColourChanged(abgrToQColor(kernel->config.uiTerminalBG));
+	uiColourBG->onColourChanged(abgrToQColor(config->uiColourBG));
+	uiTerminalBG->onColourChanged(abgrToQColor(config->uiTerminalBG));
 }
 void pg::DialogPreferences::save()
 {
-	kernel->config.uiColourBG = qColorToABGR(uiColourBG->getColour());
-	kernel->config.uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
+	config->uiColourBG = qColorToABGR(uiColourBG->getColour());
+	config->uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
 }
 

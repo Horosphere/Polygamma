@@ -35,7 +35,7 @@ public:
 	 * @data A pre-allocated array.
 	 * @size The number of objects in the array.
 	 */
-	Vector(T* const data, std::size_t size);
+	Vector(std::size_t size, T* const data);
 
 	~Vector();
 
@@ -110,7 +110,7 @@ pg::Vector<T>::Vector(std::size_t size):
 {
 }
 template <typename T> inline
-pg::Vector<T>::Vector(T* const data, std::size_t size):
+pg::Vector<T>::Vector(std::size_t size, T* const data):
 	size(size), data(data)
 {
 }

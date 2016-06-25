@@ -2,6 +2,7 @@
 
 #include <QCloseEvent>
 #include <QDir>
+#include <QDebug>
 #include <QFileDialog>
 #include <QFont>
 #include <QMessageBox>
@@ -11,11 +12,12 @@
 
 #include "DialogPreferences.hpp"
 #include "Terminal.hpp"
+#include "editors/EditorSingular.hpp"
 
 
-pg::MainWindow::MainWindow(Kernel* const kernel,
-                           QWidget* parent): QMainWindow(parent),
-	kernel(kernel), terminal(new Terminal(kernel, this)),
+pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
+, QWidget* parent): QMainWindow(parent),
+	kernel(kernel), config(config), terminal(new Terminal(kernel, this)),
 	lineEditCommand(new LineEditCommand), lineEditLog(new QLineEdit)
 {
 	setWindowIcon(QIcon(":/icon.png"));
@@ -29,14 +31,13 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	// Menus
 	// Menu File
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
-	QAction* actionFileImport = new QAction(tr("Import"), this);
-	actionFileImport->setEnabled(false); // Temporarily disabled for debugging.
+	QAction* actionFileImport = new QAction(tr("Import..."), this);
 	menuFile->addAction(actionFileImport);
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
 	CommandAction* actionEditSummon = new CommandAction(Command("print('summon')"), "Summon", this);
 	connect(actionEditSummon, &CommandAction::execute,
-			terminal, &Terminal::onExecute);
+	        terminal, &Terminal::onExecute);
 	menuEdit->addAction(actionEditSummon);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
@@ -67,10 +68,22 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	});
 
 	// Menu actions
+	connect(actionFileImport, &QAction::triggered,
+	        this, [this]()
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("Import..."));
+		if (fileName.isNull()) return;
+		else
+			this->terminal->onExecute(Command("pg.kernel.fromFileImport(\"" +
+			                                  fileName.toStdString() + "\")"));
+
+	});
 	connect(actionEditPreferences, &QAction::triggered,
 	        this, [this]()
 	{
-		(new DialogPreferences(this->kernel, this))->show();
+		// TODO: Make sure that only one instance of DialogPreferences can exist at
+		// a time.
+		(new DialogPreferences(this->config, this))->show();
 	});
 
 	// Connects the kernel's stdout and stderr to the corresponding signals of
@@ -82,6 +95,10 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 	kernel->registerStdErrListener([this](std::string str)
 	{
 		Q_EMIT stdErrFlush(QString::fromStdString(str));
+	});
+	kernel->registerBufferListener([this](Buffer* buffer)
+	{
+		Q_EMIT newBuffer(buffer);
 	});
 	connect(this, &MainWindow::stdOutFlush,
 	        terminal->log, &TerminalLog::onStdOutFlush, Qt::QueuedConnection);
@@ -106,6 +123,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel,
 		lineEditLog->setText(lines.takeLast());
 		lineEditLog->setStyleSheet(lineEditLog_stylesheetErr);
 	}, Qt::QueuedConnection);
+	connect(this, &MainWindow::newBuffer,
+	        this, &MainWindow::onNewBuffer, Qt::QueuedConnection);
 
 	updateUIElements();
 
@@ -123,6 +142,7 @@ void pg::MainWindow::closeEvent(QCloseEvent* event)
 
 void pg::MainWindow::updateUIElements()
 {
+	// TODO: Read data from the configuration.
 	// Load
 	QFont fontMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 	int const tabWidth = 4 * QFontMetrics(fontMonospace).width(' ');
@@ -137,4 +157,17 @@ void pg::MainWindow::updateUIElements()
 	terminal->log->setTabStopWidth(tabWidth);
 	terminal->input->setFont(fontMonospace);
 	terminal->input->setTabStopWidth(tabWidth);
+}
+
+void pg::MainWindow::onNewBuffer(Buffer* buffer)
+{
+	switch (buffer->getType())
+	{
+	case Buffer::Singular:
+		qDebug() << "[UI] BufferSingular detected";
+		(new EditorSingular(kernel, (BufferSingular*) buffer, this))->show();
+		break;
+	default:
+		qDebug() << "[UI] Unrecognised Buffer Type";
+	}
 }

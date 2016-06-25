@@ -15,6 +15,19 @@ void initPython();
  * @brief Produces a traceback string of the python exception.
  */
 std::string pythonTraceBack();
+
+struct PythonException
+{
+	enum Type
+	{
+		RuntimeError,
+		IOError
+	};
+
+	std::string str;
+	Type type;
+};
+
 } // namespace pg
 
 // Implementations

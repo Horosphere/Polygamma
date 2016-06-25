@@ -20,14 +20,15 @@ int main(int argc, char* argv[])
 	av_register_all();
 	pg::initPython();
 
+	pg::Configuration config;
 	// Launch the Kernel
-	pg::Kernel kernel;
+	pg::Kernel kernel(&config);
 	std::thread threadKernel(&pg::Kernel::start, &kernel);
 	threadKernel.detach();
 
 
 	QApplication application(argc, argv);
-	pg::MainWindow window(&kernel);
+	pg::MainWindow window(&kernel, &config);
 	window.show();
 
 	return application.exec();

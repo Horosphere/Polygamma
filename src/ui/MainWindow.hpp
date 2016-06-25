@@ -17,7 +17,8 @@ class MainWindow final: public QMainWindow
 {
 	Q_OBJECT
 public:
-	explicit MainWindow(Kernel* const, QWidget* parent = 0);
+	explicit MainWindow(Kernel* const, Configuration* const,
+			QWidget* parent = 0);
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
@@ -27,15 +28,18 @@ Q_SIGNALS:
 	// a queued connection.
 	void stdOutFlush(QString);
 	void stdErrFlush(QString);
+	void newBuffer(Buffer*);
 
 private Q_SLOTS:
 
 	// Triggered upon configuration change
 	void updateUIElements();
+	void onNewBuffer(Buffer*);
 
 private:
 	// Handlers
-	Kernel* kernel;
+	Kernel* const kernel;
+	Configuration* const config;
 
 	// UI Elements
 	Terminal* terminal;

@@ -5,19 +5,13 @@
 #include <chrono>
 #include <sstream>
 
-pg::Kernel::Kernel(): config()
+pg::Kernel::Kernel(Configuration* config): config(config)
 {
-	// Loads a Buffer for experimental reason
-	real** channels = new real*[1];
-	channels[0] = new real[3];
-	Buffer* buffer = new BufferSingular(channels, 1, 3);
-	delete[] channels;
-	buffers.push_back(buffer);
-	
+
 	// Must be placed here instead of the initialiser list to avoid crashing.
 	moduleMain = boost::python::import("__main__");
 	dictMain = boost::python::extract<boost::python::dict>(
-			moduleMain.attr("__dict__"));
+	             moduleMain.attr("__dict__"));
 
 	std::cout << "Kernel starting..." << std::endl;
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
@@ -60,9 +54,9 @@ pg::Kernel::Kernel(): config()
 	                         boost::python::no_init)
 	                         .def("write", &Redirector::write);
 	boost::python::import("sys").attr("stdout") =
-	    Redirector(&signalOut, "[Out] ");
+	  Redirector(&signalOut, "[Out] ");
 	boost::python::import("sys").attr("stderr") =
-	    Redirector(&signalErr, "[Err] ");
+	  Redirector(&signalErr, "[Err] ");
 
 
 }
@@ -98,4 +92,15 @@ void pg::Kernel::start()
 		std::this_thread::yield(); // Avoids busy waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+}
+
+
+void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
+{
+	// TODO: Prevent user from importing the same file multiple times.
+	std::string error;
+	BufferSingular* buffer = BufferSingular::fromFile(fileName, &error);
+	if (buffer) pushBuffer(buffer);
+	else
+		throw PythonException{error, PythonException::IOError};
 }

@@ -14,18 +14,27 @@ class BufferSingular final: public Buffer
 {
 public:
 	/**
-	 * @brief Allocate with audio samples.
+	 * This factory method is NOT directly exposed to Python, as it is required 
+	 * (in Python) to throw exceptions upon failure.
+	 *
+	 * @brief Reads a BufferSingular from the specified file.
+	 * @param[in] fileName The path to the file.
+	 * @param[out] error The error message. The space must be pre-allocated. An
+	 *	error message of "" indicates no error.
+	 * @return A BufferSingular object if the construction is successiful.
 	 */
-	BufferSingular(real* const* const channels, std::size_t nChannels,
-	               std::size_t nSamples);
+	static BufferSingular* fromFile(std::string fileName, std::string* error);
+	              
 
 
 	virtual Type getType() override;
 
-	Vector<real>* getAudioChannels();
 	std::size_t nAudioChannels() const noexcept;
-private:
+
 	std::vector<Vector<real>> audio;
+	std::size_t sampleRate;
+private:
+	BufferSingular();
 };
 
 } // namespace pg
@@ -33,14 +42,8 @@ private:
 
 // Implementations
 inline
-pg::BufferSingular::BufferSingular(real* const* const channels,
-                                   std::size_t nChannels, std::size_t nSamples):
-  audio(nChannels)
+pg::BufferSingular::BufferSingular()
 {
-	for (std::size_t i = 0; i < nChannels; ++i)
-	{
-		audio[i] = Vector<real>(channels[i], nSamples);
-	}
 }
  
 inline pg::Buffer::Type
@@ -49,11 +52,6 @@ pg::BufferSingular::getType()
 	return Singular;
 }
 
-inline pg::Vector<pg::real>*
-pg::BufferSingular::getAudioChannels()
-{
-	return this->audio.data();
-}
 inline std::size_t
 pg::BufferSingular::nAudioChannels() const noexcept
 {
