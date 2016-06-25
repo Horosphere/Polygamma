@@ -20,6 +20,7 @@ public:
 	virtual bool saveAs(QString* const error) override;
 	virtual BufferSingular* getBuffer() override;
 
+
 private:
 	void onUpdateAudioFormat();
 
@@ -28,16 +29,18 @@ private:
 
 	QVBoxLayout* const mainLayout;
 	Waveform** waveforms;
+
 };
 
 } // namespace pg
 
 // Implementations
 
-inline  pg::BufferSingular*
+inline pg::BufferSingular*
 pg::EditorSingular::getBuffer()
 {
 	return buffer;
 }
+
 
 #endif // !_POLYGAMMA_UI_EDITORS_EDITORSINGULAR_HPP__

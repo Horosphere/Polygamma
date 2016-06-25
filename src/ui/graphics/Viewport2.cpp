@@ -20,7 +20,7 @@ pg::Viewport2::Viewport2(QWidget *parent) : QWidget(parent),
 	maxRangeX(0, width()), maxRangeY(0, height()),
 	dragging(false)
 {
-
+	setMinimumSize(1, 1); // Prevent division by 0
 }
 pg::Viewport2::~Viewport2()
 {

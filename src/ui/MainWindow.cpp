@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 
+#include <QApplication>
 #include <QCloseEvent>
 #include <QDir>
 #include <QDebug>
@@ -10,6 +11,7 @@
 #include <QResource>
 #include <QVBoxLayout>
 
+#include "ui.hpp"
 #include "DialogPreferences.hpp"
 #include "Terminal.hpp"
 #include "editors/EditorSingular.hpp"
@@ -61,6 +63,10 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	statusBar()->show();
 
 	// Connects the GUI.
+	config->registerUpdateListener([this]()
+	{
+		this->updateUIElements();
+	});
 	connect(buttonTerminal, &QPushButton::clicked,
 	        this, [this]()
 	{
@@ -157,6 +163,15 @@ void pg::MainWindow::updateUIElements()
 	terminal->log->setTabStopWidth(tabWidth);
 	terminal->input->setFont(fontMonospace);
 	terminal->input->setTabStopWidth(tabWidth);
+	qApp->setStyleSheet(
+	  "QMainWindow, QDialog, QDockWidget, QStatusBar {"
+	  "background-color: " + abgrToString(config->uiBG) + ";"
+	  "}"
+	  "pg--Waveform { "
+	  "qproperty-colourBG: " + abgrToString(config->uiWaveformBG) + ";"
+	  "qproperty-colourCore: " + abgrToString(config->uiWaveformCore) +";"
+	  "qproperty-colourEdge: " + abgrToString(config->uiWaveformEdge) + ";"
+	  "}");
 }
 
 void pg::MainWindow::onNewBuffer(Buffer* buffer)

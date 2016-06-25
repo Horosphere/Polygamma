@@ -4,6 +4,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QListWidget>
+#include <QDialogButtonBox>
+#include <QDebug>
 
 #include "ui.hpp"
 
@@ -16,10 +18,10 @@
 	page##name->setLayout(layout##name)
 
 pg::DialogPreferences::DialogPreferences(Configuration* const config,
-		QWidget* parent):
+    QWidget* parent):
 	QDialog(parent), config(config),
 	// Various options:
-	uiColourBG(new ColourButton),
+	uiBG(new ColourButton),
 	uiTerminalBG(new ColourButton)
 {
 	QHBoxLayout* layoutMain = new QHBoxLayout;
@@ -33,40 +35,43 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 	// Pages begin
 	// Page::UI
 	DP_ADD_PAGE(UI, "UI");
-	
-	layoutUI->addWidget(uiColourBG);
+
+	layoutUI->addWidget(uiBG);
 	layoutUI->addWidget(uiTerminalBG);
-	
+
 	pageStack->addWidget(pageUI);
 
-
 	// Pages end
-	
+
 	// Configure pageList so it conforms to the size of its widest child
 	pageList->setMaximumWidth(pageList->sizeHintForColumn(0) + 3);
 
-	// Setup connections
 	connect(pageList, &QListWidget::currentRowChanged,
-			pageStack, &QStackedWidget::setCurrentIndex);
+	        pageStack, &QStackedWidget::setCurrentIndex);
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(
+	  QDialogButtonBox::Apply |
+	  QDialogButtonBox::Close);
+	buttonBox->setOrientation(Qt::Vertical);
+	layoutMain->addWidget(buttonBox);
+
+	connect(buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
+	        this, &DialogPreferences::save);
 
 	// Load settings from kernel
 	onReload();
 }
 #undef DP_ADD_PAGE
 
-void pg::DialogPreferences::closeEvent(QCloseEvent* event)
-{
-	save();
-	QDialog::closeEvent(event);
-}
 void pg::DialogPreferences::onReload()
 {
-	uiColourBG->onColourChanged(abgrToQColor(config->uiColourBG));
+	uiBG->onColourChanged(abgrToQColor(config->uiBG));
 	uiTerminalBG->onColourChanged(abgrToQColor(config->uiTerminalBG));
 }
 void pg::DialogPreferences::save()
 {
-	config->uiColourBG = qColorToABGR(uiColourBG->getColour());
+	config->uiBG = qColorToABGR(uiBG->getColour());
 	config->uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
+
+	config->update();
 }
 

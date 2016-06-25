@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <QColor>
+#include <QString>
 
 #include "../core/Configuration.hpp"
 
@@ -12,6 +13,7 @@ namespace pg
 
 QColor abgrToQColor(Configuration::Colour32);
 Configuration::Colour32 qColorToABGR(QColor);
+QString abgrToString(Configuration::Colour32);
 
 /**
  * Polygamma implements audio display using fixed-point floating points. The
@@ -48,6 +50,11 @@ pg::qColorToABGR(QColor c)
 	       (c.green() & 0xFF) << 8 |
 	       (c.blue() & 0xFF) << 16 |
 	       (c.alpha() & 0xFf) << 24;
+}
+inline QString
+pg::abgrToString(Configuration::Colour32 c)
+{
+	return abgrToQColor(c).name();
 }
 
 #endif // !_POLYGAMMA_UI_UI_HPP__

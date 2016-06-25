@@ -12,20 +12,15 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
                        std::size_t channelId,
                        QWidget* parent): Viewport2(parent),
   buffer(buffer), channelId(channelId),
-	channel(&buffer->audio[channelId])
+	channel(buffer->getAudioChannel(channelId))
 {
 	setDragging(true, false);
 	setZoomFac(1.1, 1.0);
-	setMinimumSize(1,1);
 	
 	setMaximumRange(0, ((int64_t) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
 					0, height());
 	maximise();
 
-	setColourEdge(QColor(127, 255, 255));
-	setColourCore(QColor(255, 255, 255));
-	colourBackground = QColor(0, 0, 0);
-	
 }
 
 void pg::Waveform::paintEvent(QPaintEvent*)
@@ -78,7 +73,7 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 	{
 		painter.setRenderHint(QPainter::Antialiasing);
 		QPainter painterWave(this);
-		painterWave.setPen(penEdge);
+		painterWave.setPen(penCore);
 		std::size_t sampleStart = (std::size_t) rasterToAxialX(0) /
 		                          UI_SAMPLE_DISPLAY_WIDTH;
 		std::size_t sampleEnd = (std::size_t) rasterToAxialX(width()) /

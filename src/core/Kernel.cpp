@@ -13,7 +13,6 @@ pg::Kernel::Kernel(Configuration* config): config(config)
 	dictMain = boost::python::extract<boost::python::dict>(
 	             moduleMain.attr("__dict__"));
 
-	std::cout << "Kernel starting..." << std::endl;
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
 	// accessed in python with pg.kernel.
 	boost::python::import("pg").attr("kernel") = boost::ref(*this);
@@ -69,6 +68,7 @@ pg::Kernel::~Kernel()
 
 void pg::Kernel::start()
 {
+	std::cout << "Kernel starting..." << std::endl;
 	running = true;
 	while (running)
 	{
@@ -92,6 +92,7 @@ void pg::Kernel::start()
 		std::this_thread::yield(); // Avoids busy waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+	std::cout << "Kernel stopping..." << std::endl;
 }
 
 
@@ -104,3 +105,4 @@ void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
 	else
 		throw PythonException{error, PythonException::IOError};
 }
+

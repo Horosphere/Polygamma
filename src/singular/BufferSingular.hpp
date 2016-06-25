@@ -30,12 +30,15 @@ public:
 	virtual Type getType() override;
 
 	std::size_t nAudioChannels() const noexcept;
+	Vector<real>* getAudioChannel(std::size_t) noexcept;
+	Vector<real> const* getAudioChannel(std::size_t) const noexcept;
 
-	std::vector<Vector<real>> audio;
 	std::size_t sampleRate;
 private:
 	BufferSingular();
 	BufferSingular(std::size_t nAudioChannels);
+
+	std::vector<Vector<real>> audio;
 };
 
 } // namespace pg
@@ -62,6 +65,17 @@ inline std::size_t
 pg::BufferSingular::nAudioChannels() const noexcept
 {
 	return audio.size();
+}
+
+inline pg::Vector<pg::real>*
+pg::BufferSingular::getAudioChannel(std::size_t index) noexcept
+{
+	return &audio[index];
+}
+inline pg::Vector<pg::real> const*
+pg::BufferSingular::getAudioChannel(std::size_t index) const noexcept
+{
+	return &audio[index];
 }
 
 #endif // !_POLYGAMMA_SINGULAR_BUFFERSINGULAR_HPP__

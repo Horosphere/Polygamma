@@ -4,6 +4,8 @@
 #include <QActionGroup>
 #include <QDockWidget>
 
+#include "../../core/Configuration.hpp"
+
 namespace pg
 {
 
@@ -25,7 +27,6 @@ public:
 protected:
 
 	/**
-	 * Docking multiple
 	 * @brief addDockActions Called by subclasses to add dock options to their
 	 *        custom context menus.
 	 */

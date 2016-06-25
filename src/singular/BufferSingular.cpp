@@ -360,6 +360,8 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		std::memcpy(channel, channels[i], nSamples * sizeof(real));
 		std::free(channels[i]); // Must match readAudioStream's allocation pattern
 		*/
+		// Cannot use push_back since that prevents the first audio channel from
+		// being read
 		buffer->audio[i] = Vector<real>(nSamples, channels[i]);
 	}
 	delete[] channels;

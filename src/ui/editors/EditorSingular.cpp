@@ -12,7 +12,6 @@ pg::EditorSingular::EditorSingular(Kernel* const kernel,
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setLayout(mainLayout);
 	setWidget(centralWidget);
-	this->setWindowTitle("aaa");
 
 	onUpdateAudioFormat();
 }

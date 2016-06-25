@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <thread>
+
 #include <QApplication>
+#include <QStandardPaths>
 
 extern "C"
 {
@@ -21,6 +23,10 @@ int main(int argc, char* argv[])
 	pg::initPython();
 
 	pg::Configuration config;
+	std::string configFile = QStandardPaths::writableLocation(QStandardPaths::HomeLocation).toStdString() + "/.polygamma";
+	config.setFileName(configFile);
+	config.loadFile();
+
 	// Launch the Kernel
 	pg::Kernel kernel(&config);
 	std::thread threadKernel(&pg::Kernel::start, &kernel);

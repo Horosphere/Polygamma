@@ -18,20 +18,20 @@ class DialogPreferences final: public QDialog
 public:
 	explicit DialogPreferences(Configuration* const, QWidget* parent = 0);
 
-protected:
-	virtual void closeEvent(QCloseEvent*) override;
 
 public Q_SLOTS:
 	void onReload();
 
-private:
+private Q_SLOTS:
 	void save();
+
+private:
 
 	Configuration* const config;
 
 	// The naming of the configurations must be consistent with
 	// core/Configuration.hpp
-	ColourButton* uiColourBG;
+	ColourButton* uiBG;
 	ColourButton* uiTerminalBG;
 };
 
