@@ -14,17 +14,17 @@ class BufferSingular final: public Buffer
 {
 public:
 	/**
-	 * This factory method is NOT directly exposed to Python, as it is required 
+	 * This factory method is NOT directly exposed to Python, as it is required
 	 * (in Python) to throw exceptions upon failure.
 	 *
 	 * @brief Reads a BufferSingular from the specified file.
 	 * @param[in] fileName The path to the file.
 	 * @param[out] error The error message. The space must be pre-allocated. An
-	 *	error message of "" indicates no error.
+	 *  error message of "" indicates no error.
 	 * @return A BufferSingular object if the construction is successiful.
+	 *  nullptr otherwise.
 	 */
 	static BufferSingular* fromFile(std::string fileName, std::string* error);
-	              
 
 
 	virtual Type getType() override;
@@ -35,6 +35,7 @@ public:
 	std::size_t sampleRate;
 private:
 	BufferSingular();
+	BufferSingular(std::size_t nAudioChannels);
 };
 
 } // namespace pg
@@ -45,7 +46,12 @@ inline
 pg::BufferSingular::BufferSingular()
 {
 }
- 
+inline
+pg::BufferSingular::BufferSingular(std::size_t nAudioChannels):
+	audio(nAudioChannels)
+{
+}
+
 inline pg::Buffer::Type
 pg::BufferSingular::getType()
 {

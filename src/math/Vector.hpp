@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <cstring>
 
+//#define VECTOR_CPP_ALLOC
+
 namespace pg
 {
 

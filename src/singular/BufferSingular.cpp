@@ -2,9 +2,12 @@
 
 #include <limits>
 #include <typeinfo>
-#include <vector>
 #include <cstring>
 #include <iostream>
+
+// Debugging purposes
+#include <fstream>
+
 
 extern "C"
 {
@@ -270,8 +273,6 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 			  << ", Bytes/Sample: " << av_get_bytes_per_sample(codecContext->sample_fmt)
 			  << ", Duration: " << formatContext->duration / AV_TIME_BASE
 			  << " s" << std::endl;
-	BufferSingular* buffer = new BufferSingular();
-	buffer->sampleRate = codecContext->sample_rate;
 
 	AVFrame* frame = av_frame_alloc();
 	if (!frame)
@@ -279,7 +280,6 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		avcodec_close(codecContext);
 		avformat_close_input(&formatContext);
 		*error = "Unable to allocate frame";
-		delete buffer;
 		return nullptr;
 	}
 	real** channels = new real*[codecContext->channels];
@@ -329,7 +329,6 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		break;
 	default: // Should not happen
 		*error = std::string("Unrecognised sample format");
-		delete buffer;
 		return nullptr;
 	}
 
@@ -341,16 +340,27 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	{
 		*error = std::string("Unable to allocate more memory");
 		delete[] channels;
-		delete buffer;
 		return nullptr;
 	}
+	std::ofstream output;
+	output.open("Channel0.txt");
+	for (std::size_t j = 0; j < 44100; ++j)
+	{
+		output << channels[0][j] << std::endl;
+	}
+	output.close();
+
+	BufferSingular* buffer = new BufferSingular(codecContext->channels);
+	buffer->sampleRate = codecContext->sample_rate;
 	// Move channels into the buffer
 	for (std::size_t i = 0; i < (std::size_t)codecContext->channels; ++i)
 	{
+		/*
 		real* channel = new real[nSamples];
 		std::memcpy(channel, channels[i], nSamples * sizeof(real));
 		std::free(channels[i]); // Must match readAudioStream's allocation pattern
-		buffer->audio.push_back(Vector<real>(nSamples, channel));
+		*/
+		buffer->audio[i] = Vector<real>(nSamples, channels[i]);
 	}
 	delete[] channels;
 
