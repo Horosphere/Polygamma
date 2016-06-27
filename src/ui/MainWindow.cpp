@@ -1,5 +1,7 @@
 #include "MainWindow.hpp"
 
+#include <exception>
+
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDebug>
@@ -20,7 +22,8 @@
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
 	kernel(kernel), config(config), terminal(new Terminal(kernel, this)),
-	lineEditCommand(new LineEditCommand), lineEditLog(new QLineEdit)
+	lineEditCommand(new LineEditCommand), lineEditLog(new QLineEdit),
+	currentEditor(nullptr)
 {
 	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
@@ -74,7 +77,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		QString fileName = QFileDialog::getOpenFileName(this, tr("Import..."));
 		if (fileName.isNull()) return;
 		else
-			this->terminal->onExecute(Command("pg.kernel.fromFileImport(\"" +
+			this->terminal->onExecute(Command(std::string(PYTHON_KERNEL) +
+			                                  ".fromFileImport(\"" +
 			                                  fileName.toStdString() + "\")"));
 
 	});
@@ -142,7 +146,6 @@ void pg::MainWindow::closeEvent(QCloseEvent* event)
 
 void pg::MainWindow::updateUIElements()
 {
-	// TODO: Read data from the configuration.
 	// Load
 	QFont fontMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 	int const tabWidth = 4 * QFontMetrics(fontMonospace).width(' ');
@@ -174,9 +177,15 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 	{
 	case Buffer::Singular:
 		qDebug() << "[UI] BufferSingular detected";
-		(new EditorSingular(kernel, (BufferSingular*) buffer, this))->show();
+		currentEditor = new EditorSingular(kernel, (BufferSingular*) buffer, this);
 		break;
 	default:
 		qDebug() << "[UI] Unrecognised Buffer Type";
+		throw std::logic_error("Buffer Type " +
+		                       std::to_string((int)buffer->getType()) +
+		                       "is not recognised by MainWindow");
 	}
+	currentEditor->show();
+	connect(currentEditor, &Editor::execute,
+	        terminal, &Terminal::onExecute);
 }

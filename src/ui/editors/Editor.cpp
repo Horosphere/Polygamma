@@ -1,10 +1,19 @@
 #include "Editor.hpp"
 
-pg::Editor::Editor(Kernel* const kernel, QWidget *parent): Panel(parent),
+pg::Editor::Editor(Kernel* const kernel, Buffer* buffer,
+                   QWidget* parent): Panel(parent),
 	kernel(kernel)
 {
 	setFocusPolicy(Qt::StrongFocus);
-
+	buffer->registerUpdateListener([this]()
+	{
+		Q_EMIT this->graphicsUpdate();
+	});
+	connect(this, &Editor::graphicsUpdate,
+	        this, [this]()
+	{
+		this->repaint();
+	});
 }
 pg::Editor::~Editor()
 {

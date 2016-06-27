@@ -53,7 +53,7 @@ public:
 	 *	occasionally.
 	 */
 	template<typename Listener> void
-	registerStdOutListener(Listener const& listener);
+	registerStdOutListener(Listener const& listener) noexcept;
 	/**
 	 * @brief Register a callback to receive the stdout output of the kernel.
 	 * @tparam Listener A function that accepts (std::string).
@@ -61,7 +61,7 @@ public:
 	 *	occasionally.
 	 */
 	template<typename Listener> void
-	registerStdErrListener(Listener const& listener);
+	registerStdErrListener(Listener const& listener) noexcept;
 
 	/**
 	 * @brief Register a callback to receive the newly created Buffers. The
@@ -71,7 +71,7 @@ public:
 	 *	occasionally.
 	 */
 	template<typename Listener> void
-	registerBufferListener(Listener const& listener);
+	registerBufferListener(Listener const& listener) noexcept;
 
 	/**
 	 * This function shall be called from only one thread.
@@ -99,6 +99,12 @@ public:
 	 * @brief Gets a immutable list of buffers.
 	 */
 	std::vector<Buffer*> getBuffers() noexcept;
+
+	/**
+	 * @brief Determine the index of the buffer. Returns the size of the buffer
+	 *	if the buffer does not exist in the buffers.
+	 */
+	std::size_t bufferIndex(Buffer*) const noexcept;
 
 	/**
 	 * Exposed to Python 
@@ -143,17 +149,17 @@ pg::Kernel::halt()
 }
 
 template<typename Listener> inline void
-pg::Kernel::registerStdOutListener(Listener const& listener)
+pg::Kernel::registerStdOutListener(Listener const& listener) noexcept
 {
 	signalOut.connect(listener);
 }
 template<typename Listener> inline void
-pg::Kernel::registerStdErrListener(Listener const& listener)
+pg::Kernel::registerStdErrListener(Listener const& listener) noexcept
 {
 	signalErr.connect(listener);
 }
 template<typename Listener> inline void
-pg::Kernel::registerBufferListener(Listener const& listener)
+pg::Kernel::registerBufferListener(Listener const& listener) noexcept
 {
 	signalBuffer.connect(listener);
 }
@@ -183,5 +189,13 @@ inline std::vector<pg::Buffer*>
 pg::Kernel::getBuffers() noexcept
 {
 	return buffers;
+}
+inline std::size_t
+pg::Kernel::bufferIndex(Buffer* buffer) const noexcept
+{
+	std::size_t i = 0;
+	for (i = 0; i < buffers.size(); ++i)
+		if (buffers[i] == buffer) return i;
+	return i;
 }
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

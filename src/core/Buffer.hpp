@@ -1,6 +1,10 @@
 #ifndef _POLYGAMMA_CORE_BUFFER_HPP__
 #define _POLYGAMMA_CORE_BUFFER_HPP__
 
+#include <cstdint>
+
+#include <boost/signals2.hpp>
+
 namespace pg
 {
 
@@ -15,13 +19,30 @@ public:
 	virtual ~Buffer();
 	enum Type
 	{
-		Singular // Single-file audio/video streams
+		Singular // singular/BufferSingular.hpp
 	};
 
-	virtual Type getType() = 0;
+	/**
+	 * Exposed to Python
+	 */
+	virtual Type getType() const noexcept = 0;
 
+	template <typename Listener> void
+	registerUpdateListener(Listener listener) noexcept;
+protected:
+	/**
+	 * Subclasses shall call this to signal a graphics update
+	 */
+	boost::signals2::signal<void ()> signalUpdate;
 };
 
 } // namespace pg
 
+// Implementations
+
+template <typename Listener> inline void
+pg::Buffer::registerUpdateListener(Listener listener) noexcept
+{
+	signalUpdate.connect(listener);
+}
 #endif // !_POLYGAMMA_CORE_BUFFER_HPP__

@@ -21,8 +21,9 @@ public:
 	virtual BufferSingular* getBuffer() override;
 
 
-private:
+private Q_SLOTS:
 	void onUpdateAudioFormat();
+	void onSelection(Interval<int64_t>, std::size_t index);
 
 private:
 	BufferSingular* const buffer;

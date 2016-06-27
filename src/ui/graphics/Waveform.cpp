@@ -73,8 +73,7 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 	else
 	{
 		painter.setRenderHint(QPainter::Antialiasing);
-		QPainter painterWave(this);
-		painterWave.setPen(penCore);
+		painter.setPen(penCore);
 		std::size_t sampleStart = (std::size_t) rasterToAxialX(0) /
 		                          UI_SAMPLE_DISPLAY_WIDTH;
 		std::size_t sampleEnd = (std::size_t) rasterToAxialX(width()) /
@@ -92,9 +91,20 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 			nextSampleX = axialToRasterX((i + 1) * UI_SAMPLE_DISPLAY_WIDTH);
 			nextSampleY = (int)((1.0 - (*channel)[i + 1]) * 0.5 * height());
 
-			painterWave.drawLine(thisSampleX, thisSampleY,
+			painter.drawLine(thisSampleX, thisSampleY,
 			                     nextSampleX, nextSampleY);
 		}
+	}
+
+	// Draw the selection
+	BufferSingular::AudioInterval selection = buffer->getSelection(channelId);
+	if (!isEmpty(selection))
+	{
+		painter.setCompositionMode(QPainter::CompositionMode_Difference);
+		int begin = axialToRasterX(selection.first);
+		int end = axialToRasterX(selection.second);
+		painter.fillRect(QRect(begin, 0, end - begin, height()), Qt::white);
+		
 	}
 
 }

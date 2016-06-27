@@ -8,6 +8,7 @@
 
 #include "Terminal.hpp"
 #include "mainWindowAccessories.hpp"
+#include "editors/Editor.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -47,6 +48,9 @@ private:
 	QLineEdit* lineEditLog;
 	QString lineEditLog_stylesheetOut;
 	QString lineEditLog_stylesheetErr;
+
+	// Dynamic
+	Editor* currentEditor;
 
 };
 

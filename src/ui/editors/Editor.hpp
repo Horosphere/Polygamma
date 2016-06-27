@@ -19,16 +19,26 @@ class Editor: public Panel
 {
 	Q_OBJECT
 public:
-	explicit Editor(Kernel* const kernel, QWidget *parent = 0);
+	explicit Editor(Kernel* const kernel, Buffer* buffer,
+			QWidget *parent = 0);
 	virtual ~Editor();
 
 	virtual bool saveAs(QString* const error) = 0;
 	virtual Buffer* getBuffer() = 0;
 
+Q_SIGNALS:
+	void execute(Command);
+	/**
+	 * @brief Called in the Kernel thread. Should only be used to relay signal to
+	 *	repaint()
+	 */
+	void graphicsUpdate();
+
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
 
 	Kernel* const kernel;
+
 };
 
 } // namespace pg

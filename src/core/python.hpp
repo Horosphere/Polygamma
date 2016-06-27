@@ -28,6 +28,11 @@ struct PythonException
 	Type type;
 };
 
+/**
+ * The command that references the Kernel in Python.
+ */
+constexpr char PYTHON_KERNEL[] = "pg.kernel";
+
 } // namespace pg
 
 // Implementations

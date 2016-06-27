@@ -32,7 +32,7 @@ class Buffer: public pg::Buffer,
 	public boost::python::wrapper<pg::Buffer>
 {
 public:
-	Type getType()
+	Type getType() const noexcept
 	{
 		return this->get_override("getType")();
 	}
@@ -70,9 +70,20 @@ BOOST_PYTHON_MODULE(pg)
 	.def("getType", pure_virtual(&pg::Buffer::getType));
 	class_<std::vector<pg::Buffer*>>("stdvector_Buffer")
 	                              .def(vector_indexing_suite<std::vector<pg::Buffer*>>());
+
+	// BufferSingular
+	class_<pg::BufferSingular::AudioInterval>("AudioInterval", init<std::size_t, std::size_t>())
+	.def_readwrite("begin", &pg::BufferSingular::AudioInterval::first)
+	.def_readwrite("end", &pg::BufferSingular::AudioInterval::second);
 	class_<pg::BufferSingular, bases<pg::Buffer>, boost::noncopyable>(
 	  "BufferSingular", no_init)
-	.def_readonly("nAudioChannels", &pg::BufferSingular::nAudioChannels);
+	.def_readonly("nAudioChannels", &pg::BufferSingular::nAudioChannels)
+	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t, std::size_t))
+	     &pg::BufferSingular::select)
+	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::BufferSingular::AudioInterval))
+	     &pg::BufferSingular::select)
+	.def("clearSelect", &pg::BufferSingular::clearSelect)
+	.def("getSelection", &pg::BufferSingular::getSelection);
 
 
 	class_<pg::Kernel, boost::noncopyable>("Kernel", no_init)
