@@ -16,8 +16,13 @@ class Waveform final: public Viewport2
 	Q_PROPERTY(QColor colourBG READ getColourBG WRITE setColourBG)
 	Q_PROPERTY(QColor colourCore READ getColourCore WRITE setColourCore)
 	Q_PROPERTY(QColor colourEdge READ getColourEdge WRITE setColourEdge)
+
+	QColor colourBackground;
+	QPen penCore;
+	QPen penEdge;
 public:
-	Waveform(BufferSingular const* const buffer, std::size_t channelId, QWidget* parent = 0);
+	Waveform(BufferSingular const* const buffer, std::size_t channelId,
+			QWidget* parent = 0);
 
 	void setColourBG(QColor) noexcept;
 	QColor getColourBG() const noexcept;
@@ -30,14 +35,9 @@ protected:
 	void paintEvent(QPaintEvent*);
 
 private:
-	QPen penCore;
-	QPen penEdge;
-	QColor colourBackground;
-
 	BufferSingular const* const buffer;
 	std::size_t channelId;
 	Vector<real> const* const channel;
-	
 };
 
 } // namespace pg

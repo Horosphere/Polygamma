@@ -1,10 +1,10 @@
 #ifndef _POLYGAMMA_UI_MAINWINDOW_HPP__
 #define _POLYGAMMA_UI_MAINWINDOW_HPP__
 
-#include <QMainWindow>
-#include <QStatusBar>
-#include <QMenuBar>
 #include <QLineEdit>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QStatusBar>
 
 #include "Terminal.hpp"
 #include "mainWindowAccessories.hpp"

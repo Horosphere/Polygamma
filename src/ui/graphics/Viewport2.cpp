@@ -6,19 +6,17 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include <QGraphicsView>
-
 #include <QDebug>
 
-pg::Viewport2::Viewport2(QWidget *parent) : QWidget(parent),
+pg::Viewport2::Viewport2(QWidget* parent) : QWidget(parent),
 	rangeX(0, width()), rangeY(0, height()),
 	dragFacX(0.0), dragFacY(0.0),
 	zoomFacX(1.0), zoomFacY(1.0),
 	isDraggable(false), isDraggableX(false), isDraggableY(false),
-	isZoomable(false),
+	isZoomable(false), isSelectibleX(false), isSelectibleY(false),
 
 	maxRangeX(0, width()), maxRangeY(0, height()),
-	dragging(false)
+	dragging(false), rubberBand(nullptr)
 {
 	setMinimumSize(1, 1); // Prevent division by 0
 }
@@ -33,6 +31,16 @@ void pg::Viewport2::mousePressEvent(QMouseEvent* event)
 	{
 		dragging = isDraggable;
 	}
+	else if (event->buttons() & Qt::LeftButton && rubberBand)
+	{
+		selectTopLeft = event->pos();
+		if (!isSelectibleY)
+			selectTopLeft.setY(rect().top());
+		else if (!isSelectibleX)
+			selectTopLeft.setX(rect().left());
+		rubberBand->setGeometry(QRect(selectTopLeft, QSize()));
+		rubberBand->show();
+	}
 	event->accept();
 }
 // This method shall handle panning
@@ -43,12 +51,12 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 		if (isDraggableX) // Dragging on X enabled
 		{
 			rangeX = translate(rangeX, maxRangeX,
-							   (int64_t)((dragPos.x() - event->pos().x()) * dragFacX));
+			                   (int64_t)((dragPos.x() - event->pos().x()) * dragFacX));
 		}
 		if (isDraggableY) // Dragging on Y enabled
 		{
 			rangeY = translate(rangeY, maxRangeY,
-							   (int64_t)((dragPos.y() - event->pos().y()) * dragFacY));
+			                   (int64_t)((dragPos.y() - event->pos().y()) * dragFacY));
 		}
 
 		if (isDraggable)
@@ -60,10 +68,42 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 			Q_EMIT rangeYChanged(rangeY);
 		}
 	}
+	if (rubberBand)
+	{
+		QPoint pos = event->pos();
+		if (!isSelectibleY) pos.setY(rect().bottom());
+		else if (!isSelectibleX) pos.setX(rect().right());
+		rubberBand->setGeometry(QRect(selectTopLeft, pos).normalized());
+	}
+	event->accept();
 }
 void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 {
 	dragging = false;
+	if (rubberBand)
+	{
+		rubberBand->hide();
+		QRect selection = rubberBand->rect();
+		if (isSelectibleX)
+		{
+			Interval<int64_t> iX(rasterToAxialX(rubberBand->x()),
+			                     rasterToAxialX(rubberBand->x() + selection.right()));
+			if (isSelectibleY)
+			{
+			Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+			                     rasterToAxialY(rubberBand->y() + selection.bottom()));
+				Q_EMIT selectionXY(iX, iY);
+			}
+			else
+				Q_EMIT selectionX(iX);
+		}
+		else
+		{
+			Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+			                     rasterToAxialY(rubberBand->y() + selection.bottom()));
+			Q_EMIT selectionY(iY);
+		}
+	}
 	event->accept();
 }
 
@@ -125,17 +165,17 @@ void pg::Viewport2::resizeEvent(QResizeEvent* event)
 	// Recalculate ranges
 	if (event->oldSize().isValid())
 	{
-	int64_t resultXLen = length(rangeX) * event->size().width()
-			/ event->oldSize().width();
-	int64_t resultYLen = length(rangeX) * event->size().height()
-			/ event->oldSize().height();
+		int64_t resultXLen = length(rangeX) * event->size().width()
+		                     / event->oldSize().width();
+		int64_t resultYLen = length(rangeX) * event->size().height()
+		                     / event->oldSize().height();
 
-	if (resultXLen > length(maxRangeX))
-		rangeX = maxRangeX;
-	else rangeX.end = rangeX.begin + resultXLen;
-	if (resultYLen > length(maxRangeY))
-		rangeY = maxRangeY;
-	else rangeY.end = rangeY.begin + resultYLen;
+		if (resultXLen > length(maxRangeX))
+			rangeX = maxRangeX;
+		else rangeX.end = rangeX.begin + resultXLen;
+		if (resultYLen > length(maxRangeY))
+			rangeY = maxRangeY;
+		else rangeY.end = rangeY.begin + resultYLen;
 	}
 	this->QWidget::resizeEvent(event);
 

@@ -1,13 +1,9 @@
 #include "BufferSingular.hpp"
 
-#include <limits>
-#include <typeinfo>
 #include <cstring>
 #include <iostream>
-
-// Debugging purposes
-#include <fstream>
-
+#include <limits>
+#include <typeinfo>
 
 extern "C"
 {
@@ -342,13 +338,6 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		delete[] channels;
 		return nullptr;
 	}
-	std::ofstream output;
-	output.open("Channel0.txt");
-	for (std::size_t j = 0; j < 44100; ++j)
-	{
-		output << channels[0][j] << std::endl;
-	}
-	output.close();
 
 	BufferSingular* buffer = new BufferSingular(codecContext->channels);
 	buffer->sampleRate = codecContext->sample_rate;

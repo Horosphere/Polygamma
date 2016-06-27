@@ -12,6 +12,7 @@ pg::Panel::Panel(QWidget* parent, Qt::WindowFlags flags):
 	setAllowedAreas(Qt::AllDockWidgetAreas);
 	connect(this, &Panel::customContextMenuRequested,
 			this, &Panel::onContextMenuRequest);
+	setFloating(true);
 }
 
 void pg::Panel::addDockActions(QMenu* const menu)

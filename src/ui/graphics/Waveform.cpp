@@ -16,6 +16,7 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
 {
 	setDragging(true, false);
 	setZoomFac(1.1, 1.0);
+	setSelecting(true, false);
 	
 	setMaximumRange(0, ((int64_t) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
 					0, height());

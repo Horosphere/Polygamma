@@ -2,8 +2,8 @@
 
 #include <QApplication>
 #include <QCloseEvent>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
 #include <QFileDialog>
 #include <QFont>
 #include <QMessageBox>
@@ -44,12 +44,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
 	// Menu end
-
-	// Central
-	QWidget* centralWidget = new QWidget(this);
-	setCentralWidget(centralWidget);
-	QVBoxLayout* layoutMain = new QVBoxLayout(centralWidget);
-	(void) layoutMain;
 
 	// Status bar
 	statusBar()->addPermanentWidget(lineEditCommand, 1);
@@ -135,8 +129,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	updateUIElements();
 
 	// Set default states
+	setBaseSize(QSize(300, 500));
 	lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
-	centralWidget->setMinimumSize(400, 100);
 	terminal->setBaseSize(QSize(300, 500));
 }
 

@@ -8,7 +8,7 @@
 
 pg::Configuration::Configuration():
 	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF),
-	uiWaveformBG(0xFFFFAA88), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
+	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {
 }
 

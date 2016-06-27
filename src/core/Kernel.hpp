@@ -4,11 +4,11 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/signals2.hpp>
 
+#include "Buffer.hpp"
 #include "Command.hpp"
 #include "Configuration.hpp"
 #include "polygamma.hpp"
 #include "python.hpp"
-#include "Buffer.hpp"
 #include "../singular/BufferSingular.hpp"
 
 namespace pg

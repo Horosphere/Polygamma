@@ -1,18 +1,26 @@
 #include "Kernel.hpp"
 
-#include <iostream>
-#include <thread>
 #include <chrono>
+#include <iostream>
 #include <sstream>
+#include <thread>
 
 pg::Kernel::Kernel(Configuration* config): config(config)
 {
-
 	// Must be placed here instead of the initialiser list to avoid crashing.
 	moduleMain = boost::python::import("__main__");
 	dictMain = boost::python::extract<boost::python::dict>(
 	             moduleMain.attr("__dict__"));
+}
+pg::Kernel::~Kernel()
+{
+	// Releases all buffers
+	for (auto const& buffer: buffers)
+		delete buffer;
+}
 
+void pg::Kernel::start()
+{
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
 	// accessed in python with pg.kernel.
 	boost::python::import("pg").attr("kernel") = boost::ref(*this);
@@ -58,17 +66,8 @@ pg::Kernel::Kernel(Configuration* config): config(config)
 	  Redirector(&signalErr, "[Err] ");
 
 
-}
-pg::Kernel::~Kernel()
-{
-	// Releases all buffers
-	for (auto const& buffer: buffers)
-		delete buffer;
-}
-
-void pg::Kernel::start()
-{
 	std::cout << "Kernel starting..." << std::endl;
+
 	running = true;
 	while (running)
 	{
