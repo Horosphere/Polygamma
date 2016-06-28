@@ -31,9 +31,10 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 
 	// Decides drawing mode. If the avaliable pixel per sample is less than
 	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform
-	if (width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX))
+	bool denseDrawing = width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX);
+	if (denseDrawing)
 	{
-
+		std::size_t step = 1 + length(rangeX) / width() / UI_SAMPLE_DISPLAY_WIDTH / 512;
 		for (int x = 0; x < width(); ++x)
 		{
 			std::size_t sampleStart = (std::size_t) rasterToAxialX(x) /
@@ -44,7 +45,7 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 			real maxAbs = 0.0;
 			real averageMin = 0.0;
 			real averageMax = 0.0;
-			for (std::size_t s = sampleStart; s < sampleEnd; ++s)
+			for (std::size_t s = sampleStart; s < sampleEnd; s += step)
 			{
 				real const sample = (*channel)[s];
 				if (sample > 0.0)
@@ -58,7 +59,7 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 					averageMin += minAbs;
 				}
 			}
-			real invSpan = 1.0 / (sampleEnd - sampleStart);
+			real invSpan = 1.0 / (sampleEnd - sampleStart) * step;
 			averageMax *= invSpan;
 			averageMin *= invSpan;
 			painter.setPen(penEdge);
@@ -68,7 +69,6 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 			painter.drawLine(x, height() / 2 - (int)(averageMax * 0.5 * height()),
 			                 x, height() / 2 - (int)(averageMin * 0.5 * height()));
 		}
-
 	}
 	else
 	{

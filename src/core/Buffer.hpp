@@ -27,8 +27,12 @@ public:
 	 */
 	virtual Type getType() const noexcept = 0;
 
+	/**
+	 * @brief Registers a listener that is notified (operator()()) when
+	 *	the Buffer requires a graphics update.
+	 */
 	template <typename Listener> void
-	registerUpdateListener(Listener listener) noexcept;
+	registerUpdateListener(Listener listener) const noexcept;
 protected:
 	/**
 	 * Subclasses shall call this to signal a graphics update
@@ -41,8 +45,8 @@ protected:
 // Implementations
 
 template <typename Listener> inline void
-pg::Buffer::registerUpdateListener(Listener listener) noexcept
+pg::Buffer::registerUpdateListener(Listener listener) const noexcept
 {
-	signalUpdate.connect(listener);
+	const_cast<boost::signals2::signal<void ()>&>(signalUpdate).connect(listener);
 }
 #endif // !_POLYGAMMA_CORE_BUFFER_HPP__

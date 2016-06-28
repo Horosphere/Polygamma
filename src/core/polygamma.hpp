@@ -1,3 +1,10 @@
+/*
+ * Convention:
+ * Types with trivial constructor, destructor, and copy/move constructor/
+ * assignment start with lower case letter. All other types start with upper
+ * case letter.
+ * Use camelCase instead of underscore.
+ */
 #ifndef _POLYGAMMA_CORE_POLYGAMMA_HPP__
 #define _POLYGAMMA_CORE_POLYGAMMA_HPP__
 
@@ -12,6 +19,9 @@ namespace pg
 typedef double real;
 typedef std::complex<real> complex;
 
+/**
+ * @brief Returns the version information.
+ */
 std::string about();
 
 } // namespace pg

@@ -78,6 +78,7 @@ BOOST_PYTHON_MODULE(pg)
 	class_<pg::BufferSingular, bases<pg::Buffer>, boost::noncopyable>(
 	  "BufferSingular", no_init)
 	.def_readonly("nAudioChannels", &pg::BufferSingular::nAudioChannels)
+	.def_readonly("nAudioSamples", &pg::BufferSingular::nAudioSamples)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t, std::size_t))
 	     &pg::BufferSingular::select)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::BufferSingular::AudioInterval))

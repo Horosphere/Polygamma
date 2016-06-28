@@ -7,6 +7,7 @@
 namespace pg
 {
 
+
 void initPython();
 
 /**
@@ -29,7 +30,7 @@ struct PythonException
 };
 
 /**
- * The command that references the Kernel in Python.
+ * The command that references the Polygamma Kernel in Python.
  */
 constexpr char PYTHON_KERNEL[] = "pg.kernel";
 

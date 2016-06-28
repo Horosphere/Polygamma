@@ -33,11 +33,14 @@ Polygamma's source codes are formatted according to the following astyle
 configuration:
 ```
 --style=allman
---indent=tab
+--align-pointer=type	
+--close-templates
+--convert-tabs
 --indent-preproc-block
+--indent-preproc-define
+--indent=tab=2
 --pad-header
 --unpad-paren
---align-pointer=type	
 ```
 Polygamma's include guards are formatted according to the `.formatGen` file in
 the root directory.

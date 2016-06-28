@@ -1,6 +1,6 @@
 #include "Editor.hpp"
 
-pg::Editor::Editor(Kernel* const kernel, Buffer* buffer,
+pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
                    QWidget* parent): Panel(parent),
 	kernel(kernel)
 {
@@ -21,6 +21,6 @@ pg::Editor::~Editor()
 
 void pg::Editor::closeEvent(QCloseEvent* event)
 {
-	kernel->eraseBuffer(getBuffer());
+	Q_EMIT editorClose();
 	Panel::closeEvent(event);
 }

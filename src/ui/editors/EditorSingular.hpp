@@ -14,11 +14,11 @@ class EditorSingular final: public Editor
 {
 	Q_OBJECT
 public:
-	EditorSingular(Kernel* const kernel, BufferSingular* const buffer,
+	EditorSingular(Kernel* const kernel, BufferSingular const* const buffer,
 	               QWidget* parent = 0);
 
 	virtual bool saveAs(QString* const error) override;
-	virtual BufferSingular* getBuffer() override;
+	virtual BufferSingular const* getBuffer() const noexcept override;
 
 
 private Q_SLOTS:
@@ -26,7 +26,7 @@ private Q_SLOTS:
 	void onSelection(Interval<int64_t>, std::size_t index);
 
 private:
-	BufferSingular* const buffer;
+	BufferSingular const* const buffer;
 
 	QVBoxLayout* const mainLayout;
 	Waveform** waveforms;
@@ -37,8 +37,8 @@ private:
 
 // Implementations
 
-inline pg::BufferSingular*
-pg::EditorSingular::getBuffer()
+inline pg::BufferSingular const*
+pg::EditorSingular::getBuffer() const noexcept
 {
 	return buffer;
 }

@@ -35,6 +35,10 @@ public:
 	 * Exposed to Python
 	 */
 	std::size_t nAudioChannels() const noexcept;
+	/**
+	 * Exposed to Python
+	 */
+	std::size_t nAudioSamples() const noexcept;
 
 	Vector<real>* getAudioChannel(std::size_t);
 	Vector<real> const* getAudioChannel(std::size_t) const;
@@ -100,6 +104,11 @@ inline std::size_t
 pg::BufferSingular::nAudioChannels() const noexcept
 {
 	return audio.size();
+}
+inline std::size_t
+pg::BufferSingular::nAudioSamples() const noexcept
+{
+	return audio.empty() ? 0 : audio[0].getSize();
 }
 
 inline pg::Vector<pg::real>*

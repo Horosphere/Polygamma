@@ -65,6 +65,9 @@ scale(Interval<R> const&, Fac fac, R centre);
 template<typename R, typename Fac> Interval<R>
 scale(Interval<R> const&, Interval<R> const& limits, Fac fac, R centre);
 
+template<typename R> Interval<R>
+clamp(Interval<R> const&, R lower, R upper);
+
 template<typename R> R length(Interval<R> const&);
 
 } // namespace pg
@@ -114,6 +117,12 @@ pg::scale(Interval<R> const& interval, Interval<R> const& limits,
 
 }
 
+template<typename R> inline pg::Interval<R>
+pg::clamp(Interval<R> const& interval, R lower, R upper)
+{
+	return Interval<R>(lower < interval.begin ? interval.begin : lower,
+			upper > interval.end ? interval.end : upper);
+}
 template<typename R> inline R
 pg::length(Interval<R> const& interval)
 {

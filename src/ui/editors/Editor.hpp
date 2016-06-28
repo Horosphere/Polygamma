@@ -6,6 +6,7 @@
 #include "../panels/Panel.hpp"
 #include "../../core/Buffer.hpp"
 #include "../../core/Kernel.hpp"
+#include "../../core/Script.hpp"
 
 namespace pg
 {
@@ -19,20 +20,21 @@ class Editor: public Panel
 {
 	Q_OBJECT
 public:
-	explicit Editor(Kernel* const kernel, Buffer* buffer,
-			QWidget *parent = 0);
+	explicit Editor(Kernel* const kernel, Buffer const* const buffer,
+	                QWidget* parent = 0);
 	virtual ~Editor();
 
 	virtual bool saveAs(QString* const error) = 0;
-	virtual Buffer* getBuffer() = 0;
+	virtual Buffer const* getBuffer() const noexcept = 0;
 
 Q_SIGNALS:
-	void execute(Command);
+	void execute(Script);
 	/**
 	 * @brief Called in the Kernel thread. Should only be used to relay signal to
-	 *	repaint()
+	 *  repaint()
 	 */
 	void graphicsUpdate();
+	void editorClose();
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;

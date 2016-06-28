@@ -19,13 +19,13 @@ pg::TerminalLog::TerminalLog(QWidget* parent): QTextEdit(parent)
 void pg::TerminalLog::onStdOutFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#000000;\">" + str.replace('\n', "<br>") + "</span>");
+	insertHtml("<span style=\"color:#000000;\">" + str.toHtmlEscaped() + "</span>");
 	moveCursor(QTextCursor::End);
 }
 void pg::TerminalLog::onStdErrFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#FF0000;\">" + str.replace('\n', "<br>") + "</span>");
+	insertHtml("<span style=\"color:#FF0000;\">" + str.toHtmlEscaped() + "</span>");
 	moveCursor(QTextCursor::End);
 }
 
@@ -45,7 +45,7 @@ void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
 	    event->modifiers() == Qt::ShiftModifier)
 	{
-		Q_EMIT execute(Command(document()->toPlainText().toStdString()));
+		Q_EMIT execute(Script(document()->toPlainText().toStdString()));
 		if (!preserveInput)
 			this->document()->setPlainText("");
 	}
@@ -94,9 +94,9 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 	this->hide();
 	event->ignore();
 }
-void pg::Terminal::onExecute(Command const& command)
+void pg::Terminal::onExecute(Script const& script)
 {
-	log->onStdOutFlush(QString::fromStdString("<b>>></b> " + command.str + "\n"));
-	this->kernel->pushCommand(command);
+	log->onStdOutFlush(QString::fromStdString("<b>>></b> " + (std::string)script + "\n"));
+	this->kernel->pushScript(script);
 }
 

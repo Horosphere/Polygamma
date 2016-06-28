@@ -4,37 +4,37 @@
 #include <QAction>
 #include <QLineEdit>
 
-#include "../core/Command.hpp"
+#include "../core/Script.hpp"
 
 // Accessories for the MainWindow.
 // Contents:
-// CommandAction: QAction that has an associated command
-// LineEditCommand: QLineEdit that emits a signal upon the key combination
+// ScriptAction: QAction that has an associated command
+// LineEditScript: QLineEdit that emits a signal upon the key combination
 //	Shift+Enter
 namespace pg
 {
 
-class CommandAction final: public QAction
+class ScriptAction final: public QAction
 {
 	Q_OBJECT
 public:
-	CommandAction(Command const&, QObject* parent = 0);
-	CommandAction(Command const&, QString const&, QObject* parent = 0);
-	CommandAction(Command const&, QIcon const&, QString const&, QObject* parent = 0);
+	ScriptAction(Script const&, QObject* parent = 0);
+	ScriptAction(Script const&, QString const&, QObject* parent = 0);
+	ScriptAction(Script const&, QIcon const&, QString const&, QObject* parent = 0);
 
-	Command command;
+	Script command;
 Q_SIGNALS:
-	void execute(Command const&);
+	void execute(Script const&);
 };
 
-class LineEditCommand final: public QLineEdit
+class LineEditScript final: public QLineEdit
 {
 	Q_OBJECT
 public:
-	explicit LineEditCommand(QWidget* parent = 0);
+	explicit LineEditScript(QWidget* parent = 0);
 
 Q_SIGNALS:
-	void execute(Command);
+	void execute(Script);
 
 protected:
 	virtual void keyPressEvent(QKeyEvent*) override;

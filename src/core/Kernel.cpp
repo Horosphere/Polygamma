@@ -25,7 +25,7 @@ void pg::Kernel::start()
 	// accessed in python with pg.kernel.
 	boost::python::import("pg").attr("kernel") = boost::ref(*this);
 
-	// Redirects Python stdout and stderr streams to the terminal
+	// Redirects Script stdout and stderr streams to the terminal
 	class Redirector
 	{
 	public:
@@ -71,14 +71,15 @@ void pg::Kernel::start()
 	running = true;
 	while (running)
 	{
-		Command command;
-		while (commandQueue.pop(command))
+		Script script;
+		while (scriptQueue.pop(script))
 		{
+			std::cout << "[Py] " << (std::string) script << std::endl;
 			try
 			{
 				using namespace boost::python;
 
-				object result = eval(command.str.c_str(), dictMain);
+				object result = eval(((std::string) script).c_str(), dictMain);
 				if (!result.is_none())
 					signalOut(extract<std::string>(str(result))());
 			}
@@ -86,6 +87,18 @@ void pg::Kernel::start()
 			{
 				signalErr(pythonTraceBack());
 				PyErr_Clear();
+			}
+		}
+		Special special;
+		while (specialQueue.pop(special))
+		{
+			switch (special.type)
+			{
+			case Special::Deletion:
+				delete special.buffer;
+				buffers.erase(std::remove(buffers.begin(), buffers.end(), special.buffer),
+				              buffers.end());
+				break;
 			}
 		}
 		std::this_thread::yield(); // Avoids busy waiting

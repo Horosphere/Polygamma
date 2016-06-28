@@ -44,7 +44,7 @@ private:
 
 	// UI Elements
 	Terminal* terminal;
-	LineEditCommand* lineEditCommand;
+	LineEditScript* lineEditScript;
 	QLineEdit* lineEditLog;
 	QString lineEditLog_stylesheetOut;
 	QString lineEditLog_stylesheetErr;

@@ -6,7 +6,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include <QDebug>
+//#include <QDebug>
 
 pg::Viewport2::Viewport2(QWidget* parent) : QWidget(parent),
 	rangeX(0, width()), rangeY(0, height()),
@@ -80,28 +80,34 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 {
 	dragging = false;
-	if (rubberBand)
+	if (rubberBand && rubberBand->isVisible())
 	{
 		rubberBand->hide();
-		QRect selection = rubberBand->rect();
-		if (isSelectibleX)
+		QRect selection = rubberBand->rect().normalized();
+		if (selection.isValid()) // Must check
 		{
-			Interval<int64_t> iX(rasterToAxialX(rubberBand->x()),
-			                     rasterToAxialX(rubberBand->x() + selection.right()));
-			if (isSelectibleY)
+			if (isSelectibleX)
 			{
-			Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
-			                     rasterToAxialY(rubberBand->y() + selection.bottom()));
-				Q_EMIT selectionXY(iX, iY);
+				Interval<int64_t> iX(rasterToAxialX(rubberBand->x()),
+				                     rasterToAxialX(rubberBand->x() + selection.right()));
+				iX = clamp(iX, maxRangeX.begin, maxRangeX.end);
+				if (isSelectibleY)
+				{
+					Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+					                     rasterToAxialY(rubberBand->y() + selection.bottom()));
+					iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
+					Q_EMIT selectionXY(iX, iY);
+				}
+				else
+					Q_EMIT selectionX(iX);
 			}
 			else
-				Q_EMIT selectionX(iX);
-		}
-		else
-		{
-			Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
-			                     rasterToAxialY(rubberBand->y() + selection.bottom()));
-			Q_EMIT selectionY(iY);
+			{
+				Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+				                     rasterToAxialY(rubberBand->y() + selection.bottom()));
+				iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
+				Q_EMIT selectionY(iY);
+			}
 		}
 	}
 	event->accept();

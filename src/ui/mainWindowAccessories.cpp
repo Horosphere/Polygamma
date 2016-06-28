@@ -2,8 +2,8 @@
 
 #include <QKeyEvent>
 
-// CommandAction
-pg::CommandAction::CommandAction(Command const& command, QObject* parent):
+// ScriptAction
+pg::ScriptAction::ScriptAction(Script const& command, QObject* parent):
 	QAction(parent), command(command)
 {
 	connect(this, &QAction::triggered,
@@ -12,7 +12,7 @@ pg::CommandAction::CommandAction(Command const& command, QObject* parent):
 		Q_EMIT execute(this->command);
 	});
 }
-pg::CommandAction::CommandAction(Command const& command, QString const& text,
+pg::ScriptAction::ScriptAction(Script const& command, QString const& text,
                                  QObject* parent):
 	QAction(text, parent), command(command)
 {
@@ -22,7 +22,7 @@ pg::CommandAction::CommandAction(Command const& command, QString const& text,
 		Q_EMIT execute(this->command);
 	});
 }
-pg::CommandAction::CommandAction(Command const& command, QIcon const& icon,
+pg::ScriptAction::ScriptAction(Script const& command, QIcon const& icon,
                                  QString const& text, QObject* parent):
 	QAction(icon, text, parent), command(command)
 {
@@ -33,16 +33,16 @@ pg::CommandAction::CommandAction(Command const& command, QIcon const& icon,
 	});
 }
 
-// LineEditCommand
-pg::LineEditCommand::LineEditCommand(QWidget* parent): QLineEdit(parent)
+// LineEditScript
+pg::LineEditScript::LineEditScript(QWidget* parent): QLineEdit(parent)
 {
 }
-void pg::LineEditCommand::keyPressEvent(QKeyEvent* event)
+void pg::LineEditScript::keyPressEvent(QKeyEvent* event)
 {
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
 	        event->modifiers() == Qt::ShiftModifier)
 	{
-		Q_EMIT execute(Command(text().toStdString()));
+		Q_EMIT execute(Script(text().toStdString()));
 		this->clear();
 	}
 	else

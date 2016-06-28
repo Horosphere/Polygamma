@@ -5,7 +5,7 @@
 #include <boost/signals2.hpp>
 
 #include "Buffer.hpp"
-#include "Command.hpp"
+#include "Script.hpp"
 #include "Configuration.hpp"
 #include "polygamma.hpp"
 #include "python.hpp"
@@ -25,6 +25,21 @@ constexpr std::size_t KERNEL_EVENTLOOP_SIZE = 16;
 class Kernel final
 {
 public:
+	/**
+	 * @brief Each instance represents a special operation for the Kernel.
+	 */
+	struct Special
+	{
+		enum Type
+		{
+			Deletion
+		} type;
+		union
+		{
+			Buffer* buffer; // type = Deletion
+		};
+	};
+
 	Kernel(Configuration*);
 	~Kernel();
 
@@ -75,9 +90,14 @@ public:
 
 	/**
 	 * This function shall be called from only one thread.
-	 * @brief Pushes a command into the command queue.
+	 * @brief Pushes a script into the script queue.
 	 */
-	void pushCommand(Command const&);
+	void pushScript(Script const&);
+	/**
+	 * This function shall be called from only one thread.
+	 * @brief Pushes a Special into the Special queue.
+	 */
+	void pushSpecial(Special const&);
 
 	/**
 	 * Does nothing upon an existing buffer or nullptr is passed. Triggers a
@@ -91,11 +111,11 @@ public:
 	 * regardless of whether it is in the buffers or not.
 	 * @brief Erases a existing buffer in the buffers.
 	 */
-	void eraseBuffer(Buffer*);
+	void eraseBuffer(std::size_t index);
 	
 
 	/**
-	 * Exposed to Python
+	 * Exposed to Script
 	 * @brief Gets a immutable list of buffers.
 	 */
 	std::vector<Buffer*> getBuffers() noexcept;
@@ -104,10 +124,10 @@ public:
 	 * @brief Determine the index of the buffer. Returns the size of the buffer
 	 *	if the buffer does not exist in the buffers.
 	 */
-	std::size_t bufferIndex(Buffer*) const noexcept;
+	std::size_t bufferIndex(Buffer const*) const noexcept;
 
 	/**
-	 * Exposed to Python 
+	 * Exposed to Script 
 	 * @brief "Import" as opposed to "Open" a file. It does not work on internal
 	 *	Polygamma project files.
 	 */
@@ -120,7 +140,8 @@ private:
 	/**
 	 * Concurrent event queue
 	 */
-	boost::lockfree::spsc_queue<Command, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> commandQueue;
+	boost::lockfree::spsc_queue<Script, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> scriptQueue;
+	boost::lockfree::spsc_queue<Special, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> specialQueue;
 	// Signals
 	boost::signals2::signal<void (std::string)> signalOut;
 	boost::signals2::signal<void (std::string)> signalErr;
@@ -132,7 +153,7 @@ private:
 	// TODO: Consider if it is necessary to convert this to a set in the future.
 	std::vector<Buffer*> buffers;
 
-	// Python
+	// Script
 	boost::python::object moduleMain;
 	boost::python::dict dictMain;
 };
@@ -165,9 +186,14 @@ pg::Kernel::registerBufferListener(Listener const& listener) noexcept
 }
 
 inline void
-pg::Kernel::pushCommand(Command const& command)
+pg::Kernel::pushScript(Script const& command)
 {
-	commandQueue.push(command);
+	scriptQueue.push(command);
+}
+inline void
+pg::Kernel::pushSpecial(Special const& command)
+{
+	specialQueue.push(command);
 }
 inline void
 pg::Kernel::pushBuffer(Buffer* buffer)
@@ -179,10 +205,10 @@ pg::Kernel::pushBuffer(Buffer* buffer)
 	}
 }
 inline void
-pg::Kernel::eraseBuffer(Buffer* buffer)
+pg::Kernel::eraseBuffer(std::size_t index)
 {
-	delete buffer;
-	buffers.erase(std::remove(buffers.begin(), buffers.end(), buffer), buffers.end());
+	delete buffers[index];
+	buffers.erase(buffers.begin() + index);
 }
 
 inline std::vector<pg::Buffer*>
@@ -191,7 +217,7 @@ pg::Kernel::getBuffers() noexcept
 	return buffers;
 }
 inline std::size_t
-pg::Kernel::bufferIndex(Buffer* buffer) const noexcept
+pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
 {
 	std::size_t i = 0;
 	for (i = 0; i < buffers.size(); ++i)

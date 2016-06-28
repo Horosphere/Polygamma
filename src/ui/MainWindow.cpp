@@ -22,7 +22,7 @@
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
 	kernel(kernel), config(config), terminal(new Terminal(kernel, this)),
-	lineEditCommand(new LineEditCommand), lineEditLog(new QLineEdit),
+	lineEditScript(new LineEditScript), lineEditLog(new QLineEdit),
 	currentEditor(nullptr)
 {
 	setWindowIcon(QIcon(":/icon.png"));
@@ -40,8 +40,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	menuFile->addAction(actionFileImport);
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
-	CommandAction* actionEditSummon = new CommandAction(Command("print('summon')"), "Summon", this);
-	connect(actionEditSummon, &CommandAction::execute,
+	ScriptAction* actionEditSummon = new ScriptAction(Script("print('summon')"), "Summon", this);
+	connect(actionEditSummon, &ScriptAction::execute,
 	        terminal, &Terminal::onExecute);
 	menuEdit->addAction(actionEditSummon);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
@@ -49,7 +49,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	// Menu end
 
 	// Status bar
-	statusBar()->addPermanentWidget(lineEditCommand, 1);
+	statusBar()->addPermanentWidget(lineEditScript, 1);
 	lineEditLog->setReadOnly(true);
 	statusBar()->addPermanentWidget(lineEditLog, 1);
 	QPushButton* buttonTerminal = new QPushButton;
@@ -77,7 +77,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		QString fileName = QFileDialog::getOpenFileName(this, tr("Import..."));
 		if (fileName.isNull()) return;
 		else
-			this->terminal->onExecute(Command(std::string(PYTHON_KERNEL) +
+			this->terminal->onExecute(Script(std::string(PYTHON_KERNEL) +
 			                                  ".fromFileImport(\"" +
 			                                  fileName.toStdString() + "\")"));
 
@@ -108,8 +108,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	        terminal->log, &TerminalLog::onStdOutFlush, Qt::QueuedConnection);
 	connect(this, &MainWindow::stdErrFlush,
 	        terminal->log, &TerminalLog::onStdErrFlush, Qt::QueuedConnection);
-	// Command line
-	connect(lineEditCommand, &LineEditCommand::execute,
+	// Script line
+	connect(lineEditScript, &LineEditScript::execute,
 	        terminal, &Terminal::onExecute);
 	connect(this, &MainWindow::stdOutFlush,
 	        this, [this](QString const& str)
@@ -151,7 +151,7 @@ void pg::MainWindow::updateUIElements()
 	int const tabWidth = 4 * QFontMetrics(fontMonospace).width(' ');
 
 	// Apply
-	lineEditCommand->setFont(fontMonospace);
+	lineEditScript->setFont(fontMonospace);
 	lineEditLog->setFont(fontMonospace);
 	lineEditLog_stylesheetOut = QString("color: white; background-color: black");
 	lineEditLog_stylesheetErr = QString("color: white; background-color: #220000");
@@ -188,4 +188,10 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 	currentEditor->show();
 	connect(currentEditor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
+	connect(currentEditor, &Editor::editorClose,
+			this, [kernel = this->kernel, buffer]
+			{
+			kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
+			});
+	
 }

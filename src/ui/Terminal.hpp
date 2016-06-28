@@ -34,7 +34,7 @@ protected:
 	virtual void keyPressEvent(QKeyEvent*) override;
 
 Q_SIGNALS:
-	void execute(Command);
+	void execute(Script);
 
 private Q_SLOTS:
 	void onPreserveInputToggled(bool);
@@ -65,9 +65,9 @@ protected:
 
 private Q_SLOTS:
 	/**
-	 * Sends a command to the Kernel.
+	 * Sends a script to the Kernel.
 	 */
-	void onExecute(Command const&);
+	void onExecute(Script const&);
 
 private:
 	/**

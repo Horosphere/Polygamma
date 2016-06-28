@@ -7,7 +7,7 @@
 
 
 pg::EditorSingular::EditorSingular(Kernel* const kernel,
-                                   BufferSingular* const buffer,
+                                   BufferSingular const* const buffer,
                                    QWidget* parent):
 	Editor(kernel, buffer, parent), buffer(buffer),
 	mainLayout(new QVBoxLayout), waveforms(nullptr)
@@ -53,10 +53,10 @@ void pg::EditorSingular::onUpdateAudioFormat()
 void pg::EditorSingular::onSelection(Interval<int64_t> selection,
 		std::size_t index)
 {
-	std::string command = std::string(PYTHON_KERNEL) + ".buffers[" +
+	std::string string = std::string(PYTHON_KERNEL) + ".buffers[" +
 		std::to_string(kernel->bufferIndex(buffer)) + "].select(" +
 		std::to_string(index) + ", " + std::to_string(selection.begin) +
 		", " + std::to_string(selection.end) + ')';
-	Q_EMIT execute(Command(command));
+	Q_EMIT execute(Script(string));
 
 }
