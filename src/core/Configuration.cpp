@@ -7,7 +7,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 pg::Configuration::Configuration():
-	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF),
+	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiTerminalShowSystemLevel(false),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {
 }
@@ -27,6 +27,7 @@ bool pg::Configuration::loadFile()
 			boost::property_tree::xml_parser::trim_whitespace);
 	file.close();
 	
+	boost::optional<bool> keyBool;
 	boost::optional<boost::property_tree::ptree&> treeUI =
 		tree.get_child_optional("ui");
 	if (treeUI)
@@ -34,6 +35,7 @@ bool pg::Configuration::loadFile()
 		boost::optional<Colour32> keyColour32;
 		CONFIG_READ(keyColour32, uiBG, treeUI, "BG", Colour32);
 		CONFIG_READ(keyColour32, uiTerminalBG, treeUI, "terminalBG", Colour32);
+		CONFIG_READ(keyBool, uiTerminalShowSystemLevel, treeUI, "ShowSystemLevel", bool);
 		CONFIG_READ(keyColour32, uiWaveformBG, treeUI, "waveformBG", Colour32);
 		CONFIG_READ(keyColour32, uiWaveformCore, treeUI, "waveformCore", Colour32);
 		CONFIG_READ(keyColour32, uiWaveformEdge, treeUI, "waveformEdge", Colour32);
@@ -50,6 +52,7 @@ void pg::Configuration::saveFile()
 	boost::property_tree::ptree treeUI;
 	treeUI.put("BG", uiBG);
 	treeUI.put("terminalBG", uiTerminalBG);
+	treeUI.put("ShowSystemLevel", uiTerminalShowSystemLevel);
 	treeUI.put("waveformBG", uiWaveformBG);
 	treeUI.put("waveformCore", uiWaveformCore);
 	treeUI.put("waveformEdge", uiWaveformEdge);

@@ -20,6 +20,13 @@ If `cmake` is unable to find `Qt5Widgets`, try feeding it the following option:
 ```
 -DQt5Widgets_DIR = <directory containing Qt5WidgetsConfig.cmake>
 ```
+
+## Usage
+
+The configuration file is `.polygamma` in the user's home directory. Currently
+many of its options are not avaliable in the UI, so users will have to modify
+them in the text based XML file.
+
 ## Developing
 
 ###### Conventions and scripts

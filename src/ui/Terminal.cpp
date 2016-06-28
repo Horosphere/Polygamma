@@ -96,7 +96,8 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 }
 void pg::Terminal::onExecute(Script const& script)
 {
-	log->onStdOutFlush(QString::fromStdString("<b>>></b> " + (std::string)script + "\n"));
+	if (!script.isSystemLevel() || showSystemLevel)
+		log->onStdOutFlush(QString::fromStdString("<b>>></b> " + (std::string)script + "\n"));
 	this->kernel->pushScript(script);
 }
 

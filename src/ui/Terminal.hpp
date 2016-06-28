@@ -48,11 +48,12 @@ private:
 class Terminal final: public QMainWindow
 {
 	Q_OBJECT
+	Q_PROPERTY(bool showSystemLevel READ getShowSystemLevel WRITE setShowSystemLevel)
 public:
-	
-	
 	explicit Terminal(Kernel* const, QWidget* parent = 0);
 
+	void setShowSystemLevel(bool) noexcept;
+	bool getShowSystemLevel() const noexcept;
 Q_SIGNALS:
 	/**
 	 * @brief Receive the updated log from the Kernel. This signal is emitted in
@@ -81,9 +82,23 @@ private:
 	TerminalInput* input;
 	Kernel* kernel;
 
+	bool showSystemLevel;
+
 	friend class MainWindow;
 };
 
 } // namespace pg
 
+// Implementations
+
+inline void
+pg::Terminal::setShowSystemLevel(bool flag) noexcept
+{
+	showSystemLevel = flag;
+}
+inline bool
+pg::Terminal::getShowSystemLevel() const noexcept
+{
+	return showSystemLevel;
+}
 #endif // !_POLYGAMMA_UI_TERMINAL_HPP__

@@ -46,6 +46,7 @@ public:
 	// ui/DialogPreferences.hpp.
 	Colour32 uiBG;
 	Colour32 uiTerminalBG;
+	bool uiTerminalShowSystemLevel;
 	Colour32 uiWaveformBG;
 	Colour32 uiWaveformCore;
 	Colour32 uiWaveformEdge;
