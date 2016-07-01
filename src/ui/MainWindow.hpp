@@ -36,6 +36,15 @@ private Q_SLOTS:
 	// Triggered upon configuration change
 	void updateUIElements();
 	void onNewBuffer(Buffer*);
+	/**
+	 * Replacements:
+	 * %1 -> Index of current buffer
+	 *
+	 * @warning Must be called with at least one active buffer present.
+	 * @brief Converts a QString into a system command and calls 
+	 *	Terminal::onExecute
+	 */
+	void onExecute(QString const&);
 
 private:
 	// Handlers
@@ -51,7 +60,6 @@ private:
 
 	// Dynamic
 	Editor* currentEditor;
-
 };
 
 } // namespace pg

@@ -27,6 +27,8 @@ public:
 	 */
 	virtual Type getType() const noexcept = 0;
 
+	void notifyUpdate() noexcept;
+
 	/**
 	 * @brief Registers a listener that is notified (operator()()) when
 	 *	the Buffer requires a graphics update.
@@ -44,6 +46,10 @@ protected:
 
 // Implementations
 
+inline void pg::Buffer::notifyUpdate() noexcept
+{
+	signalUpdate();
+}
 template <typename Listener> inline void
 pg::Buffer::registerUpdateListener(Listener listener) const noexcept
 {

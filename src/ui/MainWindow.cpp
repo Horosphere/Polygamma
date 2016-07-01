@@ -13,10 +13,11 @@
 #include <QResource>
 #include <QVBoxLayout>
 
-#include "ui.hpp"
 #include "DialogPreferences.hpp"
 #include "Terminal.hpp"
 #include "editors/EditorSingular.hpp"
+#include "ui.hpp"
+#include "util/actions.hpp"
 
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
@@ -40,10 +41,14 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	menuFile->addAction(actionFileImport);
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
-	ScriptAction* actionEditSummon = new ScriptAction(Script("print('summon')"), "Summon", this);
+	ScriptAction* actionEditSummon = new ScriptAction("print('summon')", "Summon", this);
 	connect(actionEditSummon, &ScriptAction::execute,
-	        terminal, &Terminal::onExecute);
+	        this, &MainWindow::onExecute);
 	menuEdit->addAction(actionEditSummon);
+	ScriptAction* actionEditSilence = new ScriptAction("pg.silence(pg.kernel.buffers[%1])", "Silence", this);
+	connect(actionEditSilence, &ScriptAction::execute,
+	        this, &MainWindow::onExecute);
+	menuEdit->addAction(actionEditSilence);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
 	// Menu end
@@ -203,3 +208,13 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 			});
 	
 }
+
+void pg::MainWindow::onExecute(QString const& script)
+{
+	assert(currentEditor != nullptr);
+
+	std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
+
+	terminal->onExecute(Script(script.arg(index).toStdString()));
+}
+

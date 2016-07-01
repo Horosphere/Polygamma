@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 
+#include "../core/python.hpp"
 #include "../core/polygamma.hpp"
 #include "../core/Buffer.hpp"
 #include "../math/Vector.hpp"
@@ -45,27 +46,40 @@ public:
 
 	/**
 	 * Exposed to Python
-	 * @brief Sets a selection on the channel given. Only one selection can exist
-	 *	on a channel at a time.
+	 * @brief Sets a selection on every channel.
 	 */
-	void select(std::size_t channel, std::size_t begin, std::size_t end);
+	void select(std::size_t begin, std::size_t end) throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * @brief Sets a selection on the channel given. Only one selection can exist
 	 *	on a channel at a time.
 	 */
-	void select(std::size_t channel, AudioInterval selection);
+	void select(std::size_t channel, std::size_t begin, std::size_t end)
+		throw(PythonException);
+	/**
+	 * Exposed to Python
+	 * @brief Sets a selection on the channel given. Only one selection can exist
+	 *	on a channel at a time.
+	 */
+	void select(std::size_t channel, AudioInterval selection)
+		throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * Has the same effect as select(channel, std::make_pair(0, 0));
 	 * @brief Remove the selection on the channel.
 	 */
-	void clearSelect(std::size_t channel);
+	void clearSelect();
+	/**
+	 * Exposed to Python
+	 * Has the same effect as select(channel, std::make_pair(0, 0));
+	 * @brief Remove the selection on the channel.
+	 */
+	void clearSelect(std::size_t channel) throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * @brief Obtain the selection on the given channel.
 	 */
-	AudioInterval getSelection(std::size_t channel) const;
+	AudioInterval getSelection(std::size_t channel) const throw(PythonException);
 
 	std::size_t sampleRate;
 private:
@@ -122,27 +136,57 @@ pg::BufferSingular::getAudioChannel(std::size_t index) const
 	return &audio[index];
 }
 inline void
-pg::BufferSingular::select(std::size_t channel,
-		std::size_t begin, std::size_t end)
+pg::BufferSingular::select(std::size_t begin, std::size_t end)
+	throw(PythonException)
 {
+	if (begin > end || end >= nAudioSamples())
+		throw PythonException{"Sample index out of range", PythonException::IndexError};
+	for (auto& selection: selections)
+		selection = std::make_pair(begin, end);
+	signalUpdate();
+}
+inline void
+pg::BufferSingular::select(std::size_t channel,
+		std::size_t begin, std::size_t end) throw(PythonException)
+{
+	if (channel >= nAudioChannels())
+		throw PythonException{"Channel index out of range", PythonException::IndexError};
+	if (begin > end || end >= nAudioSamples())
+		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	selections[channel] = std::make_pair(begin, end);
 	signalUpdate();
 }
 inline void
 pg::BufferSingular::select(std::size_t channel, AudioInterval selection)
+	throw(PythonException)
 {
+	if (channel >= nAudioChannels())
+		throw PythonException{"Channel index out of range", PythonException::IndexError};
+	if (selection.first > selection.second|| selection.second >= nAudioSamples())
+		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	selections[channel] = selection;
 	signalUpdate();
 }
 inline void
-pg::BufferSingular::clearSelect(std::size_t channel)
+pg::BufferSingular::clearSelect()
 {
+	for (auto& selection: selections)
+		selection = std::make_pair(0, 0);
+	signalUpdate();
+}
+inline void
+pg::BufferSingular::clearSelect(std::size_t channel) throw(PythonException)
+{
+	if (channel >= nAudioChannels())
+		throw PythonException{"Channel index out of range", PythonException::IndexError};
 	selections[channel] = std::make_pair(0, 0);
 	signalUpdate();
 }
 inline pg::BufferSingular::AudioInterval
-pg::BufferSingular::getSelection(std::size_t channel) const
+pg::BufferSingular::getSelection(std::size_t channel) const throw(PythonException)
 {
+	if (channel >= nAudioChannels())
+		throw PythonException{"Channel index out of range", PythonException::IndexError};
 	return selections[channel];
 }
 inline bool pg::isEmpty(BufferSingular::AudioInterval const& ai) noexcept

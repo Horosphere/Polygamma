@@ -16,9 +16,12 @@ Configuration::Colour32 qColorToABGR(QColor);
 QString abgrToString(Configuration::Colour32);
 
 /**
- * Polygamma implements audio display using fixed-point floating points. The
+ * This is set to 1 since fixed point numbers don't work very well with Ticked
+ * Axis (ui/util/Axis.hpp)
+ *
+ * Polygamma implements audio display using fixed-point numbers. The
  * value 1/UI_SAMPLE_DISPLAY_WIDTH represents the smallest number while drawing.
- * The fixed-point floating point is emulated.
+ * The fixed-point decimal is emulated.
  *
  * While drawing waveforms, the "ranges" (represented by Interval<int64_t>s) are
  * controlled so that they always have greater or equal length comparing to the
@@ -29,7 +32,7 @@ QString abgrToString(Configuration::Colour32);
  * @brief UI_SAMPLE_DISPLAY_WIDTH The width in pixels between two samples while
  *     plotting audio.
  */
-constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 32;
+constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 1;
 
 
 } // namespace pg

@@ -70,6 +70,7 @@ private Q_SLOTS:
 	 */
 	void onExecute(Script const&);
 
+
 private:
 	/**
 	 * @brief Called when the log has been updated. This slot is connected to

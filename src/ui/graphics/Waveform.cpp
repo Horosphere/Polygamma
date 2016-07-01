@@ -11,15 +11,17 @@
 pg::Waveform::Waveform(BufferSingular const* const buffer,
                        std::size_t channelId,
                        QWidget* parent): Viewport2(parent),
-  buffer(buffer), channelId(channelId),
+	buffer(buffer), channelId(channelId),
 	channel(buffer->getAudioChannel(channelId))
 {
 	setDragging(true, false);
 	setZoomFac(1.1, 1.0);
 	setSelecting(true, false);
-	
-	setMaximumRange(0, ((long) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
-					0, height());
+
+	// In the past this was multiplied by UI_SAMPLE_DISPLAY_WIDTH to mimic
+	// floating point
+	setMaximumRange(0, ((long) channel->getSize() - 1) / UI_SAMPLE_DISPLAY_WIDTH,
+	                0, height());
 	maximise();
 }
 
@@ -91,7 +93,7 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 			nextSampleY = (int)((1.0 - (*channel)[i + 1]) * 0.5 * height());
 
 			painter.drawLine(thisSampleX, thisSampleY,
-			                     nextSampleX, nextSampleY);
+			                 nextSampleX, nextSampleY);
 		}
 	}
 

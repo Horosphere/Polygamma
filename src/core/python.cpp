@@ -1,8 +1,11 @@
 #include "python.hpp"
 
+#include <cassert>
+
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "Kernel.hpp"
+#include "../singular/audio.hpp"
 #include "../singular/BufferSingular.hpp"
 
 namespace pg
@@ -16,6 +19,12 @@ void exceptionTranslator(pg::PythonException const& exc)
 {
 	switch (exc.type)
 	{
+	case pg::PythonException::IndexError:
+		PyErr_SetString(PyExc_IndexError, exc.str.c_str());
+		break;
+	case pg::PythonException::ValueError:
+		PyErr_SetString(PyExc_ValueError, exc.str.c_str());
+		break;
 	case pg::PythonException::RuntimeError:
 		PyErr_SetString(PyExc_RuntimeError, exc.str.c_str());
 		break;
@@ -23,6 +32,7 @@ void exceptionTranslator(pg::PythonException const& exc)
 		PyErr_SetString(PyExc_IOError, exc.str.c_str());
 		break;
 	default:
+		assert(false && "Unable to translate Python exception");
 		PyErr_SetString(PyExc_SystemError,
 		                ("Unable to translate: " + exc.str).c_str());
 	}
@@ -79,13 +89,20 @@ BOOST_PYTHON_MODULE(pg)
 	  "BufferSingular", no_init)
 	.def_readonly("nAudioChannels", &pg::BufferSingular::nAudioChannels)
 	.def_readonly("nAudioSamples", &pg::BufferSingular::nAudioSamples)
+	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t))
+	     &pg::BufferSingular::select)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t, std::size_t))
 	     &pg::BufferSingular::select)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::BufferSingular::AudioInterval))
 	     &pg::BufferSingular::select)
-	.def("clearSelect", &pg::BufferSingular::clearSelect)
+	.def("clearSelect", (void (pg::BufferSingular::*)())
+			&pg::BufferSingular::clearSelect)
+	.def("clearSelect", (void (pg::BufferSingular::*)(std::size_t))
+			&pg::BufferSingular::clearSelect)
 	.def("getSelection", &pg::BufferSingular::getSelection);
 
+	// BufferSingular associated functions
+	def("silence", (void (*)(pg::BufferSingular*)) &pg::silence);
 
 	class_<pg::Kernel, boost::noncopyable>("Kernel", no_init)
 	.def_readonly("buffers", &pg::Kernel::getBuffers)

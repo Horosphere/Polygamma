@@ -21,6 +21,8 @@ struct PythonException
 {
 	enum Type
 	{
+		IndexError,
+		ValueError,
 		RuntimeError,
 		IOError
 	};
@@ -35,6 +37,7 @@ struct PythonException
 constexpr char PYTHON_KERNEL[] = "pg.kernel";
 
 } // namespace pg
+
 
 // Implementations
 

@@ -39,6 +39,7 @@ qt5_add_resources(QtCompiledResources resources/Polygamma.qrc)
 # Auto-generated. Do not edit. All changes will be undone
 set(SourceFiles
     src/main.cpp
+    src/singular/audio.cpp
     src/singular/BufferSingular.cpp
     src/core/Kernel.cpp
     src/core/python.cpp
@@ -52,6 +53,7 @@ set(SourceFiles
     src/ui/DialogPreferences.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
     src/ui/util/ColourButton.cpp
+    src/ui/util/actions.cpp
     src/ui/util/Axis.cpp
     src/ui/editors/EditorSingular.cpp
     src/ui/editors/Editor.cpp
@@ -68,6 +70,7 @@ set(QObjectHeaders
     src/ui/util/SyntaxHighlighterPython.hpp
     src/ui/util/Axis.hpp
     src/ui/util/ColourButton.hpp
+    src/ui/util/actions.hpp
     src/ui/editors/Editor.hpp
     src/ui/editors/EditorSingular.hpp
     src/ui/graphics/Viewport2.hpp

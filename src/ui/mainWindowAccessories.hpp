@@ -8,24 +8,10 @@
 
 // Accessories for the MainWindow.
 // Contents:
-// ScriptAction: QAction that has an associated command
 // LineEditScript: QLineEdit that emits a signal upon the key combination
 //	Shift+Enter
 namespace pg
 {
-
-class ScriptAction final: public QAction
-{
-	Q_OBJECT
-public:
-	ScriptAction(Script const&, QObject* parent = 0);
-	ScriptAction(Script const&, QString const&, QObject* parent = 0);
-	ScriptAction(Script const&, QIcon const&, QString const&, QObject* parent = 0);
-
-	Script command;
-Q_SIGNALS:
-	void execute(Script const&);
-};
 
 class LineEditScript final: public QLineEdit
 {
@@ -40,7 +26,6 @@ protected:
 	virtual void keyPressEvent(QKeyEvent*) override;
 
 };
-
 
 } // namespace pg
 

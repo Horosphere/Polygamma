@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QDebug>
 
+#include "../ui.hpp"
 #include "../util/Axis.hpp"
 
 pg::EditorSingular::EditorSingular(Kernel* const kernel,
@@ -36,15 +37,14 @@ void pg::EditorSingular::onUpdateAudioFormat()
 	}
 	delete[] waveforms;
 
+	std::size_t const nAudioChannels = buffer->nAudioChannels();
+
 	AxisInterval* axis = new AxisInterval(this);
-	qDebug() << buffer->sampleRate;
-	qDebug() << "Test" << timecodeCallback(buffer->sampleRate)(22055 + 44100 * 50 + 44100 * 60 * 2, 1);
 	axis->setIntervalLabelingFunction(timecodeCallback(buffer->sampleRate));
 	axis->interval.begin = 0;
 	axis->interval.end = buffer->nAudioSamples();
 	mainLayout->addWidget(axis);
 
-	std::size_t const nAudioChannels = buffer->nAudioChannels();
 	waveforms = new Waveform*[nAudioChannels];
 	for (std::size_t i = 0; i < nAudioChannels; ++i)
 	{
@@ -85,23 +85,18 @@ pg::EditorSingular::timecodeCallback(int sampleRate) noexcept
 		if (mod % sampleRate == 0)
 		{
 			base *= mod / sampleRate; // base is in seconds
-			result = QString::number(base % 60).rightJustified(2, '0'); // Seconds
-			base /= 60; // base is in minutes
-			if (base) result.prepend(QString::number(base % 60).rightJustified(2, '0') + ':');
-			base /= 60; // base is in hours
-			if (base) result.prepend(QString::number(base) + ':');
 		}
 		else
 		{
 			base *= mod; // base is in samples
-			result = QString::number(base % sampleRate).rightJustified(5, '0');
+			result = ':' + QString::number(base % sampleRate).rightJustified(5, '0');
 			base /= sampleRate; // base is in seconds
-			result.prepend(QString::number(base % 60).rightJustified(2, '0') + ':');
-			base /= 60; // base is in minutes
-			if (base) result.prepend(QString::number(base % 60).rightJustified(2, '0') + ':');
-			base /= 60; // base is in hours
-			if (base) result.prepend(QString::number(base) + ':');
 		}
+		result.prepend(QString::number(base % 60).rightJustified(2, '0'));
+		base /= 60; // base is in minutes
+		if (base) result.prepend(QString::number(base % 60).rightJustified(2, '0') + ':');
+		base /= 60; // base is in hours
+		if (base) result.prepend(QString::number(base) + ':');
 		return result;
 	};
 }
