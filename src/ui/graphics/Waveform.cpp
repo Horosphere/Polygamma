@@ -18,7 +18,7 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
 	setZoomFac(1.1, 1.0);
 	setSelecting(true, false);
 	
-	setMaximumRange(0, ((int64_t) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
+	setMaximumRange(0, ((long) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
 					0, height());
 	maximise();
 
@@ -104,7 +104,5 @@ void pg::Waveform::paintEvent(QPaintEvent*)
 		int begin = axialToRasterX(selection.first);
 		int end = axialToRasterX(selection.second);
 		painter.fillRect(QRect(begin, 0, end - begin, height()), Qt::white);
-		
 	}
-
 }

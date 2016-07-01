@@ -20,9 +20,6 @@ pg::Viewport2::Viewport2(QWidget* parent) : QWidget(parent),
 {
 	setMinimumSize(1, 1); // Prevent division by 0
 }
-pg::Viewport2::~Viewport2()
-{
-}
 
 void pg::Viewport2::mousePressEvent(QMouseEvent* event)
 {
@@ -51,12 +48,12 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 		if (isDraggableX) // Dragging on X enabled
 		{
 			rangeX = translate(rangeX, maxRangeX,
-			                   (int64_t)((dragPos.x() - event->pos().x()) * dragFacX));
+			                   (long)((dragPos.x() - event->pos().x()) * dragFacX));
 		}
 		if (isDraggableY) // Dragging on Y enabled
 		{
 			rangeY = translate(rangeY, maxRangeY,
-			                   (int64_t)((dragPos.y() - event->pos().y()) * dragFacY));
+			                   (long)((dragPos.y() - event->pos().y()) * dragFacY));
 		}
 
 		if (isDraggable)
@@ -88,12 +85,12 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 		{
 			if (isSelectibleX)
 			{
-				Interval<int64_t> iX(rasterToAxialX(rubberBand->x()),
+				Interval<long> iX(rasterToAxialX(rubberBand->x()),
 				                     rasterToAxialX(rubberBand->x() + selection.right()));
 				iX = clamp(iX, maxRangeX.begin, maxRangeX.end);
 				if (isSelectibleY)
 				{
-					Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+					Interval<long> iY(rasterToAxialY(rubberBand->y()),
 					                     rasterToAxialY(rubberBand->y() + selection.bottom()));
 					iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
 					Q_EMIT selectionXY(iX, iY);
@@ -103,7 +100,7 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 			}
 			else
 			{
-				Interval<int64_t> iY(rasterToAxialY(rubberBand->y()),
+				Interval<long> iY(rasterToAxialY(rubberBand->y()),
 				                     rasterToAxialY(rubberBand->y() + selection.bottom()));
 				iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
 				Q_EMIT selectionY(iY);
@@ -121,7 +118,7 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 	{
 		if (zoomFacX != 1.0) // Zoom enabled
 		{
-			int64_t axialX = rasterToAxialX(event->x());
+			long axialX = rasterToAxialX(event->x());
 			double fac = std::pow(zoomFacX, steps);
 			if (length(rangeX) * fac > width())
 			{
@@ -131,7 +128,7 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 		}
 		if (zoomFacY != 1.0)
 		{
-			int64_t axialY = rasterToAxialY(event->y());
+			long axialY = rasterToAxialY(event->y());
 			double fac = std::pow(zoomFacY, steps);
 			if (length(rangeX) * fac > height())
 			{
@@ -171,9 +168,9 @@ void pg::Viewport2::resizeEvent(QResizeEvent* event)
 	// Recalculate ranges
 	if (event->oldSize().isValid())
 	{
-		int64_t resultXLen = length(rangeX) * event->size().width()
+		long resultXLen = length(rangeX) * event->size().width()
 		                     / event->oldSize().width();
-		int64_t resultYLen = length(rangeX) * event->size().height()
+		long resultYLen = length(rangeX) * event->size().height()
 		                     / event->oldSize().height();
 
 		if (resultXLen > length(maxRangeX))
@@ -187,13 +184,3 @@ void pg::Viewport2::resizeEvent(QResizeEvent* event)
 
 }
 
-void pg::Viewport2::setRangeX(Interval<int64_t> range)
-{
-	rangeX = range;
-	repaint();
-}
-void pg::Viewport2::setRangeY(Interval<int64_t> range)
-{
-	rangeY = range;
-	repaint();
-}

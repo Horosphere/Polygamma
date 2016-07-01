@@ -52,6 +52,7 @@ set(SourceFiles
     src/ui/DialogPreferences.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
     src/ui/util/ColourButton.cpp
+    src/ui/util/Axis.cpp
     src/ui/editors/EditorSingular.cpp
     src/ui/editors/Editor.cpp
     src/ui/graphics/Viewport2.cpp
@@ -65,6 +66,7 @@ set(QObjectHeaders
     src/ui/MainWindow.hpp
     src/ui/Terminal.hpp
     src/ui/util/SyntaxHighlighterPython.hpp
+    src/ui/util/Axis.hpp
     src/ui/util/ColourButton.hpp
     src/ui/editors/Editor.hpp
     src/ui/editors/EditorSingular.hpp

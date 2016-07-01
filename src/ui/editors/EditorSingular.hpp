@@ -23,7 +23,7 @@ public:
 
 private Q_SLOTS:
 	void onUpdateAudioFormat();
-	void onSelection(Interval<int64_t>, std::size_t index);
+	void onSelection(Interval<long>, std::size_t index);
 
 private:
 	BufferSingular const* const buffer;

@@ -1,9 +1,11 @@
 #include "EditorSingular.hpp"
 
 #include <string>
+
 #include <QLineEdit>
 #include <QDebug>
 
+#include "../util/Axis.hpp"
 
 
 pg::EditorSingular::EditorSingular(Kernel* const kernel,
@@ -35,22 +37,26 @@ void pg::EditorSingular::onUpdateAudioFormat()
 	}
 	delete[] waveforms;
 
+	AxisInterval* axis = new AxisInterval(this);
+	mainLayout->addWidget(axis);
+
 	std::size_t const nAudioChannels = buffer->nAudioChannels();
 	waveforms = new Waveform*[nAudioChannels];
 	for (std::size_t i = 0; i < nAudioChannels; ++i)
 	{
 		waveforms[i] = new Waveform(buffer, i, this);
 		connect(waveforms[i], &Waveform::selectionX,
-		        this, [this, i](Interval<int64_t> selection)
+		        this, [this, i](Interval<long> selection)
 		{
 			this->onSelection(selection, i);
 		});
 		mainLayout->addWidget(waveforms[i]);
 	}
-
+	connect(waveforms[0], &Viewport2::rangeXChanged,
+			axis, &AxisInterval::onIntervalChanged);
 }
 
-void pg::EditorSingular::onSelection(Interval<int64_t> selection,
+void pg::EditorSingular::onSelection(Interval<long> selection,
 		std::size_t index)
 {
 	std::string string = std::string(PYTHON_KERNEL) + ".buffers[" +

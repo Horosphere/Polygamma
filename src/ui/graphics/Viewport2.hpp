@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+#include <QPen>
 #include <QRubberBand>
 #include <QWidget>
 
@@ -14,16 +15,22 @@ namespace pg
 /**
  * @brief The Viewport2 class is the base class for editors. It allows
  * navigation by MMB + drag (pan) and scroll (zoom). Viewport2 stores the
- * "view" in two \ref pg::Interval<int64_t> objects which represent the
+ * "view" in two \ref pg::Interval<long> objects which represent the
  * "view coordinate"
  */
 class Viewport2: public QWidget
 {
 	Q_OBJECT
-public:
 
+	Q_PROPERTY(QPen penGrid READ getPenGrid WRITE setPenGrid)
+	Q_PROPERTY(QPen penGridMinor READ getPenGridMinor WRITE setPenGridMinor)
+public:
 	explicit Viewport2(QWidget* parent = 0);
-	virtual ~Viewport2();
+
+	QPen getPenGrid() const noexcept { return penGrid; }
+	void setPenGrid(QPen p) noexcept { penGrid = p; }
+	QPen getPenGridMinor() const noexcept { return penGridMinor; }
+	void setPenGridMinor(QPen p) noexcept { penGridMinor = p; }
 
 	void setDragging(bool dragX, bool dragY) noexcept;
 
@@ -34,8 +41,8 @@ public:
 	 * @param y The coefficient in the y direction. Must be >= 1.
 	 */
 	void setZoomFac(double x, double y) noexcept;
-	void setMaximumRange(int64_t x0, int64_t x1,
-	                     int64_t y0, int64_t y1) noexcept;
+	void setMaximumRange(long x0, long x1,
+	                     long y0, long y1) noexcept;
 	/**
 	 * @brief Set the Viewport to the maximum range.
 	 */
@@ -43,9 +50,9 @@ public:
 
 	/**
 	 * The user can draw a selection rectangle by holding LMB. The signals
-	 * (true, false): selectionX(Interval<int64_t>)
-	 * (false, true): selectionY(Interval<int64_t>)
-	 * (true, true): selectionXY(Interval<int64_t>, Interval<int64_t>)
+	 * (true, false): selectionX(Interval<long>)
+	 * (false, true): selectionY(Interval<long>)
+	 * (true, true): selectionXY(Interval<long>, Interval<long>)
 	 * will be emitted when the selection is made.
 	 * @brief Enables the user to draw a selection box on the two dimensions.
 	 */
@@ -54,10 +61,10 @@ public:
 protected:
 
 	// The following methods convert raster coordinates to axial coordinates
-	int64_t rasterToAxialX(int) const noexcept;
-	int axialToRasterX(int64_t) const noexcept;
-	int64_t rasterToAxialY(int) const noexcept;
-	int axialToRasterY(int64_t) const noexcept;
+	long rasterToAxialX(int) const noexcept;
+	int axialToRasterX(long) const noexcept;
+	long rasterToAxialY(int) const noexcept;
+	int axialToRasterY(long) const noexcept;
 
 	// Events (Inherited from QWidget)
 	virtual void   mousePressEvent(QMouseEvent*) override;
@@ -66,22 +73,22 @@ protected:
 	virtual void        wheelEvent(QWheelEvent*) override;
 	virtual void       resizeEvent(QResizeEvent*) override;
 
-	Interval<int64_t> rangeX, rangeY;
+	Interval<long> rangeX, rangeY;
 
 Q_SIGNALS:
-	void rangeXChanged(Interval<int64_t>);
-	void rangeYChanged(Interval<int64_t>);
-	void selectionX(Interval<int64_t>);
-	void selectionY(Interval<int64_t>);
-	void selectionXY(Interval<int64_t>, Interval<int64_t>);
+	void rangeXChanged(Interval<long>);
+	void rangeYChanged(Interval<long>);
+	void selectionX(Interval<long>);
+	void selectionY(Interval<long>);
+	void selectionXY(Interval<long>, Interval<long>);
 
 
 public Q_SLOTS:
-	void setRangeX(Interval<int64_t>);
-	void setRangeY(Interval<int64_t>);
+	void setRangeX(Interval<long>);
+	void setRangeY(Interval<long>);
 
 private:
-
+	QPen penGrid, penGridMinor;
 	// The dragging factors here are calculated based on the ratio of axial
 	// width to raster width to increase the precision.
 	double dragFacX, dragFacY;
@@ -91,7 +98,7 @@ private:
 	bool isZoomable;
 	bool isSelectibleX, isSelectibleY;
 
-	Interval<int64_t> maxRangeX, maxRangeY;
+	Interval<long> maxRangeX, maxRangeY;
 
 	// Dynamic variables
 	QPoint dragPos;
@@ -120,11 +127,11 @@ inline void pg::Viewport2::setZoomFac(double x, double y) noexcept
 	zoomFacY = y;
 	isZoomable = zoomFacX != 1.0 || zoomFacY != 1.0;
 }
-inline void pg::Viewport2::setMaximumRange(int64_t x0, int64_t x1,
-    int64_t y0, int64_t y1) noexcept
+inline void pg::Viewport2::setMaximumRange(long x0, long x1,
+    long y0, long y1) noexcept
 {
-	maxRangeX = Interval<int64_t>(x0, x1);
-	maxRangeY = Interval<int64_t>(y0, y1);
+	maxRangeX = Interval<long>(x0, x1);
+	maxRangeY = Interval<long>(y0, y1);
 }
 inline void pg::Viewport2::setSelecting(bool x, bool y) noexcept
 {
@@ -144,22 +151,32 @@ inline void pg::Viewport2::maximise() noexcept
 	rangeY = maxRangeY;
 }
 
-inline int64_t pg::Viewport2::rasterToAxialX(int v) const noexcept
+inline long pg::Viewport2::rasterToAxialX(int v) const noexcept
 {
 	return v * length(rangeX) / width() + rangeX.begin;
 }
-inline int pg::Viewport2::axialToRasterX(int64_t v) const noexcept
+inline int pg::Viewport2::axialToRasterX(long v) const noexcept
 {
 	return (int)((v - rangeX.begin) * width() / length(rangeX));
 }
-inline int64_t pg::Viewport2::rasterToAxialY(int v) const noexcept
+inline long pg::Viewport2::rasterToAxialY(int v) const noexcept
 {
 	return v * length(rangeY) / width() + rangeY.begin;
 }
-inline int pg::Viewport2::axialToRasterY(int64_t v) const noexcept
+inline int pg::Viewport2::axialToRasterY(long v) const noexcept
 {
 	return (int)((v - rangeY.begin) * height() / length(rangeY));
 }
 
+inline void pg::Viewport2::setRangeX(Interval<long> range)
+{
+	rangeX = range;
+	repaint();
+}
+inline void pg::Viewport2::setRangeY(Interval<long> range)
+{
+	rangeY = range;
+	repaint();
+}
 #endif // !_POLYGAMMA_UI_GRAPHICS_VIEWPORT2_HPP__
 

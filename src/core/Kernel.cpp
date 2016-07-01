@@ -22,7 +22,8 @@ pg::Kernel::~Kernel()
 void pg::Kernel::start()
 {
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
-	// accessed in python with pg.kernel.
+	// accessed in python with PYTHON_KERNEL
+	// I don't know why this cannot be std::ref
 	boost::python::import("pg").attr("kernel") = boost::ref(*this);
 
 	// Redirects Script stdout and stderr streams to the terminal

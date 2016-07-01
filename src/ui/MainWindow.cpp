@@ -161,13 +161,16 @@ void pg::MainWindow::updateUIElements()
 	terminal->input->setFont(fontMonospace);
 	terminal->input->setTabStopWidth(tabWidth);
 
-	auto boolToString = [](bool b) -> QString { return b ? "true" : "false"; };
+	/*
+	 * "Bool To String" Converts a bool to a QString for using the stylesheet.
+	 */
+	auto bts = [](bool b) -> QString { return b ? "true" : "false"; };
 	qApp->setStyleSheet(
 	  "QMainWindow, QDialog, QDockWidget, QStatusBar {"
 	  "background-color: " + abgrToString(config->uiBG) + ";"
 	  "}"
 	  "pg--Terminal {"
-	  "qproperty-showSystemLevel: " + boolToString(config->uiTerminalShowSystemLevel) + ";"
+	  "qproperty-showSystemLevel: " + bts(config->uiTerminalShowSystemLevel) + ";"
 	  "}"
 	  "pg--Waveform { "
 	  "qproperty-colourBG: " + abgrToString(config->uiWaveformBG) + ";"
