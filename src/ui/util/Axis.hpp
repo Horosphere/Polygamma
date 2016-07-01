@@ -27,7 +27,9 @@ class Axis: public QWidget
 	 */
 	Q_PROPERTY(Qt::Edge orientation READ getOrientation WRITE setOrientation)
 	/**
-	 * Base for a logarithm plot. If it is 0 then a linear plot is produced
+	 * Base for a logarithm plot. If it is 0 then a linear plot is produced.
+	 * Negative values result in the axis being inverted. The absolute value of
+	 * logBase must be greater than 1.
 	 */
 	Q_PROPERTY(double logBase READ getLogBase WRITE setLogBase)
 	/**
@@ -68,6 +70,7 @@ public:
 	// logBase = 0 is equivalent to linear
 	void setLogBase(double d) noexcept
 	{
+		assert(d > 1.0 || d < -1.0 || d == 0.0);
 		invLogBase = d == 0.0 ? 0.0 : 1.0 / d;
 	}
 	double getLogBase() const noexcept
@@ -124,7 +127,8 @@ public:
 	}
 
 	/**
-	 * \ref ticks ticks will be drawn between the position raster0 and raster1.
+	 * \ref nSegments segments will be drawn between the position raster0 and
+	 * raster1. Emits a recalculationComplete() signal.
 	 * @param raster0 Position of marker 0
 	 * @param raster1 Position of marker 1
 	 * @param nSegments Number of segments. a.k.a. number of ticks - 1.
@@ -143,6 +147,10 @@ public:
 
 	std::vector<std::pair<int, QString>> ticks;
 	std::vector<int> ticksMinor;
+
+Q_SIGNALS:
+	void recalculationComplete();
+	
 protected:
 	virtual void paintEvent(QPaintEvent*) final;
 
@@ -163,7 +171,7 @@ private:
 
 };
 
-class AxisInterval final: public Axis
+class AxisInterval: public Axis
 {
 	Q_OBJECT
 
@@ -190,9 +198,13 @@ public:
 	void setModuli(std::vector<long> moduli) noexcept;
 	// Arguments: 1. Multiplier 2.Modulus
 	void setIntervalLabelingFunction(std::function<QString (long, long)>) noexcept;
+	void setIntervalLabelingFunction(std::function<std::string (long, long)>) noexcept;
+
+	Interval<long> interval;
+
 public Q_SLOTS:
 	/**
-	 * Update the interval
+	 * Update the interval. Calls recalculate()
 	 */
 	void onIntervalChanged(Interval<long>) noexcept;
 	/**
@@ -210,7 +222,6 @@ private:
 
 	std::vector<long> moduli;
 
-	Interval<long> interval;
 	// Calculated
 	long modulus;
 	long tLow;
@@ -249,6 +260,15 @@ pg::AxisInterval::setIntervalLabelingFunction(std::function<QString (long, long)
 	auto lambda = [this, f](int index) -> QString
 	{
 		return f(this->tLow + index, modulus);
+	};
+	setLabelingFunction(lambda);
+}
+inline void
+pg::AxisInterval::setIntervalLabelingFunction(std::function<std::string (long, long)> f) noexcept
+{
+	auto lambda = [this, f](int index) -> QString
+	{
+		return QString::fromStdString(f(this->tLow + index, this->modulus));
 	};
 	setLabelingFunction(lambda);
 }

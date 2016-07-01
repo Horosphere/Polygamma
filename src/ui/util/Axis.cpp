@@ -11,7 +11,7 @@ namespace pg
 {
 
 inline QString
-defaultLabelingFunction(double val) noexcept
+defaultLabelingFunction(int val) noexcept
 {
 	return QString::number(val);
 }
@@ -21,7 +21,7 @@ defaultLabelingFunction(double val) noexcept
 // Axis
 
 pg::Axis::Axis(QWidget* parent): QWidget(parent),
-	orientation(Qt::TopEdge), invLogBase(0.0), nTicksMinor(8),
+	orientation(Qt::TopEdge), invLogBase(0.0), nTicksMinor(3),
 	penTick(Qt::black, 2), penTickMinor(Qt::black), penText(Qt::black),
 	tickLength(12), tickLengthMinor(6), nSegments(0),
 	labelingFunction(defaultLabelingFunction)
@@ -55,11 +55,23 @@ pg::Axis::setMarks(int r0, int r1, int n)
 		{
 			if (invLogBase) // Logarithmic minor ticks
 			{
-				double dist = step;
-				for (int i = 0; i < nTicksMinor; ++i)
+				if (invLogBase > 0.0)
 				{
-					dist *= invLogBase;
-					ticksMinor.push_back((int)(dist + tick));
+					double dist = step;
+					for (int i = 0; i < nTicksMinor; ++i)
+					{
+						dist *= invLogBase;
+						ticksMinor.push_back((int)(dist + tick));
+					}
+				}
+				else
+				{
+					double dist = step;
+					for (int i = 0; i < nTicksMinor; ++i)
+					{
+						dist *= -invLogBase;
+						ticksMinor.push_back((int)(step - dist + tick));
+					}
 				}
 			}
 			else // Linear minor ticks
@@ -75,6 +87,8 @@ pg::Axis::setMarks(int r0, int r1, int n)
 		tick += step;
 		ticks.push_back(std::make_pair((int) tick, labelingFunction(i + 1)));
 	}
+	Q_EMIT recalculationComplete();
+	repaint();
 }
 
 void pg::Axis::paintEvent(QPaintEvent*)
@@ -164,6 +178,7 @@ void pg::Axis::paintEvent(QPaintEvent*)
 
 // AxisInterval
 pg::AxisInterval::AxisInterval(QWidget* parent): Axis(parent),
+	interval(0, effectiveLength()),
 	minTickWidth(150)
 {
 	setFixedHeight(30);
@@ -181,14 +196,14 @@ void pg::AxisInterval::recalculate()
 
 	long intervalLength = length(interval);
 
-	long modulus = 1;
+	modulus = 1;
 
 	long baseLength = l;
 	for (long const& m: moduli)
 	{
-	  if (baseLength * m / intervalLength > minTickWidth) break;
-	  baseLength *= m;
-	  modulus *= m;
+		if (baseLength * m / intervalLength > minTickWidth) break;
+		baseLength *= m;
+		modulus *= m;
 	}
 	while (baseLength / intervalLength < minTickWidth)
 	{
@@ -203,7 +218,6 @@ void pg::AxisInterval::recalculate()
 	setMarks((int)((tLow * modulus - interval.begin) * l / intervalLength),
 	         (int)((tHigh * modulus - interval.begin) * l / intervalLength),
 	         tHigh - tLow);
-	repaint();
 }
 
 void pg::AxisInterval::resizeEvent(QResizeEvent* event)

@@ -261,7 +261,7 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		*error = std::string("Unable to open codec");
 		return nullptr;
 	}
-	std::cout << "[IO]Found audio stream with the following information:"
+	std::cout << "[IO]Found audio stream:"
 			  << std::endl;
 	std::cout << "[IO]Channels: " << codecContext->channels
 			  << ", Sample rate: " << codecContext->sample_rate

@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include <QPainter>
 #include <QResizeEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -10,10 +11,12 @@
 
 pg::Viewport2::Viewport2(QWidget* parent) : QWidget(parent),
 	rangeX(0, width()), rangeY(0, height()),
+	colourBG(Qt::black), penGrid(Qt::gray, 2), penGridMinor(Qt::gray, 1),
 	dragFacX(0.0), dragFacY(0.0),
 	zoomFacX(1.0), zoomFacY(1.0),
 	isDraggable(false), isDraggableX(false), isDraggableY(false),
 	isZoomable(false), isSelectibleX(false), isSelectibleY(false),
+	axisX(nullptr), axisY(nullptr),
 
 	maxRangeX(0, width()), maxRangeY(0, height()),
 	dragging(false), rubberBand(nullptr)
@@ -60,7 +63,6 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 		{
 			dragPos = event->pos();
 			event->accept();
-			repaint();
 			Q_EMIT rangeXChanged(rangeX);
 			Q_EMIT rangeYChanged(rangeY);
 		}
@@ -105,6 +107,19 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 				iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
 				Q_EMIT selectionY(iY);
 			}
+		}
+		else
+		{
+			if (isSelectibleX)
+			{
+				if (isSelectibleY)
+					Q_EMIT selectionXY(Interval<long>(0, 0), Interval<long>(0, 0));
+				else
+					Q_EMIT selectionX(Interval<long>(0, 0));
+			}
+			else
+				Q_EMIT selectionY(Interval<long>(0, 0));
+		
 		}
 	}
 	event->accept();
@@ -155,7 +170,6 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 	if (isZoomable)
 	{
 		event->accept();
-		repaint();
 		Q_EMIT rangeXChanged(rangeX);
 		Q_EMIT rangeYChanged(rangeY);
 	}
@@ -184,3 +198,40 @@ void pg::Viewport2::resizeEvent(QResizeEvent* event)
 
 }
 
+void pg::Viewport2::paintEvent(QPaintEvent*)
+{
+	QPainter painter(this);
+	painter.fillRect(rect(), colourBG);
+	if (axisX)
+	{
+		painter.setPen(penGrid);
+		for (auto const& tick: axisX->ticks)
+			painter.drawLine(tick.first, 0, tick.first, height());
+		painter.setPen(penGridMinor);
+		for (auto const& tick: axisX->ticksMinor)
+			painter.drawLine(tick, 0, tick, height());
+	}
+	if (axisY)
+	{
+		painter.setPen(penGrid);
+		for (auto const& tick: axisY->ticks)
+			painter.drawLine(0, tick.first, width(), tick.first);
+		painter.setPen(penGridMinor);
+		for (auto const& tick: axisY->ticksMinor)
+			painter.drawLine(0, tick, width(), tick);
+	}
+}
+
+void pg::Viewport2::updateFromAxes()
+{
+	AxisInterval* ai = nullptr;
+	if ((ai = dynamic_cast<AxisInterval*>(axisX)))
+	{
+		rangeX = ai->interval;
+	}
+	if ((ai = dynamic_cast<AxisInterval*>(axisY)))
+	{
+		rangeY = ai->interval;
+	}
+	repaint();
+}

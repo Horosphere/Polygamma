@@ -7,6 +7,7 @@
 #include <QRubberBand>
 #include <QWidget>
 
+#include "../util/Axis.hpp"
 #include "../../math/Interval.hpp"
 
 namespace pg
@@ -22,11 +23,14 @@ class Viewport2: public QWidget
 {
 	Q_OBJECT
 
+	Q_PROPERTY(QColor colourBG READ getColourBG WRITE setColourBG)
 	Q_PROPERTY(QPen penGrid READ getPenGrid WRITE setPenGrid)
 	Q_PROPERTY(QPen penGridMinor READ getPenGridMinor WRITE setPenGridMinor)
 public:
 	explicit Viewport2(QWidget* parent = 0);
 
+	QColor getColourBG() const noexcept { return colourBG; }
+	void setColourBG(QColor c) noexcept { colourBG = c; }
 	QPen getPenGrid() const noexcept { return penGrid; }
 	void setPenGrid(QPen p) noexcept { penGrid = p; }
 	QPen getPenGridMinor() const noexcept { return penGridMinor; }
@@ -58,6 +62,9 @@ public:
 	 */
 	void setSelecting(bool, bool) noexcept;
 
+	void setAxisX(Axis*) noexcept;
+	void setAxisY(Axis*) noexcept;
+
 protected:
 
 	// The following methods convert raster coordinates to axial coordinates
@@ -72,10 +79,12 @@ protected:
 	virtual void mouseReleaseEvent(QMouseEvent*) override;
 	virtual void        wheelEvent(QWheelEvent*) override;
 	virtual void       resizeEvent(QResizeEvent*) override;
+	virtual void        paintEvent(QPaintEvent*) override;
 
 	Interval<long> rangeX, rangeY;
 
 Q_SIGNALS:
+	// Connect these signals to setRangeX and setRangeY to automatically repaint.
 	void rangeXChanged(Interval<long>);
 	void rangeYChanged(Interval<long>);
 	void selectionX(Interval<long>);
@@ -84,10 +93,17 @@ Q_SIGNALS:
 
 
 public Q_SLOTS:
+	// The following slots call repaint()
 	void setRangeX(Interval<long>);
 	void setRangeY(Interval<long>);
+	/**
+	 * @brief Automatically acquire the x and y intervals from the axes. The axes
+	 *	must be instances of AxisInterval for this to work
+	 */
+	void updateFromAxes();
 
 private:
+	QColor colourBG;
 	QPen penGrid, penGridMinor;
 	// The dragging factors here are calculated based on the ratio of axial
 	// width to raster width to increase the precision.
@@ -97,7 +113,8 @@ private:
 	bool isDraggableX, isDraggableY;
 	bool isZoomable;
 	bool isSelectibleX, isSelectibleY;
-
+	Axis* axisX;
+	Axis* axisY;	
 	Interval<long> maxRangeX, maxRangeY;
 
 	// Dynamic variables
@@ -144,6 +161,14 @@ inline void pg::Viewport2::setSelecting(bool x, bool y) noexcept
 		delete rubberBand;
 		rubberBand = nullptr;
 	}
+}
+inline void pg::Viewport2::setAxisX(Axis* a) noexcept
+{
+	axisX = a;
+}
+inline void pg::Viewport2::setAxisY(Axis* a) noexcept
+{
+	axisY = a;
 }
 inline void pg::Viewport2::maximise() noexcept
 {

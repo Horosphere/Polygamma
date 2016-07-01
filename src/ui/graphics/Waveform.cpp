@@ -21,13 +21,12 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
 	setMaximumRange(0, ((long) channel->getSize() - 1) * UI_SAMPLE_DISPLAY_WIDTH + 1,
 					0, height());
 	maximise();
-
 }
 
-void pg::Waveform::paintEvent(QPaintEvent*)
+void pg::Waveform::paintEvent(QPaintEvent* event)
 {
+	Viewport2::paintEvent(event);
 	QPainter painter(this);
-	painter.fillRect(rect(), colourBackground); 
 
 	// Decides drawing mode. If the avaliable pixel per sample is less than
 	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform

@@ -10,7 +10,7 @@ namespace pg
 /**
  * This class implements a colour picker 
  */
-class ColourButton final: public QPushButton
+class ColourButton: public QPushButton
 {
 	Q_OBJECT
 

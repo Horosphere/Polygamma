@@ -32,7 +32,7 @@ find_package(Qt5Widgets REQUIRED)
 #add_definitions(-DQT_CONSOLE)
 add_definitions(-DQT_NO_KEYWORDS)
 
-set(QtResources resources/Polygamma.qrc)
+qt5_add_resources(QtCompiledResources resources/Polygamma.qrc)
 
 # Do not remove the following auto-generated signatures
 
@@ -77,7 +77,6 @@ set(QObjectHeaders
 # Auto-generated end
 
 qt5_wrap_cpp(QtMOCSourceFiles ${QObjectHeaders})
-qt5_add_resources(QtCompiledResources ${QtResources})
 
 add_executable(Polygamma
 	${SourceFiles}

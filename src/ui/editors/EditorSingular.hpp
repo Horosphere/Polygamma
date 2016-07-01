@@ -14,8 +14,9 @@ class EditorSingular final: public Editor
 {
 	Q_OBJECT
 public:
-	EditorSingular(Kernel* const kernel, BufferSingular const* const buffer,
-	               QWidget* parent = 0);
+	explicit EditorSingular(Kernel* const kernel,
+	                        BufferSingular const* const buffer,
+	                        QWidget* parent = 0);
 
 	virtual bool saveAs(QString* const error) override;
 	virtual BufferSingular const* getBuffer() const noexcept override;
@@ -26,6 +27,15 @@ private Q_SLOTS:
 	void onSelection(Interval<long>, std::size_t index);
 
 private:
+	/**
+	 * @brief Generates a callback for AxisInterval tick labeling.
+	 * @return A function that when supplied with two numbers, format their
+	 *  product into a timecode. The second number determines whether to show
+	 *  sample index or not.
+	 */
+	static std::function<QString(long, long)>
+	timecodeCallback(int sampleRate) noexcept;
+
 	BufferSingular const* const buffer;
 
 	QVBoxLayout* const mainLayout;
