@@ -99,19 +99,6 @@ public:
 	 */
 	void pushSpecial(Special const&);
 
-	/**
-	 * Does nothing upon an existing buffer or nullptr is passed. Triggers a
-	 * signalBuffer signal.
-	 * @brief Add a buffer to the buffers.
-	 */
-	void pushBuffer(Buffer*);
-
-	/**
-	 * Nothing happens if the erased buffer is nullptr. The buffer is deleted
-	 * regardless of whether it is in the buffers or not.
-	 * @brief Erases a existing buffer in the buffers.
-	 */
-	void eraseBuffer(std::size_t index);
 	
 
 	/**
@@ -134,6 +121,21 @@ public:
 	void fromFileImport(std::string fileName) throw(PythonException);
 
 private:
+	// Not public since they are not thread safe
+	/**
+	 * Does nothing upon an existing buffer or nullptr is passed. Triggers a
+	 * signalBuffer signal.
+	 * @brief Add a buffer to the buffers.
+	 */
+	void pushBuffer(Buffer*);
+
+	/**
+	 * Nothing happens if the erased buffer is nullptr. The buffer is deleted
+	 * regardless of whether it is in the buffers or not.
+	 * @brief Erases a existing buffer in the buffers.
+	 */
+	void eraseBuffer(std::size_t index);
+
 	Configuration* config;
 	
 
@@ -195,6 +197,21 @@ pg::Kernel::pushSpecial(Special const& command)
 {
 	specialQueue.push(command);
 }
+
+inline std::vector<pg::Buffer*>
+pg::Kernel::getBuffers() noexcept
+{
+	return buffers;
+}
+inline std::size_t
+pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
+{
+	std::size_t i = 0;
+	for (i = 0; i < buffers.size(); ++i)
+		if (buffers[i] == buffer) return i;
+	return i;
+}
+
 inline void
 pg::Kernel::pushBuffer(Buffer* buffer)
 {
@@ -209,19 +226,5 @@ pg::Kernel::eraseBuffer(std::size_t index)
 {
 	delete buffers[index];
 	buffers.erase(buffers.begin() + index);
-}
-
-inline std::vector<pg::Buffer*>
-pg::Kernel::getBuffers() noexcept
-{
-	return buffers;
-}
-inline std::size_t
-pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
-{
-	std::size_t i = 0;
-	for (i = 0; i < buffers.size(); ++i)
-		if (buffers[i] == buffer) return i;
-	return i;
 }
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

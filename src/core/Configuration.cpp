@@ -13,8 +13,8 @@ pg::Configuration::Configuration():
 }
 
 #define CONFIG_READ(op, key, tree, name, Type) \
-	op = tree->get<Type>(name, key); \
-	if (op) key = *op;
+	if ((op = tree->get<Type>(name, key))) key = *op;
+
 
 bool pg::Configuration::loadFile()
 {

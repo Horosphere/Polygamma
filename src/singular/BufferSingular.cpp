@@ -127,7 +127,7 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 						{
 							for (int j = 0; j < frame->channels; ++j)
 								std::free(channels[channel]);
-							av_free_packet(&readingPacket);
+							av_packet_unref(&readingPacket);
 							return false;
 						}
 					}
@@ -165,7 +165,7 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 				}
 			}
 		}
-		av_free_packet(&readingPacket); // Called to avoid memory leaks.
+		av_packet_unref(&readingPacket); // Called to avoid memory leaks.
 	}
 	// Some codecs buffer frames while decoding
 	// Flushes the buffer
@@ -190,7 +190,7 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 				{
 					for (int j = 0; j < frame->channels; ++j)
 						std::free(channels[channel]);
-					av_free_packet(&readingPacket);
+					av_packet_unref(&readingPacket);
 					return false;
 				}
 			}
