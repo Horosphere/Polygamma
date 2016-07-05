@@ -12,9 +12,6 @@ pg::Configuration::Configuration():
 {
 }
 
-#define CONFIG_READ(op, key, tree, name, Type) \
-	if ((op = tree->get<Type>(name, key))) key = *op;
-
 
 bool pg::Configuration::loadFile()
 {
@@ -33,12 +30,12 @@ bool pg::Configuration::loadFile()
 	if (treeUI)
 	{
 		boost::optional<Colour32> keyColour32;
-		CONFIG_READ(keyColour32, uiBG, treeUI, "BG", Colour32);
-		CONFIG_READ(keyColour32, uiTerminalBG, treeUI, "terminalBG", Colour32);
-		CONFIG_READ(keyBool, uiTerminalShowSystemLevel, treeUI, "ShowSystemLevel", bool);
-		CONFIG_READ(keyColour32, uiWaveformBG, treeUI, "waveformBG", Colour32);
-		CONFIG_READ(keyColour32, uiWaveformCore, treeUI, "waveformCore", Colour32);
-		CONFIG_READ(keyColour32, uiWaveformEdge, treeUI, "waveformEdge", Colour32);
+		uiBG = treeUI->get("BG", uiBG);
+		uiTerminalBG = treeUI->get("terminalBG", uiTerminalBG);
+		uiTerminalShowSystemLevel = treeUI->get("ShowSystemLevel", uiTerminalShowSystemLevel);
+		uiWaveformBG = treeUI->get("waveformBG", uiWaveformBG);
+		uiWaveformCore = treeUI->get("waveformCore", uiWaveformCore);
+		uiWaveformEdge = treeUI->get("waveformEdge", uiWaveformEdge);
 	}
 
 
