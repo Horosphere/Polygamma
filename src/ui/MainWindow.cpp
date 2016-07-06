@@ -17,7 +17,6 @@
 #include "Terminal.hpp"
 #include "editors/EditorSingular.hpp"
 #include "ui.hpp"
-#include "util/actions.hpp"
 
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
@@ -34,6 +33,15 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	//setTabPosition(Qt::RightDockWidgetArea, QTabWidget::East);
 	setWindowTitle("Polygamma");
 
+// Arguments: menu, action, flags
+// Call this if the given scriptAction should be deactivated
+#define ADD_SCRIPTACTION(menu, sa, fl) \
+	sa->flags = fl; \
+	connect(sa, &ScriptAction::execute, \
+	        this, &MainWindow::onExecute); \
+	scriptActions.push_back(sa); \
+	menu->addAction(sa)
+
 	// Menus
 	// Menu File
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
@@ -45,13 +53,13 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	connect(actionEditSummon, &ScriptAction::execute,
 	        this, &MainWindow::onExecute);
 	menuEdit->addAction(actionEditSummon);
+
 	ScriptAction* actionEditSilence = new ScriptAction("pg.silence(pg.kernel.buffers[%1])", "Silence", this);
-	connect(actionEditSilence, &ScriptAction::execute,
-	        this, &MainWindow::onExecute);
-	menuEdit->addAction(actionEditSilence);
+	ADD_SCRIPTACTION(menuEdit, actionEditSilence, Buffer::Singular);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
 	// Menu end
+#undef ADD_SCRIPTACTION
 
 	// Status bar
 	statusBar()->addPermanentWidget(lineEditScript, 1);
@@ -69,6 +77,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	{
 		this->updateUIElements();
 	});
+	connect(qApp, &QApplication::focusChanged,
+	        this, &MainWindow::onFocusChanged);
 	connect(buttonTerminal, &QPushButton::clicked,
 	        this, [this]()
 	{
@@ -83,8 +93,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		if (fileName.isNull()) return;
 		else
 			this->terminal->onExecute(Script(std::string(PYTHON_KERNEL) +
-			                                  ".fromFileImport(\"" +
-			                                  fileName.toStdString() + "\")"));
+			                                 ".fromFileImport(\"" +
+			                                 fileName.toStdString() + "\")"));
 
 	});
 	connect(actionEditPreferences, &QAction::triggered,
@@ -141,6 +151,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	setBaseSize(QSize(300, 500));
 	lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
 	terminal->setBaseSize(QSize(300, 500));
+	// Disable all actions since nothing is loaded
+	for (auto& action: scriptActions) action->setEnabled(false);
 }
 
 void pg::MainWindow::closeEvent(QCloseEvent* event)
@@ -186,11 +198,13 @@ void pg::MainWindow::updateUIElements()
 
 void pg::MainWindow::onNewBuffer(Buffer* buffer)
 {
+	Editor* editor;
+
 	switch (buffer->getType())
 	{
 	case Buffer::Singular:
 		qDebug() << "[UI] BufferSingular detected";
-		currentEditor = new EditorSingular(kernel, (BufferSingular*) buffer, this);
+		editor = new EditorSingular(kernel, (BufferSingular*) buffer, this);
 		break;
 	default:
 		qDebug() << "[UI] Unrecognised Buffer Type";
@@ -198,23 +212,48 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 		                       std::to_string((int)buffer->getType()) +
 		                       "is not recognised by MainWindow");
 	}
-	currentEditor->show();
-	connect(currentEditor, &Editor::execute,
+	editor->show();
+	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
-	connect(currentEditor, &Editor::editorClose,
-			this, [kernel = this->kernel, buffer]
-			{
-			kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
-			});
-	
+	connect(editor, &Editor::editorClose,
+	        this, [kernel = this->kernel, buffer]
+	{
+		kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
+	});
+
 }
 
 void pg::MainWindow::onExecute(QString const& script)
 {
-	assert(currentEditor != nullptr);
+	if (currentEditor)
+	{
 
-	std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
+		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
 
-	terminal->onExecute(Script(script.arg(index).toStdString()));
+		terminal->onExecute(Script(script.arg(index).toStdString()));
+	}
+}
+
+void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
+{
+	(void) old;
+	if (Editor* editor = dynamic_cast<Editor*>(now))
+	{
+		currentEditor = editor;
+		Buffer::Type type = editor->getBuffer()->getType();
+		for (auto& action: scriptActions)
+		{
+			if (action->flags & type)
+				action->setEnabled(true);
+			else
+				action->setEnabled(false);
+		}
+	}
+	else
+	{
+		currentEditor = nullptr;
+		for (auto& action: scriptActions)
+			action->setEnabled(false);
+	}
 }
 

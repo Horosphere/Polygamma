@@ -2,7 +2,7 @@
 
 // ScriptAction
 pg::ScriptAction::ScriptAction(QString const& script, QObject* parent):
-	QAction(parent), script(script)
+	QAction(parent), script(script), flags(0xFFFFFFFF)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()
@@ -12,7 +12,7 @@ pg::ScriptAction::ScriptAction(QString const& script, QObject* parent):
 }
 pg::ScriptAction::ScriptAction(QString const& script, QString const& text,
                                QObject* parent):
-	QAction(text, parent), script(script)
+	QAction(text, parent), script(script), flags(0xFFFFFFFF)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()
@@ -22,7 +22,7 @@ pg::ScriptAction::ScriptAction(QString const& script, QString const& text,
 }
 pg::ScriptAction::ScriptAction(QString const& script, QIcon const& icon,
                                QString const& text, QObject* parent):
-	QAction(icon, text, parent), script(script)
+	QAction(icon, text, parent), script(script), flags(0xFFFFFFFF)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()

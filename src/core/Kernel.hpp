@@ -32,7 +32,11 @@ public:
 	{
 		enum Type
 		{
-			Deletion
+			/**
+			 * @brief Deletes a buffer without sending a closing signal to its
+			 *	corresponding GUI.
+			 */
+			Deletion 
 		} type;
 		union
 		{
@@ -99,8 +103,6 @@ public:
 	 */
 	void pushSpecial(Special const&);
 
-	
-
 	/**
 	 * Exposed to Script
 	 * @brief Gets a immutable list of buffers.
@@ -112,6 +114,7 @@ public:
 	 *	if the buffer does not exist in the buffers.
 	 */
 	std::size_t bufferIndex(Buffer const*) const noexcept;
+
 
 	/**
 	 * Exposed to Script 

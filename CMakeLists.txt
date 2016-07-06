@@ -1,6 +1,6 @@
 project(Polygamma)
 # Pre-requisites:
-# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, Qt 5.6
+# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, Qt 5
 cmake_minimum_required(VERSION 3.5)
 
 set(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -28,6 +28,7 @@ endif()
 
 # Qt
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Multimedia REQUIRED)
 #add_definitions(-DQT_CONSOLE)
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -89,7 +90,7 @@ add_executable(Polygamma
 	${QtCompiledResources})
 target_link_libraries(Polygamma ${PYTHON_LIBRARIES})
 target_link_libraries(Polygamma ${Boost_LIBRARIES})
-target_link_libraries(Polygamma Qt5::Widgets Qt5::Core)
+target_link_libraries(Polygamma Qt5::Widgets Qt5::Multimedia Qt5::Core)
 target_link_libraries(Polygamma avcodec avformat avutil swscale)
 target_link_libraries(Polygamma ${CMAKE_THREAD_LIBS_INIT})
 

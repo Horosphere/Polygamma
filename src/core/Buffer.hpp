@@ -19,7 +19,7 @@ public:
 	virtual ~Buffer();
 	enum Type
 	{
-		Singular // singular/BufferSingular.hpp
+		Singular = 1 << 0 // singular/BufferSingular.hpp
 	};
 
 	/**

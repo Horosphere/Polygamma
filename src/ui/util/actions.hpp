@@ -21,6 +21,10 @@ public:
 
 	QString script;
 
+	/**
+	 * @brief An integer that is initialised to 0xFFFFFFFF by default.
+	 */
+	int flags;
 Q_SIGNALS:
 	void execute(QString const&);
 };

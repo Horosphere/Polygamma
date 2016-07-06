@@ -12,7 +12,8 @@ pg::Configuration::Configuration():
 {
 }
 
-
+// XML Convention: Trees start with lower case letter, entries start with upper
+// case letter
 bool pg::Configuration::loadFile()
 {
 	std::cout << "Reading configuration from: " << fileName << std::endl;
@@ -24,18 +25,17 @@ bool pg::Configuration::loadFile()
 			boost::property_tree::xml_parser::trim_whitespace);
 	file.close();
 	
-	boost::optional<bool> keyBool;
 	boost::optional<boost::property_tree::ptree&> treeUI =
 		tree.get_child_optional("ui");
 	if (treeUI)
 	{
 		boost::optional<Colour32> keyColour32;
 		uiBG = treeUI->get("BG", uiBG);
-		uiTerminalBG = treeUI->get("terminalBG", uiTerminalBG);
+		uiTerminalBG = treeUI->get("TerminalBG", uiTerminalBG);
 		uiTerminalShowSystemLevel = treeUI->get("ShowSystemLevel", uiTerminalShowSystemLevel);
-		uiWaveformBG = treeUI->get("waveformBG", uiWaveformBG);
-		uiWaveformCore = treeUI->get("waveformCore", uiWaveformCore);
-		uiWaveformEdge = treeUI->get("waveformEdge", uiWaveformEdge);
+		uiWaveformBG = treeUI->get("WaveformBG", uiWaveformBG);
+		uiWaveformCore = treeUI->get("WaveformCore", uiWaveformCore);
+		uiWaveformEdge = treeUI->get("WaveformEdge", uiWaveformEdge);
 	}
 
 
@@ -48,11 +48,11 @@ void pg::Configuration::saveFile()
 	boost::property_tree::ptree tree;
 	boost::property_tree::ptree treeUI;
 	treeUI.put("BG", uiBG);
-	treeUI.put("terminalBG", uiTerminalBG);
+	treeUI.put("TerminalBG", uiTerminalBG);
 	treeUI.put("ShowSystemLevel", uiTerminalShowSystemLevel);
-	treeUI.put("waveformBG", uiWaveformBG);
-	treeUI.put("waveformCore", uiWaveformCore);
-	treeUI.put("waveformEdge", uiWaveformEdge);
+	treeUI.put("WaveformBG", uiWaveformBG);
+	treeUI.put("WaveformCore", uiWaveformCore);
+	treeUI.put("WaveformEdge", uiWaveformEdge);
 	tree.put_child("ui", treeUI);
 	
 	boost::property_tree::xml_writer_settings<std::string> settings('\t', 1);

@@ -1,6 +1,8 @@
 #ifndef _POLYGAMMA_UI_MAINWINDOW_HPP__
 #define _POLYGAMMA_UI_MAINWINDOW_HPP__
 
+#include <vector>
+
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenuBar>
@@ -9,6 +11,7 @@
 #include "Terminal.hpp"
 #include "mainWindowAccessories.hpp"
 #include "editors/Editor.hpp"
+#include "util/actions.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -45,6 +48,7 @@ private Q_SLOTS:
 	 *	Terminal::onExecute
 	 */
 	void onExecute(QString const&);
+	void onFocusChanged(QWidget* old, QWidget* now);
 
 private:
 	// Handlers
@@ -52,6 +56,13 @@ private:
 	Configuration* const config;
 
 	// UI Elements
+	
+	/**
+	 * @brief Stores all scriptActions that are deactivated upon particular editor
+	 *	changes.
+	 */
+	std::vector<ScriptAction*> scriptActions;
+
 	Terminal* terminal;
 	LineEditScript* lineEditScript;
 	QLineEdit* lineEditLog;
