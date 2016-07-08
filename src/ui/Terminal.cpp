@@ -19,13 +19,13 @@ pg::TerminalLog::TerminalLog(QWidget* parent): QTextEdit(parent)
 void pg::TerminalLog::onStdOutFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#000000;\">" + str.toHtmlEscaped() + "</span>");
+	insertHtml("<span style=\"color:#000000;\">" + str.toHtmlEscaped().replace('\n', "<br>") + "</span>");
 	moveCursor(QTextCursor::End);
 }
 void pg::TerminalLog::onStdErrFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#FF0000;\">" + str.toHtmlEscaped() + "</span>");
+	insertHtml("<span style=\"color:#FF0000;\">" + str.toHtmlEscaped().replace('\n', "<br>") + "</span>");
 	moveCursor(QTextCursor::End);
 }
 
@@ -97,7 +97,7 @@ void pg::Terminal::closeEvent(QCloseEvent* event)
 void pg::Terminal::onExecute(Script const& script)
 {
 	if (!script.isSystemLevel() || showSystemLevel)
-		log->onStdOutFlush(QString::fromStdString("<b>>></b> " + (std::string)script + "\n"));
+		log->onStdOutFlush(QString::fromStdString("\n>> " + (std::string)script + "\n"));
 	this->kernel->pushScript(script);
 }
 

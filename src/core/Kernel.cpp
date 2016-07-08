@@ -15,6 +15,7 @@ pg::Kernel::Kernel(Configuration* config): config(config)
 pg::Kernel::~Kernel()
 {
 	// Releases all buffers
+	// TODO: Call each buffer's destruction signal
 	for (auto const& buffer: buffers)
 		delete buffer;
 }

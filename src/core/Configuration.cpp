@@ -7,7 +7,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 pg::Configuration::Configuration():
-	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiTerminalShowSystemLevel(false),
+	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiTerminalShowSystemLevel(true),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {
 }

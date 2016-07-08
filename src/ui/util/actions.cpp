@@ -1,8 +1,8 @@
 #include "actions.hpp"
 
-// ScriptAction
-pg::ScriptAction::ScriptAction(QString const& script, QObject* parent):
-	QAction(parent), script(script), flags(0xFFFFFFFF)
+// ActionScripted
+pg::ActionScripted::ActionScripted(QString const& script, QObject* parent):
+	ActionFlagged(parent), script(script)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()
@@ -10,9 +10,9 @@ pg::ScriptAction::ScriptAction(QString const& script, QObject* parent):
 		Q_EMIT execute(this->script);
 	});
 }
-pg::ScriptAction::ScriptAction(QString const& script, QString const& text,
+pg::ActionScripted::ActionScripted(QString const& script, QString const& text,
                                QObject* parent):
-	QAction(text, parent), script(script), flags(0xFFFFFFFF)
+	ActionFlagged(text, parent), script(script)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()
@@ -20,9 +20,9 @@ pg::ScriptAction::ScriptAction(QString const& script, QString const& text,
 		Q_EMIT execute(this->script);
 	});
 }
-pg::ScriptAction::ScriptAction(QString const& script, QIcon const& icon,
+pg::ActionScripted::ActionScripted(QString const& script, QIcon const& icon,
                                QString const& text, QObject* parent):
-	QAction(icon, text, parent), script(script), flags(0xFFFFFFFF)
+	ActionFlagged(icon, text, parent), script(script)
 {
 	connect(this, &QAction::triggered,
 	        this, [this]()

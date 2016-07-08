@@ -22,15 +22,27 @@ namespace pg
  * int32_t: [-2147483648,2147483647]
  * float: [-1.0f,1.0f]
  * double: [-1.0,1.0]
- * @brief dequantise converts a internal value used by FFMpeg to floating point.
+ * @brief dequantise converts a internal value used by FFMpeg to floating
+ *  point.
  * @return A real number in the range [-1.0, 1.0].
  */
 template<typename Value> real dequantise(Value);
+/**
+ * Output ranges: (Casted linearly from [-1,1])
+ * uint8_t: [0,255]
+ * int16_t: [-32768,32767]
+ * int32_t: [-2147483648,2147483647]
+ * float: [-1.0f,1.0f]
+ * double: [-1.0,1.0]
+ * @brief Inverse operator of \ref dequantise. The parameter must lie within
+ *  the range [-1, 1]
+ */
+template<typename Value> Value quantise(real);
 
-template<typename Value, bool planar> bool
-/** Template arguments:
- *     Value: The type of value stored in the audio stream. e.g. fltp -> float32
- *     planar: Is the audio planar or not.
+/**
+ * @tparam Value The type of value stored in the audio stream. e.g. fltp ->
+ *  float32
+ * @tparam planar is true if the audio is stored planar. Interleaved otherwise.
  * @brief readAVInternal Internal method for reading an audio from a file. This
  *     function does not generate errors.
  * @param[out] channels Pre-allocated pointer to store the audio channels. THe
@@ -44,10 +56,11 @@ template<typename Value, bool planar> bool
  *     generated from av_find_best_stream with AVMEDIA_TYPE_AUDIO fed in.
  * @return true if succeeded. false if any subroutine allocation fails.
  */
+template<typename Value, bool planar> bool
 readAudioStream(real** const channels, std::size_t* nSamples,
-               AVFormatContext* const formatContext,
-               AVCodecContext* const codecContext,
-               AVFrame* const frame, int stream);
+                AVFormatContext* const formatContext,
+                AVCodecContext* const codecContext,
+                AVFrame* const frame, int stream);
 
 } // namespace pg
 
@@ -57,6 +70,7 @@ readAudioStream(real** const channels, std::size_t* nSamples,
 
 template<typename Value> inline pg::real pg::dequantise(Value value)
 {
+	// TODO: Use hexadecimal floating point literals
 	// Unsigned integer
 	if (typeid(Value) == typeid(uint8_t))
 		// Toggle a single bit to achieve the linear map [0,255] -> [-128,127]
@@ -82,11 +96,33 @@ template<typename Value> inline pg::real pg::dequantise(Value value)
 	return (real) value;
 }
 
+template<typename Value> inline Value pg::quantise(real value)
+{
+	// Unsigned integer
+	if (typeid(Value) == typeid(uint8_t))
+		return (uint8_t)(1 << 7 ^ (int8_t)(value * 128.0));
+	if (typeid(Value) == typeid(uint16_t))
+		return (uint16_t)(1 << 7 ^ (int16_t)(value * 32768.0));
+	if (typeid(Value) == typeid(uint32_t))
+		return (uint32_t)(1 << 7 ^ (int32_t)(value * 2147483648.0));
+
+	// Signed integer
+	if (typeid(Value) == typeid(int8_t))
+		return (int8_t)(value * 128.0);
+	if (typeid(Value) == typeid(int16_t))
+		return (int16_t)(value * 32768.0);
+	if (typeid(Value) == typeid(int32_t))
+		return (int32_t)(value * 2147483648.0);
+
+	// Floating point types
+	return (real) value;
+}
+
 template<typename Value, bool planar> inline bool
 pg::readAudioStream(real** const channels, std::size_t* nSamples,
-                 AVFormatContext* const formatContext,
-               AVCodecContext* const codecContext,
-               AVFrame* const frame, int stream)
+                    AVFormatContext* const formatContext,
+                    AVCodecContext* const codecContext,
+                    AVFrame* const frame, int stream)
 {
 	AVPacket readingPacket;
 	av_init_packet(&readingPacket);
@@ -224,19 +260,22 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 	return true;
 }
 pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
-    std::string* error)
+    std::string* const error)
 {
+	std::cout << "[IO] Reading BufferSingular from file " << fileName
+	          << std::endl;
+
 	boost::timer::auto_cpu_timer timer;
 	AVFormatContext* formatContext = nullptr;
 	if (avformat_open_input(&formatContext, fileName.c_str(), nullptr, nullptr))
 	{
-		*error = std::string("Unable to open ") + fileName;
+		*error = "Unable to open " + fileName;
 		return nullptr;
 	}
 	if (avformat_find_stream_info(formatContext, nullptr) < 0)
 	{
 		avformat_close_input(&formatContext);
-		*error = std::string("Unable to find stream info");
+		*error = "Unable to find stream info";
 		return nullptr;
 	}
 
@@ -245,11 +284,11 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	// has no audio stream.
 	AVCodec* codec = nullptr;
 	int streamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
-										  -1, -1, &codec, 0);
+	                                      -1, -1, &codec, 0);
 	if (streamIndex < 0)
 	{
 		avformat_close_input(&formatContext);
-		*error = std::string("The file does not have any audio stream");
+		*error = "The file does not have any audio stream";
 		return nullptr;
 	}
 	AVStream* audioStream = formatContext->streams[streamIndex];
@@ -258,17 +297,17 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	if (avcodec_open2(codecContext, codecContext->codec, nullptr))
 	{
 		avformat_close_input(&formatContext);
-		*error = std::string("Unable to open codec");
+		*error = "Unable to open codec";
 		return nullptr;
 	}
 	std::cout << "[IO]Found audio stream:"
-			  << std::endl;
+	          << std::endl;
 	std::cout << "[IO]Channels: " << codecContext->channels
-			  << ", Sample rate: " << codecContext->sample_rate
-			  << "/s, Format: " << av_get_sample_fmt_name(codecContext->sample_fmt)
-			  << ", Bytes/Sample: " << av_get_bytes_per_sample(codecContext->sample_fmt)
-			  << ", Duration: " << formatContext->duration / AV_TIME_BASE
-			  << " s" << std::endl;
+	          << ", Sample rate: " << codecContext->sample_rate
+	          << "/s, Format: " << av_get_sample_fmt_name(codecContext->sample_fmt)
+	          << ", Bytes/Sample: " << av_get_bytes_per_sample(codecContext->sample_fmt)
+	          << ", Duration: " << formatContext->duration / AV_TIME_BASE
+	          << " s" << std::endl;
 
 	AVFrame* frame = av_frame_alloc();
 	if (!frame)
@@ -284,47 +323,47 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	switch (codecContext->sample_fmt)
 	{
 	case AV_SAMPLE_FMT_U8:
-		flag = readAudioStream<uint8_t, false>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<uint8_t, false>(channels, &nSamples, formatContext,
+		                                       codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_S16:
-		flag = readAudioStream<int16_t, false>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<int16_t, false>(channels, &nSamples, formatContext,
+		                                       codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_S32:
-		flag = readAudioStream<int32_t, false>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<int32_t, false>(channels, &nSamples, formatContext,
+		                                       codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_FLT:
-		flag = readAudioStream<float, false>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<float, false>(channels, &nSamples, formatContext,
+		                                     codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_DBL:
-		flag = readAudioStream<double, false>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<double, false>(channels, &nSamples, formatContext,
+		                                      codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_U8P:
-		flag = readAudioStream<uint8_t, true>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<uint8_t, true>(channels, &nSamples, formatContext,
+		                                      codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_S16P:
-		flag = readAudioStream<int16_t, true>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<int16_t, true>(channels, &nSamples, formatContext,
+		                                      codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_S32P:
-		flag = readAudioStream<int32_t, true>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<int32_t, true>(channels, &nSamples, formatContext,
+		                                      codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_FLTP:
-		flag = readAudioStream<float, true>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<float, true>(channels, &nSamples, formatContext,
+		                                    codecContext, frame, audioStream->index);
 		break;
 	case AV_SAMPLE_FMT_DBLP:
-		flag = readAudioStream<double, true>(channels, &nSamples,
-				formatContext, codecContext, frame, audioStream->index);
+		flag = readAudioStream<double, true>(channels, &nSamples, formatContext,
+		                                     codecContext, frame, audioStream->index);
 		break;
 	default: // Should not happen
-		*error = std::string("Unrecognised sample format");
+		*error = "Unrecognised sample format";
 		return nullptr;
 	}
 
@@ -334,13 +373,15 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 
 	if (!flag)
 	{
-		*error = std::string("Unable to allocate more memory");
+		*error = "Unable to allocate more memory";
 		delete[] channels;
 		return nullptr;
 	}
 
 	BufferSingular* buffer = new BufferSingular(codecContext->channels);
 	buffer->sampleRate = codecContext->sample_rate;
+	buffer->bitRate = codecContext->bit_rate;
+	buffer->channelLayout = codecContext->channel_layout;
 	// Move channels into the buffer
 	for (std::size_t i = 0; i < (std::size_t)codecContext->channels; ++i)
 	{
@@ -355,6 +396,178 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	}
 	delete[] channels;
 
-
 	return buffer;
+}
+
+bool pg::BufferSingular::saveToFile(std::string fileName,
+                                    std::string* const error)
+{
+	std::cout << "[IO] Writing BufferSingular to file " << fileName
+	          << std::endl;
+	AVOutputFormat* format = av_guess_format(nullptr, fileName.c_str(), nullptr);
+	if (!format)
+	{
+		*error = "Could not find suitable audio format";
+		return false;
+	}
+	AVCodec* codec = avcodec_find_encoder(format->audio_codec);
+	if (!codec)
+	{
+		*error = "Unable to find codec";
+		return false;
+	}
+
+	AVCodecContext* codecContext = avcodec_alloc_context3(codec);
+	if (!codecContext)
+	{
+		*error = "Unable to allocate codec context";
+		return false;
+	}
+
+	codecContext->bit_rate = this->bitRate;
+	codecContext->sample_fmt = AV_SAMPLE_FMT_S16; 
+	// Check sample format
+	AVSampleFormat const* sampleFormat = codec->sample_fmts;
+	while (*sampleFormat != AV_SAMPLE_FMT_NONE)
+	{
+		if (*sampleFormat == codecContext->sample_fmt)
+			goto sampleFormatChecked;
+		++sampleFormat;
+	}
+	// No suitable sample format found
+	{
+		*error = std::string("Encoder does not support sample format ") +
+		         av_get_sample_fmt_name(codecContext->sample_fmt);
+		avcodec_close(codecContext);
+		return false;
+	}
+sampleFormatChecked:
+
+	codecContext->sample_rate = this->sampleRate;
+	codecContext->channel_layout = this->channelLayout;
+
+	if (avcodec_open2(codecContext, codec, nullptr) < 0)
+	{
+		*error = "Could not open codec";
+		avcodec_close(codecContext);
+		return false;
+	}
+
+	int bufferSize = av_samples_get_buffer_size(nullptr, codecContext->channels,
+	                 codecContext->frame_size, codecContext->sample_fmt, 0);
+	if (bufferSize < 0)
+	{
+		*error = "Could not get sample buffer size";
+		avcodec_close(codecContext);
+		return false;
+	}
+
+	int16_t* samples = static_cast<int16_t*>(av_malloc(bufferSize));
+	if (!samples)
+	{
+		*error = "Could not allocate sample buffer";
+		avcodec_close(codecContext);
+		return false;
+	}
+
+	// Allocate frame
+	AVFrame* frame = av_frame_alloc();
+	if (!frame)
+	{
+		*error = "Could not allocate audio frame";
+		avcodec_close(codecContext);
+		return false;
+	}
+
+	frame->nb_samples = codecContext->frame_size;
+	frame->format = codecContext->sample_fmt;
+	frame->channel_layout = codecContext->channel_layout;
+
+	if (avcodec_fill_audio_frame(frame, codecContext->channels, codecContext->sample_fmt,
+	                             (uint8_t const*) samples, bufferSize, 0) < 0)
+	{
+		*error = "Could not setup audio frame";
+		avcodec_close(codecContext);
+		av_free(frame);
+		return false;
+	}
+
+	// Open the file
+	std::FILE* file = std::fopen(fileName.c_str(), "wb");
+	if (!file)
+	{
+		*error = "Could not open file";
+		avcodec_close(codecContext);
+		av_free(frame);
+		return false;
+	}
+
+	// Encode audio into frame
+	std::size_t nFrames = (nAudioSamples() - 1) / codecContext->frame_size;
+	std::size_t index = 0;
+	std::size_t nChannels = codecContext->channels;
+	AVPacket packet;
+	// Encode all except for the last frame
+	for (std::size_t iFrame = 0; iFrame < nFrames; ++iFrame)
+	{
+		av_init_packet(&packet);
+		packet.data = nullptr; // Allocated by encoder later
+		packet.size = 0;
+
+		for (std::size_t c = 0; c < nChannels; ++c)
+			for (std::size_t i = 0; i < (std::size_t) codecContext->frame_size; ++i)
+				samples[nChannels * i + c] = quantise<int16_t>(audio[c][i + index]);
+
+		int gotOutput;
+		if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
+		{
+			*error = "Error encoding audio frame";
+			avcodec_close(codecContext);
+			av_free(frame);
+			return false;
+		}
+		if (gotOutput)
+		{
+			std::fwrite(packet.data, 1, packet.size, file);
+			av_packet_unref(&packet);
+		}
+
+		index += codecContext->frame_size;
+	}
+	// The last frame is encoded here
+	std::size_t trailing = nAudioSamples() - index;
+	av_init_packet(&packet);
+	packet.data = nullptr; // Allocated by encoder later
+	packet.size = 0;
+
+	for (std::size_t c = 0; c < nChannels; ++c)
+	{
+		for (std::size_t i = 0; i < trailing; ++i)
+			samples[nChannels * i + c] = quantise<int16_t>(audio[c][i + index]);
+		for (std::size_t i = trailing; i < (std::size_t) codecContext->frame_size; ++i)
+			samples[nChannels * i + c] = 0;
+	}
+
+	int gotOutput;
+	if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
+	{
+		*error = "Error encoding audio frame";
+		avcodec_close(codecContext);
+		av_free(frame);
+		return false;
+	}
+	if (gotOutput)
+	{
+		std::fwrite(packet.data, 1, packet.size, file);
+		av_packet_unref(&packet);
+	}
+
+	index += codecContext->frame_size;
+
+	// Encoding complete
+
+	std::fclose(file);
+	av_free(frame);
+	avcodec_close(codecContext);
+	return true;
 }

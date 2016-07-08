@@ -5,6 +5,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "Kernel.hpp"
+#include "Buffer.hpp"
 #include "../singular/audio.hpp"
 #include "../singular/BufferSingular.hpp"
 
@@ -77,7 +78,8 @@ BOOST_PYTHON_MODULE(pg)
 	enum_<pg::Buffer::Type>("BufferType")
 	.value("Singular", pg::Buffer::Singular);
 	class_<pg::wrap::Buffer, boost::noncopyable>("Buffer", no_init)
-	.def("getType", pure_virtual(&pg::Buffer::getType));
+	.def("getType", pure_virtual(&pg::Buffer::getType))
+	.def("saveToFile", (void (pg::Buffer::*)(std::string)) &pg::Buffer::saveToFile);
 	class_<std::vector<pg::Buffer*>>("stdvector_Buffer")
 	                              .def(vector_indexing_suite<std::vector<pg::Buffer*>>());
 

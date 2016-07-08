@@ -6,29 +6,58 @@
 namespace pg
 {
 
-/**
- * Emits execute(QString const&) when triggered
- */
-class ScriptAction: public QAction
+class ActionFlagged: public QAction
 {
 	Q_OBJECT
 public:
-	explicit ScriptAction(QString const& script, QObject* parent = 0);
-	explicit ScriptAction(QString const& script, QString const& text,
-	                      QObject* parent = 0);
-	explicit ScriptAction(QString const& script, QIcon const&,
-	                      QString const& text, QObject* parent = 0);
+	typedef int flag_t;
+	static constexpr flag_t const FLAG_FULL = 0xFFFFFFFF;
 
-	QString script;
+	explicit ActionFlagged(QObject* parent = 0);
+	explicit ActionFlagged(QString const& text, QObject* parent = 0);
+	explicit ActionFlagged(QIcon const& icon, QString const& text,
+	                       QObject* parent = 0);
 
 	/**
-	 * @brief An integer that is initialised to 0xFFFFFFFF by default.
+	 * @brief An integer that is initialised to FLAG_FULL by default.
 	 */
-	int flags;
+	flag_t flags;
+};
+/**
+ * Emits execute(QString const&) when triggered
+ */
+class ActionScripted: public ActionFlagged
+{
+	Q_OBJECT
+public:
+
+	explicit ActionScripted(QString const& script, QObject* parent = 0);
+	explicit ActionScripted(QString const& script, QString const& text,
+	                        QObject* parent = 0);
+	explicit ActionScripted(QString const& script, QIcon const&,
+	                        QString const& text, QObject* parent = 0);
+
+	QString script;
 Q_SIGNALS:
 	void execute(QString const&);
 };
 
+} // namespace pg
+
+// Implementations
+
+inline pg::ActionFlagged::ActionFlagged(QObject* parent): QAction(parent),
+	flags(FLAG_FULL)
+{
+}
+inline pg::ActionFlagged::ActionFlagged(QString const& text, QObject* parent):
+	QAction(text, parent), flags(FLAG_FULL)
+{
+}
+inline pg::ActionFlagged::ActionFlagged(QIcon const& icon, QString const& text,
+                                        QObject* parent):
+	QAction(icon, text, parent), flags(FLAG_FULL)
+{
 }
 
 #endif // !_POLYGAMMA_UI_UTIL_ACTIONS_HPP__

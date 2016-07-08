@@ -5,6 +5,8 @@
 
 #include <boost/signals2.hpp>
 
+#include "python.hpp"
+
 namespace pg
 {
 
@@ -26,6 +28,12 @@ public:
 	 * Exposed to Python
 	 */
 	virtual Type getType() const noexcept = 0;
+	virtual bool saveToFile(std::string fileName, std::string* const error) = 0;
+	/**
+	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
+	 *	and throws IOError upon failure.
+	 */
+	void saveToFile(std::string fileName) throw(PythonException);
 
 	void notifyUpdate() noexcept;
 
@@ -45,6 +53,16 @@ protected:
 } // namespace pg
 
 // Implementations
+
+inline void
+pg::Buffer::saveToFile(std::string fileName) throw(PythonException)
+{
+	std::string error;
+	if (!saveToFile(fileName, &error))
+	{
+		throw PythonException{error, PythonException::IOError};
+	}
+}
 
 inline void pg::Buffer::notifyUpdate() noexcept
 {

@@ -58,10 +58,10 @@ private:
 	// UI Elements
 	
 	/**
-	 * @brief Stores all scriptActions that are deactivated upon particular editor
+	 * @brief Stores all actionFlagged that are deactivated upon particular editor
 	 *	changes.
 	 */
-	std::vector<ScriptAction*> scriptActions;
+	std::vector<ActionFlagged*> actionsFlagged;
 
 	Terminal* terminal;
 	LineEditScript* lineEditScript;

@@ -25,6 +25,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	lineEditScript(new LineEditScript), lineEditLog(new QLineEdit),
 	currentEditor(nullptr)
 {
+	setFocusPolicy(Qt::NoFocus);
 	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
 	               QMainWindow::AnimatedDocks |
@@ -35,31 +36,39 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 // Arguments: menu, action, flags
 // Call this if the given scriptAction should be deactivated
-#define ADD_SCRIPTACTION(menu, sa, fl) \
-	sa->flags = fl; \
-	connect(sa, &ScriptAction::execute, \
+#define ADD_ACTIONFLAGGED(menu, action, fl) \
+	action->flags = fl; \
+	actionsFlagged.push_back(action); \
+	menu->addAction(action)
+#define ADD_ACTIONSCRIPTED(menu, action, fl) \
+	action->flags = fl; \
+	connect(action, &ActionScripted::execute, \
 	        this, &MainWindow::onExecute); \
-	scriptActions.push_back(sa); \
-	menu->addAction(sa)
+	actionsFlagged.push_back(action); \
+	menu->addAction(action)
 
 	// Menus
 	// Menu File
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
 	QAction* actionFileImport = new QAction(tr("Import..."), this);
 	menuFile->addAction(actionFileImport);
+	ActionFlagged* actionFileSaveAs = new ActionFlagged(tr("Save As..."), this);
+	ADD_ACTIONFLAGGED(menuFile, actionFileSaveAs, ActionFlagged::FLAG_FULL);
+
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
-	ScriptAction* actionEditSummon = new ScriptAction("print('summon')", "Summon", this);
-	connect(actionEditSummon, &ScriptAction::execute,
+	ActionScripted* actionEditSummon = new ActionScripted("print('summon')", "Summon", this);
+	connect(actionEditSummon, &ActionScripted::execute,
 	        this, &MainWindow::onExecute);
 	menuEdit->addAction(actionEditSummon);
 
-	ScriptAction* actionEditSilence = new ScriptAction("pg.silence(pg.kernel.buffers[%1])", "Silence", this);
-	ADD_SCRIPTACTION(menuEdit, actionEditSilence, Buffer::Singular);
+	ActionScripted* actionEditSilence = new ActionScripted("pg.silence(pg.kernel.buffers[%1])", "Silence", this);
+	ADD_ACTIONSCRIPTED(menuEdit, actionEditSilence, Buffer::Singular);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
 	// Menu end
-#undef ADD_SCRIPTACTION
+#undef ADD_ACTIONFLAGGED
+#undef ADD_ACTIONSCRIPTED
 
 	// Status bar
 	statusBar()->addPermanentWidget(lineEditScript, 1);
@@ -95,7 +104,15 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 			this->terminal->onExecute(Script(std::string(PYTHON_KERNEL) +
 			                                 ".fromFileImport(\"" +
 			                                 fileName.toStdString() + "\")"));
-
+	});
+	connect(actionFileSaveAs, &QAction::triggered,
+	        this, [this]()
+	{
+		QString fileName = QFileDialog::getSaveFileName(this, tr("Import..."));
+		if (fileName.isNull()) return;
+		else
+			this->onExecute(QString(PYTHON_KERNEL) + ".buffers[%1].saveToFile('" +
+			                fileName + "')");
 	});
 	connect(actionEditPreferences, &QAction::triggered,
 	        this, [this]()
@@ -152,7 +169,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
 	terminal->setBaseSize(QSize(300, 500));
 	// Disable all actions since nothing is loaded
-	for (auto& action: scriptActions) action->setEnabled(false);
+	for (auto& action: actionsFlagged) action->setEnabled(false);
 }
 
 void pg::MainWindow::closeEvent(QCloseEvent* event)
@@ -172,7 +189,6 @@ void pg::MainWindow::updateUIElements()
 	lineEditLog->setFont(fontMonospace);
 	lineEditLog_stylesheetOut = QString("color: white; background-color: black");
 	lineEditLog_stylesheetErr = QString("color: white; background-color: #220000");
-
 	terminal->log->setFont(fontMonospace);
 	terminal->log->setTabStopWidth(tabWidth);
 	terminal->input->setFont(fontMonospace);
@@ -213,12 +229,15 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 		                       "is not recognised by MainWindow");
 	}
 	editor->show();
+	currentEditor = editor;
+
 	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
 	connect(editor, &Editor::editorClose,
-	        this, [kernel = this->kernel, buffer]
+	        this, [this, buffer]
 	{
-		kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
+		this->kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
+		this->onFocusChanged(nullptr, nullptr);
 	});
 
 }
@@ -227,11 +246,13 @@ void pg::MainWindow::onExecute(QString const& script)
 {
 	if (currentEditor)
 	{
-
 		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
 
 		terminal->onExecute(Script(script.arg(index).toStdString()));
 	}
+	else
+		qDebug() << "[UI] Current editor null but command is called: "
+			<< script;
 }
 
 void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
@@ -239,21 +260,16 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 	(void) old;
 	if (Editor* editor = dynamic_cast<Editor*>(now))
 	{
+//		qDebug() << "[UI] Focus changed to new editor";
 		currentEditor = editor;
 		Buffer::Type type = editor->getBuffer()->getType();
-		for (auto& action: scriptActions)
+		for (auto& action: actionsFlagged)
 		{
 			if (action->flags & type)
 				action->setEnabled(true);
 			else
 				action->setEnabled(false);
 		}
-	}
-	else
-	{
-		currentEditor = nullptr;
-		for (auto& action: scriptActions)
-			action->setEnabled(false);
 	}
 }
 
