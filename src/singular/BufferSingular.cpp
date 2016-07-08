@@ -62,6 +62,17 @@ readAudioStream(real** const channels, std::size_t* nSamples,
                 AVCodecContext* const codecContext,
                 AVFrame* const frame, int stream);
 
+/**
+ * @brief Write the channels to the file. This function is not responsible for
+ *	any allocations
+ * @param samples A pre-allocated region (frame size * number of channels) as
+ *	buffer.
+ */
+template<typename Value, bool planar> bool
+writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
+                 AVCodecContext* const codecContext, AVFrame* const frame,
+                 Value* const samples);
+
 } // namespace pg
 
 
@@ -399,9 +410,97 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	return buffer;
 }
 
+template<typename Value, bool planar> inline bool
+pg::writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
+                     AVCodecContext* const codecContext, AVFrame* const frame,
+                     Value* const samples)
+{
+	// Encode audio into frame
+	std::size_t nSamples = channels[0].getSize();
+	std::size_t frameSize = codecContext->frame_size;
+	std::size_t nFrames = (nSamples - 1) / frameSize;
+	std::size_t index = 0;
+	std::size_t nChannels = codecContext->channels;
+	AVPacket packet;
+	// Encode all except for the last frame. The last frame is encoded at the
+	// end with zero paddings
+	for (std::size_t iFrame = 0; iFrame < nFrames; ++iFrame)
+	{
+		av_init_packet(&packet);
+		packet.data = nullptr; // Allocated by encoder later
+		packet.size = 0;
+
+		if (planar)
+		{
+			for (std::size_t c = 0; c < nChannels; ++c)
+			{
+				std::size_t indexBegin = c * frameSize;
+				for (std::size_t i = 0; i < frameSize; ++i)
+					samples[indexBegin + i] = quantise<Value>(channels[c][i + index]);
+			}
+		}
+		else
+		{
+			for (std::size_t c = 0; c < nChannels; ++c)
+				for (std::size_t i = 0; i < frameSize; ++i)
+					samples[nChannels * i + c] = quantise<Value>(channels[c][i + index]);
+		}
+
+		int gotOutput;
+		if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
+			return false;
+		if (gotOutput)
+		{
+			std::fwrite(packet.data, 1, packet.size, file);
+			av_packet_unref(&packet);
+		}
+
+		index += codecContext->frame_size;
+	}
+
+	// The last frame is encoded here
+	std::size_t trailing = nSamples - index;
+	av_init_packet(&packet);
+	packet.data = nullptr; // Allocated by encoder later
+	packet.size = 0;
+
+	if (planar)
+	{
+		for (std::size_t c = 0; c < nChannels; ++c)
+		{
+			std::size_t indexBegin = c * frameSize;
+			for (std::size_t i = 0; i < trailing; ++i)
+				samples[indexBegin + i] = quantise<Value>(channels[c][i + index]);
+			for (std::size_t i = trailing; i < frameSize; ++i)
+				samples[indexBegin + i] = 0;
+		}
+	}
+	else
+	{
+		for (std::size_t c = 0; c < nChannels; ++c)
+		{
+			for (std::size_t i = 0; i < trailing; ++i)
+				samples[nChannels * i + c] = quantise<Value>(channels[c][i + index]);
+			for (std::size_t i = trailing; i < frameSize; ++i)
+				samples[nChannels * i + c] = 0;
+		}
+	}
+
+	int gotOutput;
+	if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
+		return false;
+	if (gotOutput)
+	{
+		std::fwrite(packet.data, 1, packet.size, file);
+		av_packet_unref(&packet);
+	}
+	return true;
+}
 bool pg::BufferSingular::saveToFile(std::string fileName,
                                     std::string* const error)
 {
+	boost::timer::auto_cpu_timer timer;
+
 	std::cout << "[IO] Writing BufferSingular to file " << fileName
 	          << std::endl;
 	AVOutputFormat* format = av_guess_format(nullptr, fileName.c_str(), nullptr);
@@ -425,26 +524,17 @@ bool pg::BufferSingular::saveToFile(std::string fileName,
 	}
 
 	codecContext->bit_rate = this->bitRate;
-	codecContext->sample_fmt = AV_SAMPLE_FMT_S16; 
-	// Check sample format
+
+	// Use the last sample format
 	AVSampleFormat const* sampleFormat = codec->sample_fmts;
 	while (*sampleFormat != AV_SAMPLE_FMT_NONE)
-	{
-		if (*sampleFormat == codecContext->sample_fmt)
-			goto sampleFormatChecked;
 		++sampleFormat;
-	}
-	// No suitable sample format found
-	{
-		*error = std::string("Encoder does not support sample format ") +
-		         av_get_sample_fmt_name(codecContext->sample_fmt);
-		avcodec_close(codecContext);
-		return false;
-	}
-sampleFormatChecked:
+	--sampleFormat;
+	codecContext->sample_fmt = *sampleFormat;
 
 	codecContext->sample_rate = this->sampleRate;
 	codecContext->channel_layout = this->channelLayout;
+	codecContext->channels = this->nAudioChannels();
 
 	if (avcodec_open2(codecContext, codec, nullptr) < 0)
 	{
@@ -455,17 +545,10 @@ sampleFormatChecked:
 
 	int bufferSize = av_samples_get_buffer_size(nullptr, codecContext->channels,
 	                 codecContext->frame_size, codecContext->sample_fmt, 0);
+
 	if (bufferSize < 0)
 	{
 		*error = "Could not get sample buffer size";
-		avcodec_close(codecContext);
-		return false;
-	}
-
-	int16_t* samples = static_cast<int16_t*>(av_malloc(bufferSize));
-	if (!samples)
-	{
-		*error = "Could not allocate sample buffer";
 		avcodec_close(codecContext);
 		return false;
 	}
@@ -483,91 +566,91 @@ sampleFormatChecked:
 	frame->format = codecContext->sample_fmt;
 	frame->channel_layout = codecContext->channel_layout;
 
-	if (avcodec_fill_audio_frame(frame, codecContext->channels, codecContext->sample_fmt,
-	                             (uint8_t const*) samples, bufferSize, 0) < 0)
-	{
-		*error = "Could not setup audio frame";
-		avcodec_close(codecContext);
-		av_free(frame);
-		return false;
-	}
-
 	// Open the file
 	std::FILE* file = std::fopen(fileName.c_str(), "wb");
 	if (!file)
 	{
 		*error = "Could not open file";
-		avcodec_close(codecContext);
 		av_free(frame);
+		avcodec_close(codecContext);
 		return false;
 	}
 
-	// Encode audio into frame
-	std::size_t nFrames = (nAudioSamples() - 1) / codecContext->frame_size;
-	std::size_t index = 0;
-	std::size_t nChannels = codecContext->channels;
-	AVPacket packet;
-	// Encode all except for the last frame
-	for (std::size_t iFrame = 0; iFrame < nFrames; ++iFrame)
+	void* samples = av_malloc(bufferSize);
+	if (!samples)
 	{
-		av_init_packet(&packet);
-		packet.data = nullptr; // Allocated by encoder later
-		packet.size = 0;
-
-		for (std::size_t c = 0; c < nChannels; ++c)
-			for (std::size_t i = 0; i < (std::size_t) codecContext->frame_size; ++i)
-				samples[nChannels * i + c] = quantise<int16_t>(audio[c][i + index]);
-
-		int gotOutput;
-		if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
-		{
-			*error = "Error encoding audio frame";
-			avcodec_close(codecContext);
-			av_free(frame);
-			return false;
-		}
-		if (gotOutput)
-		{
-			std::fwrite(packet.data, 1, packet.size, file);
-			av_packet_unref(&packet);
-		}
-
-		index += codecContext->frame_size;
-	}
-	// The last frame is encoded here
-	std::size_t trailing = nAudioSamples() - index;
-	av_init_packet(&packet);
-	packet.data = nullptr; // Allocated by encoder later
-	packet.size = 0;
-
-	for (std::size_t c = 0; c < nChannels; ++c)
-	{
-		for (std::size_t i = 0; i < trailing; ++i)
-			samples[nChannels * i + c] = quantise<int16_t>(audio[c][i + index]);
-		for (std::size_t i = trailing; i < (std::size_t) codecContext->frame_size; ++i)
-			samples[nChannels * i + c] = 0;
-	}
-
-	int gotOutput;
-	if (avcodec_encode_audio2(codecContext, &packet, frame, &gotOutput) < 0)
-	{
-		*error = "Error encoding audio frame";
-		avcodec_close(codecContext);
+		*error = "Unable to allocate samples";
 		av_free(frame);
+		avcodec_close(codecContext);
 		return false;
 	}
-	if (gotOutput)
+	if (avcodec_fill_audio_frame(frame, codecContext->channels, codecContext->sample_fmt,
+	                             (uint8_t const*) samples, bufferSize, 0) < 0)
 	{
-		std::fwrite(packet.data, 1, packet.size, file);
-		av_packet_unref(&packet);
+		*error = "Unable to fill audio frame with samples";
+		av_free(samples);
+		av_free(frame);
+		avcodec_close(codecContext);
+		return false;
 	}
 
-	index += codecContext->frame_size;
+	bool flag;
+	switch (codecContext->sample_fmt)
+	{
+	case AV_SAMPLE_FMT_U8:
+		flag = writeAudioStream<uint8_t, false>(file, audio, codecContext, frame,
+		                                        (uint8_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_S16:
+		flag = writeAudioStream<int16_t, false>(file, audio, codecContext, frame,
+		                                        (int16_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_S32:
+		flag = writeAudioStream<int32_t, false>(file, audio, codecContext, frame,
+		                                        (int32_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_FLT:
+		flag = writeAudioStream<float, false>(file, audio, codecContext, frame,
+		                                      (float* const) samples);
+		break;
+	case AV_SAMPLE_FMT_DBL:
+		flag = writeAudioStream<double, false>(file, audio, codecContext, frame,
+		                                       (double* const) samples);
+		break;
+	case AV_SAMPLE_FMT_U8P:
+		flag = writeAudioStream<uint8_t, true>(file, audio, codecContext, frame,
+		                                       (uint8_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_S16P:
+		flag = writeAudioStream<int16_t, true>(file, audio, codecContext, frame,
+		                                       (int16_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_S32P:
+		flag = writeAudioStream<int32_t, true>(file, audio, codecContext, frame,
+		                                       (int32_t* const) samples);
+		break;
+	case AV_SAMPLE_FMT_FLTP:
+		flag = writeAudioStream<float, true>(file, audio, codecContext, frame,
+		                                     (float* const) samples);
+		break;
+	case AV_SAMPLE_FMT_DBLP:
+		flag = writeAudioStream<double, true>(file, audio, codecContext, frame,
+		                                      (double* const) samples);
+		break;
+	default:
+		*error = "[IO] No valid sample format found";
+		av_free(samples);
+		std::fclose(file);
+		av_free(frame);
+		avcodec_close(codecContext);
+		return false;
+	}
 
-	// Encoding complete
-
+	if (!flag)
+		*error = "Error while encoding audio";
+	av_free(samples);
 	std::fclose(file);
 	av_free(frame);
 	avcodec_close(codecContext);
-	return true;
+	return flag;
 }
