@@ -34,7 +34,12 @@ Q_SIGNALS:
 	 *  repaint()
 	 */
 	void graphicsUpdate();
-	void editorClose();
+
+	/**
+	 * Called in the Kernel thread. Editor intercepts this signal and calls
+	 * delete this
+	 */
+	void bufferDestoyed();
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;

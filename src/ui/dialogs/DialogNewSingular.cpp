@@ -1,7 +1,11 @@
 #include "DialogNewSingular.hpp"
 
-#include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
+#include "../../core/text.hpp"
 
 constexpr std::size_t const sampleRates[] = {44100, 72000};
 
@@ -9,6 +13,10 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent): QDialog(parent),
 	comboChannelLayout(new QComboBox), comboSampleRate(new QComboBox),
 	lineEditDuration(new QLineEdit)
 {
+	QLabel* labelChannelLayout = new QLabel(tr("Channel Layout"));
+	QLabel* labelSampleRate = new QLabel(tr("Sample Rate(/s)"));
+	QLabel* labelDuration = new QLabel(tr("Duration(s)"));
+
 	for (auto const& pair: channelNames)
 		comboChannelLayout->addItem(QString::fromStdString(pair.second));
 	for (std::size_t const sampleRate: sampleRates)
@@ -17,9 +25,19 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent): QDialog(parent),
 	QVBoxLayout* layoutMain = new QVBoxLayout;
 	setLayout(layoutMain);
 
-	layoutMain->addWidget(comboChannelLayout);
-	layoutMain->addWidget(comboSampleRate);
-	layoutMain->addWidget(lineEditDuration);
+	QHBoxLayout* layoutChannelLayout = new QHBoxLayout;
+	layoutChannelLayout->addWidget(labelChannelLayout);
+	layoutChannelLayout->addWidget(comboChannelLayout);
+	layoutMain->addLayout(layoutChannelLayout);
+	QHBoxLayout* layoutSampleRate = new QHBoxLayout;
+	layoutSampleRate->addWidget(labelSampleRate);
+	layoutSampleRate->addWidget(comboSampleRate);
+	layoutMain->addLayout(layoutSampleRate);
+	QHBoxLayout* layoutDuration = new QHBoxLayout;
+	layoutDuration->addWidget(labelDuration);
+	layoutDuration->addWidget(lineEditDuration);
+	layoutMain->addLayout(layoutDuration);
+	
 
 	QDialogButtonBox* buttonBox = new QDialogButtonBox(
 			QDialogButtonBox::Ok |

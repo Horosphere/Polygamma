@@ -36,6 +36,7 @@ public:
 	void saveToFile(std::string fileName) throw(PythonException);
 
 	void notifyUpdate() noexcept;
+	void destroy() noexcept;
 
 	/**
 	 * @brief Registers a listener that is notified (operator()()) when
@@ -43,11 +44,16 @@ public:
 	 */
 	template <typename Listener> void
 	registerUpdateListener(Listener listener) const noexcept;
+	template <typename Listener> void
+	registerDestroyListener(Listener listener) const noexcept;
 protected:
 	/**
 	 * Subclasses shall call this to signal a graphics update
 	 */
 	boost::signals2::signal<void ()> signalUpdate;
+
+private:
+	boost::signals2::signal<void ()> signalDestroy;
 };
 
 } // namespace pg
@@ -68,9 +74,18 @@ inline void pg::Buffer::notifyUpdate() noexcept
 {
 	signalUpdate();
 }
+inline void pg::Buffer::destroy() noexcept
+{
+	signalDestroy();
+}
 template <typename Listener> inline void
 pg::Buffer::registerUpdateListener(Listener listener) const noexcept
 {
 	const_cast<boost::signals2::signal<void ()>&>(signalUpdate).connect(listener);
+}
+template <typename Listener> inline void
+pg::Buffer::registerDestroyListener(Listener listener) const noexcept
+{
+	const_cast<boost::signals2::signal<void ()>&>(signalDestroy).connect(listener);
 }
 #endif // !_POLYGAMMA_CORE_BUFFER_HPP__

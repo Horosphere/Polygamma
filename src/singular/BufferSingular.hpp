@@ -11,7 +11,6 @@ extern "C"
 
 #include "../core/python.hpp"
 #include "../core/polygamma.hpp"
-#include "../core/text.hpp"
 #include "../core/Buffer.hpp"
 #include "../math/Vector.hpp"
 

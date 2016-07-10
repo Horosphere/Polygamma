@@ -113,6 +113,7 @@ BOOST_PYTHON_MODULE(pg)
 	class_<pg::Kernel, boost::noncopyable>("Kernel", no_init)
 	.def_readonly("buffers", &pg::Kernel::getBuffers)
 	.def("fromFileImport", &pg::Kernel::fromFileImport)
+	.def("eraseBuffer", &pg::Kernel::eraseBuffer)
 	.def("createSingular", &pg::Kernel::createSingular);
 
 	// If this line does not show, then the above code has thrown an exception

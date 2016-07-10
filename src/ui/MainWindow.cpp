@@ -253,13 +253,6 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 
 	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
-	connect(editor, &Editor::editorClose,
-	        this, [this, buffer]
-	{
-		this->kernel->pushSpecial(Kernel::Special{Kernel::Special::Deletion, {buffer}});
-		this->onFocusChanged(nullptr, nullptr);
-	});
-
 }
 
 void pg::MainWindow::onExecute(QString const& script)

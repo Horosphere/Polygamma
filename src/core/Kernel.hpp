@@ -26,17 +26,14 @@ class Kernel final
 public:
 	static constexpr std::size_t EVENTLOOP_SIZE = 16;
 	/**
+	 * @warning Currently has no usage.
 	 * @brief Each instance represents a special operation for the Kernel.
 	 */
 	struct Special
 	{
 		enum Type
 		{
-			/**
-			 * @brief Deletes a buffer without sending a closing signal to its
-			 *  corresponding GUI.
-			 */
-			Deletion
+			Compute
 		} type;
 		union
 		{
@@ -104,7 +101,12 @@ public:
 	void pushSpecial(Special const&);
 
 	/**
-	 * Exposed to Script
+	 * Exposed to Python
+	 * @brief Erases a existing buffer in the buffers.
+	 */
+	void eraseBuffer(std::size_t index) throw(PythonException);
+	/**
+	 * Exposed to Python 
 	 * @brief Gets a immutable list of buffers.
 	 */
 	std::vector<Buffer*> getBuffers() noexcept;
@@ -136,12 +138,6 @@ private:
 	 */
 	void pushBuffer(Buffer*);
 
-	/**
-	 * Nothing happens if the erased buffer is nullptr. The buffer is deleted
-	 * regardless of whether it is in the buffers or not.
-	 * @brief Erases a existing buffer in the buffers.
-	 */
-	void eraseBuffer(std::size_t index);
 
 	Configuration* config;
 
@@ -227,11 +223,5 @@ pg::Kernel::pushBuffer(Buffer* buffer)
 		buffers.push_back(buffer);
 		signalBuffer(buffer);
 	}
-}
-inline void
-pg::Kernel::eraseBuffer(std::size_t index)
-{
-	delete buffers[index];
-	buffers.erase(buffers.begin() + index);
 }
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

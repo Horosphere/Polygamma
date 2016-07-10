@@ -50,8 +50,15 @@ std::map<ChannelLayout, std::string> const channelNames = boost::assign::map_lis
 
 std::string timePointToString(std::size_t duration,
                              std::size_t sampleRate) noexcept;
+/**
+ * @brief Converts a string to samples
+ */
 std::size_t stringToTimePoint(std::string string,
                              std::size_t sampleRate) throw(PythonException);
+/**
+ * @brief Converts a string to seconds
+ */
+std::size_t stringToTimePoint(std::string string) throw(PythonException);
 
 } // namespace pg
 
@@ -100,6 +107,29 @@ pg::stringToTimePoint(std::string string, std::size_t sampleRate) throw(PythonEx
 			sampleRate * std::stoul(tokens[2]) +
 			sampleRate * 60 * std::stoul(tokens[1]) +
 			sampleRate * 60 * 60 * std::stoul(tokens[0]);
+	default:
+		throw PythonException{"Invalid duration", PythonException::ValueError};
+	}
+}
+inline std::size_t
+pg::stringToTimePoint(std::string string) throw(PythonException) 
+{
+	std::vector<std::string> tokens;
+
+	boost::algorithm::split(tokens, string, boost::algorithm::is_any_of(":"));
+
+	switch(tokens.size())
+	{
+	case 0:
+		return 0;
+	case 1:
+		return std::stoul(tokens[0]);
+	case 2:
+		return std::stoul(tokens[1]) + 60 * std::stoul(tokens[0]);
+	case 3:
+		return std::stoul(tokens[2]) +
+			60 * std::stoul(tokens[1]) +
+			60 * 60 * std::stoul(tokens[0]);
 	default:
 		throw PythonException{"Invalid duration", PythonException::ValueError};
 	}

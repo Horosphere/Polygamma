@@ -1,5 +1,7 @@
 #include "Editor.hpp"
 
+#include <QCloseEvent>
+
 pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
                    QWidget* parent): Panel(parent),
 	kernel(kernel)
@@ -14,6 +16,9 @@ pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
 	{
 		this->repaint();
 	});
+	buffer->registerDestroyListener([this](){ this->bufferDestoyed(); });
+	connect(this, &Editor::bufferDestoyed,
+			this, [this]() { delete this; }, Qt::QueuedConnection);
 }
 pg::Editor::~Editor()
 {
@@ -21,6 +26,8 @@ pg::Editor::~Editor()
 
 void pg::Editor::closeEvent(QCloseEvent* event)
 {
-	Q_EMIT editorClose();
-	Panel::closeEvent(event);
+	std::size_t index = kernel->bufferIndex(getBuffer());
+	Q_EMIT execute(std::string(PYTHON_KERNEL) + ".eraseBuffer(" +
+			std::to_string(index) + ')');
+	event->ignore();
 }

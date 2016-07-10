@@ -12,6 +12,8 @@ extern "C"
 }
 #include <boost/timer/timer.hpp>
 
+#include "../core/text.hpp"
+
 namespace pg
 {
 

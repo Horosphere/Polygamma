@@ -86,12 +86,14 @@ void pg::Kernel::start()
 				if (!result.is_none())
 					signalOut(extract<std::string>(str(result))());
 			}
-			catch (boost::python::error_already_set const&)
+			catch (boost::python::error_already_set&)
 			{
 				signalErr(pythonTraceBack());
 				PyErr_Clear();
 			}
 		}
+		// Currently unused
+		/*
 		Special special;
 		while (specialQueue.pop(special))
 		{
@@ -104,13 +106,21 @@ void pg::Kernel::start()
 				break;
 			}
 		}
+		*/
 		std::this_thread::yield(); // Avoids busy waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 	std::cout << "[Ker] stopping..." << std::endl;
 }
 
-
+void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
+{
+	if (buffers.size() <= index)
+		throw PythonException{"Buffer index out of range", PythonException::ValueError};
+	buffers[index]->destroy();
+	delete buffers[index];
+	buffers.erase(buffers.begin() + index);
+}
 void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
 {
 	// TODO: Prevent user from importing the same file multiple times.
@@ -126,7 +136,7 @@ void pg::Kernel::createSingular(ChannelLayout channelLayout,
 {
 	std::string error;
 
-	std::size_t d = stringToTimePoint(duration, sampleRate);
+	std::size_t d = stringToTimePoint(duration) * sampleRate;
 	BufferSingular* buffer = BufferSingular::create(channelLayout, sampleRate, d,
 	                         &error);
 	if (buffer) pushBuffer(buffer);
