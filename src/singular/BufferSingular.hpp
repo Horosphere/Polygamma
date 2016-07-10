@@ -4,20 +4,28 @@
 #include <vector>
 #include <utility>
 
+extern "C"
+{
+#include <libavutil/channel_layout.h>
+}
+
 #include "../core/python.hpp"
 #include "../core/polygamma.hpp"
+#include "../core/text.hpp"
 #include "../core/Buffer.hpp"
 #include "../math/Vector.hpp"
 
 namespace pg
 {
 
+
 class BufferSingular final: public Buffer
 {
 public:
 	typedef std::pair<std::size_t, std::size_t> AudioInterval;
+
 	/**
-	 * This factory method is NOT directly exposed to Python, as it is required
+	 * This factory method is not directly exposed to Python, as it is required
 	 * (in Python) to throw exceptions upon failure.
 	 *
 	 * @brief Reads a BufferSingular from the specified file.
@@ -28,7 +36,24 @@ public:
 	 *  nullptr otherwise.
 	 */
 	static BufferSingular* fromFile(std::string fileName,
-	                                std::string* const error);
+	                                std::string* const error) noexcept;
+	/**
+	 * This factory method is not directly exposed to Python, as it is required
+	 * (in Python) to throw exceptions upon failure.
+	 *
+	 * @brief Creates a buffer singular from the parameters.
+	 * @param[in] channelLayout See libavutil/channel_layout.h in ffmpeg's
+	 *  documentation.
+	 * @param[in] bitRate
+	 * @param[in] sampleRate
+	 * @param[out] error is filled when the creation fails.
+	 * @return A BufferSingular object if the construction is successiful.
+	 *  nullptr otherwise.
+	 */
+	static BufferSingular* create(ChannelLayout channelLayout,
+	                              std::size_t sampleRate,
+	                              std::size_t duration,
+	                              std::string* const error) noexcept;
 
 
 	virtual Type getType() const noexcept override;
@@ -57,15 +82,14 @@ public:
 	 * @brief Sets a selection on the channel given. Only one selection can exist
 	 *  on a channel at a time.
 	 */
-	void select(std::size_t channel, std::size_t begin, std::size_t end)
-	throw(PythonException);
+	void select(std::size_t channel, std::size_t begin,
+	            std::size_t end) throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * @brief Sets a selection on the channel given. Only one selection can exist
 	 *  on a channel at a time.
 	 */
-	void select(std::size_t channel, AudioInterval selection)
-	throw(PythonException);
+	void select(std::size_t channel, AudioInterval selection) throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * Has the same effect as select(channel, std::make_pair(0, 0));
@@ -85,11 +109,11 @@ public:
 	AudioInterval getSelection(std::size_t channel) const throw(PythonException);
 
 	std::size_t sampleRate;
-	std::size_t bitRate;
-	uint64_t channelLayout;
 private:
 	BufferSingular();
-	BufferSingular(std::size_t nAudioChannels);
+	BufferSingular(ChannelLayout channelLayout);
+
+	ChannelLayout channelLayout;
 
 	// These two vectors must have the same length.
 	std::vector<Vector<real>> audio;
@@ -106,8 +130,10 @@ bool isEmpty(BufferSingular::AudioInterval const&) noexcept;
 inline pg::BufferSingular::BufferSingular()
 {
 }
-inline pg::BufferSingular::BufferSingular(std::size_t nAudioChannels):
-	audio(nAudioChannels), selections(nAudioChannels)
+inline pg::BufferSingular::BufferSingular(ChannelLayout channelLayout):
+	channelLayout(channelLayout),
+	audio(av_get_channel_layout_nb_channels(channelLayout)),
+	selections(audio.size())
 {
 	for (auto& selection: selections)
 		selection.first = selection.second = 0;

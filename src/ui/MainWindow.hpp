@@ -50,6 +50,7 @@ private Q_SLOTS:
 	void onExecute(QString const&);
 	void onFocusChanged(QWidget* old, QWidget* now);
 
+
 private:
 	// Handlers
 	Kernel* const kernel;
@@ -75,5 +76,5 @@ private:
 
 } // namespace pg
 
-#endif // !_POLYGAMMA_UI_MAINWINDOW_HPP__
 
+#endif // !_POLYGAMMA_UI_MAINWINDOW_HPP__

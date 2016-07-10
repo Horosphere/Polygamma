@@ -19,10 +19,13 @@ namespace pg
 typedef double real;
 typedef std::complex<real> complex;
 
+typedef uint64_t ChannelLayout;
+
 /**
  * @brief Returns the version information.
  */
 std::string about();
+
 
 } // namespace pg
 
@@ -33,6 +36,7 @@ inline std::string pg::about()
 	return "Polygamma 0.0.1\n"
 	       "Author: Horosphere\n";
 }
+
 
 #endif // !_POLYGAMMA_CORE_POLYGAMMA_HPP__
 

@@ -13,10 +13,11 @@
 #include <QResource>
 #include <QVBoxLayout>
 
-#include "DialogPreferences.hpp"
-#include "Terminal.hpp"
-#include "editors/EditorSingular.hpp"
 #include "ui.hpp"
+#include "Terminal.hpp"
+#include "dialogs/DialogPreferences.hpp"
+#include "dialogs/DialogNewSingular.hpp"
+#include "editors/EditorSingular.hpp"
 
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
@@ -50,6 +51,11 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	// Menus
 	// Menu File
 	QMenu* menuFile = menuBar()->addMenu(tr("File"));
+
+	// Menu File -> New
+	QMenu* menuFileNew = menuFile->addMenu(tr("New"));
+	QAction* actionFileNewSingular = new QAction(tr("Singular..."), this);
+	menuFileNew->addAction(actionFileNewSingular);
 	QAction* actionFileImport = new QAction(tr("Import..."), this);
 	menuFile->addAction(actionFileImport);
 	ActionFlagged* actionFileSaveAs = new ActionFlagged(tr("Save As..."), this);
@@ -95,6 +101,20 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	});
 
 	// Menu actions
+	connect(actionFileNewSingular, &QAction::triggered,
+	        this, [this]()
+	{
+		DialogNewSingular* dialog = new DialogNewSingular(this);
+		if (dialog->exec())
+		{
+			auto values = dialog->values();
+			std::string script = std::string(PYTHON_KERNEL) + ".createSingular(" +
+			std::to_string(std::get<0>(values)) + ", " +
+			std::to_string(std::get<1>(values)) + ", \"" +
+			std::get<2>(values) + "\")";
+			this->terminal->onExecute(Script(script));
+		}
+	});
 	connect(actionFileImport, &QAction::triggered,
 	        this, [this]()
 	{
@@ -252,7 +272,7 @@ void pg::MainWindow::onExecute(QString const& script)
 	}
 	else
 		qDebug() << "[UI] Current editor null but command is called: "
-			<< script;
+		         << script;
 }
 
 void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)

@@ -5,10 +5,12 @@
 #include <sstream>
 #include <thread>
 
+#include "text.hpp"
+
 pg::Kernel::Kernel(Configuration* config): config(config)
 {
 	// Must be placed here instead of the initialiser list to avoid crashing.
-	moduleMain = boost::python::import("__main__");
+	boost::python::object moduleMain = boost::python::import("__main__");
 	dictMain = boost::python::extract<boost::python::dict>(
 	             moduleMain.attr("__dict__"));
 }
@@ -63,13 +65,11 @@ void pg::Kernel::start()
 	dictMain["Redirector"] = boost::python::class_<Redirector>("Redirector",
 	                         boost::python::no_init)
 	                         .def("write", &Redirector::write);
-	boost::python::import("sys").attr("stdout") =
-	  Redirector(&signalOut, "[Out] ");
-	boost::python::import("sys").attr("stderr") =
-	  Redirector(&signalErr, "[Err] ");
+	boost::python::import("sys").attr("stdout") = Redirector(&signalOut, "[Out] ");
+	boost::python::import("sys").attr("stderr") = Redirector(&signalErr, "[Err] ");
+	boost::python::exec("import pg", dictMain);
 
-
-	std::cout << "Kernel starting..." << std::endl;
+	std::cout << "[Ker] starting..." << std::endl;
 
 	running = true;
 	while (running)
@@ -77,7 +77,7 @@ void pg::Kernel::start()
 		Script script;
 		while (scriptQueue.pop(script))
 		{
-			std::cout << "[Py] " << (std::string) script << std::endl;
+			std::cout << "[Ker] " << (std::string) script << std::endl;
 			try
 			{
 				using namespace boost::python;
@@ -107,7 +107,7 @@ void pg::Kernel::start()
 		std::this_thread::yield(); // Avoids busy waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
-	std::cout << "Kernel stopping..." << std::endl;
+	std::cout << "[Ker] stopping..." << std::endl;
 }
 
 
@@ -117,7 +117,18 @@ void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
 	std::string error;
 	BufferSingular* buffer = BufferSingular::fromFile(fileName, &error);
 	if (buffer) pushBuffer(buffer);
-	else
-		throw PythonException{error, PythonException::IOError};
+	else throw PythonException{error, PythonException::IOError};
 }
 
+void pg::Kernel::createSingular(ChannelLayout channelLayout,
+                                std::size_t sampleRate,
+                                std::string duration) throw(PythonException)
+{
+	std::string error;
+
+	std::size_t d = stringToTimePoint(duration, sampleRate);
+	BufferSingular* buffer = BufferSingular::create(channelLayout, sampleRate, d,
+	                         &error);
+	if (buffer) pushBuffer(buffer);
+	else throw PythonException{error, PythonException::ValueError};
+}

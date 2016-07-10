@@ -7,7 +7,7 @@
 #include <QDialogButtonBox>
 #include <QDebug>
 
-#include "ui.hpp"
+#include "../ui.hpp"
 
 
 #define DP_ADD_PAGE(name, displayName) \
@@ -21,8 +21,7 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
     QWidget* parent):
 	QDialog(parent), config(config),
 	// Various options:
-	uiBG(new ColourButton),
-	uiTerminalBG(new ColourButton)
+	uiBG(new ColourButton), uiTerminalBG(new ColourButton)
 {
 	QHBoxLayout* layoutMain = new QHBoxLayout;
 	setLayout(layoutMain);

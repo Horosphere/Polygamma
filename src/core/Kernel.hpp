@@ -14,7 +14,6 @@
 namespace pg
 {
 
-constexpr std::size_t KERNEL_EVENTLOOP_SIZE = 16;
 
 /**
  * This class is responsible for computations.
@@ -25,6 +24,7 @@ constexpr std::size_t KERNEL_EVENTLOOP_SIZE = 16;
 class Kernel final
 {
 public:
+	static constexpr std::size_t EVENTLOOP_SIZE = 16;
 	/**
 	 * @brief Each instance represents a special operation for the Kernel.
 	 */
@@ -34,9 +34,9 @@ public:
 		{
 			/**
 			 * @brief Deletes a buffer without sending a closing signal to its
-			 *	corresponding GUI.
+			 *  corresponding GUI.
 			 */
-			Deletion 
+			Deletion
 		} type;
 		union
 		{
@@ -56,7 +56,7 @@ public:
 	/**
 	 * @warning Do not let this function execute concurrently in several threads.
 	 * @brief Starts the Kernel event loop. This should be ran in a different
-	 *	thread.
+	 *  thread.
 	 */
 	void start();
 	/**
@@ -69,7 +69,7 @@ public:
 	 * @brief Register a callback to receive the stdout output of the kernel.
 	 * @tparam Listener A function that accepts (std::string).
 	 * @param listener Listener::operator()(std::string) will be called
-	 *	occasionally.
+	 *  occasionally.
 	 */
 	template<typename Listener> void
 	registerStdOutListener(Listener const& listener) noexcept;
@@ -77,17 +77,17 @@ public:
 	 * @brief Register a callback to receive the stdout output of the kernel.
 	 * @tparam Listener A function that accepts (std::string).
 	 * @param listener Listener::operator()(std::string) will be called
-	 *	occasionally.
+	 *  occasionally.
 	 */
 	template<typename Listener> void
 	registerStdErrListener(Listener const& listener) noexcept;
 
 	/**
 	 * @brief Register a callback to receive the newly created Buffers. The
-	 *	ownership of the buffer object remains in the Kernel.
+	 *  ownership of the buffer object remains in the Kernel.
 	 * @tparam Listener A function that accepts (Buffer*).
 	 * @param listener Listener::operator()(Buffer*) will be called
-	 *	occasionally.
+	 *  occasionally.
 	 */
 	template<typename Listener> void
 	registerBufferListener(Listener const& listener) noexcept;
@@ -111,17 +111,21 @@ public:
 
 	/**
 	 * @brief Determine the index of the buffer. Returns the size of the buffer
-	 *	if the buffer does not exist in the buffers.
+	 *  if the buffer does not exist in the buffers.
 	 */
 	std::size_t bufferIndex(Buffer const*) const noexcept;
 
 
 	/**
-	 * Exposed to Script 
+	 * Exposed to Script
 	 * @brief "Import" as opposed to "Open" a file. It does not work on internal
-	 *	Polygamma project files.
+	 *  Polygamma project files.
 	 */
 	void fromFileImport(std::string fileName) throw(PythonException);
+
+	void createSingular(ChannelLayout channelLayout,
+	                    std::size_t sampleRate,
+	                    std::string duration) throw(PythonException);
 
 private:
 	// Not public since they are not thread safe
@@ -140,13 +144,13 @@ private:
 	void eraseBuffer(std::size_t index);
 
 	Configuration* config;
-	
+
 
 	/**
 	 * Concurrent event queue
 	 */
-	boost::lockfree::spsc_queue<Script, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> scriptQueue;
-	boost::lockfree::spsc_queue<Special, boost::lockfree::capacity<KERNEL_EVENTLOOP_SIZE>> specialQueue;
+	boost::lockfree::spsc_queue<Script, boost::lockfree::capacity<EVENTLOOP_SIZE>> scriptQueue;
+	boost::lockfree::spsc_queue<Special, boost::lockfree::capacity<EVENTLOOP_SIZE>> specialQueue;
 	// Signals
 	boost::signals2::signal<void (std::string)> signalOut;
 	boost::signals2::signal<void (std::string)> signalErr;
@@ -159,7 +163,6 @@ private:
 	std::vector<Buffer*> buffers;
 
 	// Script
-	boost::python::object moduleMain;
 	boost::python::dict dictMain;
 };
 
@@ -218,7 +221,8 @@ pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
 inline void
 pg::Kernel::pushBuffer(Buffer* buffer)
 {
-	if (buffer && std::find(buffers.begin(), buffers.end(), buffer) == buffers.end())
+	if (buffer && std::find(buffers.begin(), buffers.end(), buffer)
+			== buffers.end())
 	{
 		buffers.push_back(buffer);
 		signalBuffer(buffer);

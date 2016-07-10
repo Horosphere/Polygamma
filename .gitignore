@@ -3,6 +3,7 @@ build
 *.pyc
 *.swp
 makescript
+src/tags
 
 # Hidden files
 .*

@@ -42,43 +42,45 @@ qt5_add_resources(QtCompiledResources resources/Polygamma.qrc)
 # Auto-generated. Do not edit. All changes will be undone
 set(SourceFiles
     src/main.cpp
-    src/singular/audio.cpp
-    src/singular/BufferSingular.cpp
+    src/core/Buffer.cpp
+    src/core/Configuration.cpp
     src/core/Kernel.cpp
     src/core/python.cpp
-    src/core/Configuration.cpp
-    src/core/Buffer.cpp
-    src/math/fourier.cpp
+    src/ui/Terminal.cpp
     src/ui/mainWindowAccessories.cpp
     src/ui/MainWindow.cpp
     src/ui/ui.cpp
-    src/ui/Terminal.cpp
-    src/ui/DialogPreferences.cpp
-    src/ui/util/SyntaxHighlighterPython.cpp
-    src/ui/util/ColourButton.cpp
-    src/ui/util/actions.cpp
-    src/ui/util/Axis.cpp
-    src/ui/editors/EditorSingular.cpp
-    src/ui/editors/Editor.cpp
     src/ui/graphics/Viewport2.cpp
     src/ui/graphics/Waveform.cpp
+    src/ui/editors/EditorSingular.cpp
+    src/ui/editors/Editor.cpp
     src/ui/panels/Panel.cpp
+    src/ui/util/Axis.cpp
+    src/ui/util/SyntaxHighlighterPython.cpp
+    src/ui/util/actions.cpp
+    src/ui/util/ColourButton.cpp
+    src/ui/dialogs/DialogNewSingular.cpp
+    src/ui/dialogs/DialogPreferences.cpp
+    src/singular/BufferSingular.cpp
+    src/singular/audio.cpp
+    src/math/fourier.cpp
    )
 set(QObjectHeaders
-    src/ui/DialogPreferences.hpp
-    src/ui/ui.hpp
     src/ui/mainWindowAccessories.hpp
-    src/ui/MainWindow.hpp
     src/ui/Terminal.hpp
-    src/ui/util/SyntaxHighlighterPython.hpp
-    src/ui/util/Axis.hpp
-    src/ui/util/ColourButton.hpp
-    src/ui/util/actions.hpp
-    src/ui/editors/Editor.hpp
-    src/ui/editors/EditorSingular.hpp
-    src/ui/graphics/Viewport2.hpp
+    src/ui/MainWindow.hpp
+    src/ui/ui.hpp
     src/ui/graphics/Waveform.hpp
+    src/ui/graphics/Viewport2.hpp
+    src/ui/editors/EditorSingular.hpp
+    src/ui/editors/Editor.hpp
     src/ui/panels/Panel.hpp
+    src/ui/util/ColourButton.hpp
+    src/ui/util/SyntaxHighlighterPython.hpp
+    src/ui/util/actions.hpp
+    src/ui/util/Axis.hpp
+    src/ui/dialogs/DialogNewSingular.hpp
+    src/ui/dialogs/DialogPreferences.hpp
    )
 # Auto-generated end
 

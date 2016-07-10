@@ -6,8 +6,8 @@
 #include <QListWidgetItem>
 #include <QStackedWidget>
 
-#include "util/ColourButton.hpp"
-#include "../core/Configuration.hpp"
+#include "../util/ColourButton.hpp"
+#include "../../core/Configuration.hpp"
 
 namespace pg
 {

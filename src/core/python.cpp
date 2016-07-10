@@ -2,6 +2,10 @@
 
 #include <cassert>
 
+extern "C"
+{
+#include <libavutil/channel_layout.h>
+}
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include "Kernel.hpp"
@@ -108,7 +112,11 @@ BOOST_PYTHON_MODULE(pg)
 
 	class_<pg::Kernel, boost::noncopyable>("Kernel", no_init)
 	.def_readonly("buffers", &pg::Kernel::getBuffers)
-	.def("fromFileImport", &pg::Kernel::fromFileImport);
+	.def("fromFileImport", &pg::Kernel::fromFileImport)
+	.def("createSingular", &pg::Kernel::createSingular);
+
+	// If this line does not show, then the above code has thrown an exception
+	std::cout << "Python module initialisation complete" << std::endl;
 }
 
 void pg::initPython()
@@ -117,6 +125,33 @@ void pg::initPython()
 	Py_Initialize();
 
 	using namespace boost::python;
-	object dictMain = extract<dict>(import("__main__").attr("__dict__"));
-	exec("import pg", dictMain);
+	object module = import("pg");
+
+	module.attr("CH_LAYOUT_MONO") = AV_CH_LAYOUT_MONO;
+	module.attr("CH_LAYOUT_2POINT1") = AV_CH_LAYOUT_2POINT1;
+	module.attr("CH_LAYOUT_2_1") = AV_CH_LAYOUT_2_1;
+	module.attr("CH_LAYOUT_SURROUND") = AV_CH_LAYOUT_SURROUND;
+	module.attr("CH_LAYOUT_3POINT1") = AV_CH_LAYOUT_3POINT1;
+	module.attr("CH_LAYOUT_4POINT0") = AV_CH_LAYOUT_4POINT0;
+	module.attr("CH_LAYOUT_4POINT1") = AV_CH_LAYOUT_4POINT1;
+	module.attr("CH_LAYOUT_2_2") = AV_CH_LAYOUT_2_2;
+	module.attr("CH_LAYOUT_QUAD") = AV_CH_LAYOUT_QUAD;
+	module.attr("CH_LAYOUT_5POINT0") = AV_CH_LAYOUT_5POINT0;
+	module.attr("CH_LAYOUT_5POINT1") = AV_CH_LAYOUT_5POINT1;
+	module.attr("CH_LAYOUT_5POINT0_BACK") = AV_CH_LAYOUT_5POINT0_BACK;
+	module.attr("CH_LAYOUT_5POINT1_BACK") = AV_CH_LAYOUT_5POINT1_BACK;
+	module.attr("CH_LAYOUT_6POINT0") = AV_CH_LAYOUT_6POINT0;
+	module.attr("CH_LAYOUT_6POINT0_FRONT") = AV_CH_LAYOUT_6POINT0_FRONT;
+	module.attr("CH_LAYOUT_HEXAGONAL") = AV_CH_LAYOUT_HEXAGONAL;
+	module.attr("CH_LAYOUT_6POINT1") = AV_CH_LAYOUT_6POINT1;
+	module.attr("CH_LAYOUT_6POINT1_BACK") = AV_CH_LAYOUT_6POINT1_BACK;
+	module.attr("CH_LAYOUT_6POINT1_FRONT") = AV_CH_LAYOUT_6POINT1_FRONT;
+	module.attr("CH_LAYOUT_7POINT0") = AV_CH_LAYOUT_7POINT0;
+	module.attr("CH_LAYOUT_7POINT0_FRONT") = AV_CH_LAYOUT_7POINT0_FRONT;
+	module.attr("CH_LAYOUT_7POINT1") = AV_CH_LAYOUT_7POINT1;
+	module.attr("CH_LAYOUT_7POINT1_WIDE") = AV_CH_LAYOUT_7POINT1_WIDE;
+	module.attr("CH_LAYOUT_7POINT1_WIDE_BACK") = AV_CH_LAYOUT_7POINT1_WIDE_BACK;
+	module.attr("CH_LAYOUT_OCTAGONAL") = AV_CH_LAYOUT_OCTAGONAL;
+	module.attr("CH_LAYOUT_HEXADECAGONAL") = AV_CH_LAYOUT_HEXADECAGONAL;
+	module.attr("CH_LAYOUT_STEREO_DOWNMIX") = AV_CH_LAYOUT_STEREO_DOWNMIX;
 }

@@ -64,9 +64,9 @@ readAudioStream(real** const channels, std::size_t* nSamples,
 
 /**
  * @brief Write the channels to the file. This function is not responsible for
- *	any allocations
+ *  any allocations
  * @param samples A pre-allocated region (frame size * number of channels) as
- *	buffer.
+ *  buffer.
  */
 template<typename Value, bool planar> bool
 writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
@@ -271,7 +271,7 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 	return true;
 }
 pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
-    std::string* const error)
+    std::string* const error) noexcept
 {
 	std::cout << "[IO] Reading BufferSingular from file " << fileName
 	          << std::endl;
@@ -291,8 +291,7 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 	}
 
 	// Finding audio channels
-	// TODO: After video becomes supported, no error will be produced if the file
-	// has no audio stream.
+	// TODO: Add video support and allows reading of audioless media
 	AVCodec* codec = nullptr;
 	int streamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
 	                                      -1, -1, &codec, 0);
@@ -311,14 +310,14 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		*error = "Unable to open codec";
 		return nullptr;
 	}
-	std::cout << "[IO]Found audio stream:"
+	std::cout << "[IO] Found audio stream:"
 	          << std::endl;
-	std::cout << "[IO]Channels: " << codecContext->channels
+	std::cout << "[IO] Channels: " << codecContext->channels
 	          << ", Sample rate: " << codecContext->sample_rate
 	          << "/s, Format: " << av_get_sample_fmt_name(codecContext->sample_fmt)
-	          << ", Bytes/Sample: " << av_get_bytes_per_sample(codecContext->sample_fmt)
+	          << ", Bitrate: " << codecContext->bit_rate
 	          << ", Duration: " << formatContext->duration / AV_TIME_BASE
-	          << " s" << std::endl;
+	          << "s" << std::endl;
 
 	AVFrame* frame = av_frame_alloc();
 	if (!frame)
@@ -389,10 +388,8 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 		return nullptr;
 	}
 
-	BufferSingular* buffer = new BufferSingular(codecContext->channels);
+	BufferSingular* buffer = new BufferSingular(codecContext->channel_layout);
 	buffer->sampleRate = codecContext->sample_rate;
-	buffer->bitRate = codecContext->bit_rate;
-	buffer->channelLayout = codecContext->channel_layout;
 	// Move channels into the buffer
 	for (std::size_t i = 0; i < (std::size_t)codecContext->channels; ++i)
 	{
@@ -409,7 +406,26 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 
 	return buffer;
 }
-
+pg::BufferSingular* pg::BufferSingular::create(ChannelLayout cl,
+    std::size_t sampleRate, std::size_t duration, std::string* const error)
+noexcept
+{
+	std::cout << "[Ker] Creating BufferSingular with channel layout "
+	          << channelNames.at(cl)
+	          << ", Sample Rate: " << sampleRate
+	          << ", Duration: " << duration
+	          << std::endl;
+	if (duration == 0)
+	{
+		*error = "Duration too short";
+		return nullptr;
+	}
+	BufferSingular* buffer = new BufferSingular(cl);
+	buffer->sampleRate = sampleRate;
+	for (auto& channel: buffer->audio)
+		channel = Vector<real>(duration, 0.0);
+	return buffer;
+}
 template<typename Value, bool planar> inline bool
 pg::writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
                      AVCodecContext* const codecContext, AVFrame* const frame,
@@ -523,7 +539,7 @@ bool pg::BufferSingular::saveToFile(std::string fileName,
 		return false;
 	}
 
-	codecContext->bit_rate = this->bitRate;
+	codecContext->bit_rate = 128000; // TODO: Calculate this automatically
 
 	// Use the last sample format
 	AVSampleFormat const* sampleFormat = codec->sample_fmts;
@@ -645,6 +661,7 @@ bool pg::BufferSingular::saveToFile(std::string fileName,
 		avcodec_close(codecContext);
 		return false;
 	}
+
 
 	if (!flag)
 		*error = "Error while encoding audio";

@@ -31,6 +31,7 @@ public:
 	 * @param size The number of elements to be allocated.
 	 */
 	Vector(std::size_t size);
+	Vector(std::size_t size, T const& value);
 	/**
 	 * @brief Creates a vector of pre-allocated data. The ownership of the
 	 *  pointer is transferred to the Vector object.
@@ -110,6 +111,12 @@ pg::Vector<T>::Vector(std::size_t size):
 	data(size ? (T*) std::malloc(size * sizeof(T)) : nullptr)
 #endif
 {
+}
+template <typename T> inline
+pg::Vector<T>::Vector(std::size_t size, T const& value): Vector(size)
+{
+	for (std::size_t i = 0; i < size ; ++i)
+		data[i] = value;
 }
 template <typename T> inline
 pg::Vector<T>::Vector(std::size_t size, T* const data):
