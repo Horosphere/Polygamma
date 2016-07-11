@@ -55,6 +55,8 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 
 	connect(buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
 	        this, &DialogPreferences::save);
+	connect(buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked,
+	        this, &DialogPreferences::hide);
 
 	// Load settings from kernel
 	onReload();

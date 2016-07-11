@@ -22,8 +22,18 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
-	kernel(kernel), config(config), terminal(new Terminal(kernel, this)),
-	lineEditScript(new LineEditScript), lineEditLog(new QLineEdit),
+	kernel(kernel), config(config),
+
+	// UI
+	terminal(new Terminal(kernel, this)),
+	lineEditScript(new LineEditScript),
+	lineEditLog(new QLineEdit),
+
+	// Dialogs
+	dialogPreferences(new DialogPreferences(config, this)),
+	dialogNewSingular(new DialogNewSingular(this)),
+
+	// Dynamics
 	currentEditor(nullptr)
 {
 	setFocusPolicy(Qt::NoFocus);
@@ -41,6 +51,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	action->flags = fl; \
 	actionsFlagged.push_back(action); \
 	menu->addAction(action)
+// Also used for ActionDialog
 #define ADD_ACTIONSCRIPTED(menu, action, fl) \
 	action->flags = fl; \
 	connect(action, &ActionScripted::execute, \
@@ -54,15 +65,23 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Menu File -> New
 	QMenu* menuFileNew = menuFile->addMenu(tr("New"));
-	QAction* actionFileNewSingular = new QAction(tr("Singular..."), this);
+
+	ActionDialog* actionFileNewSingular = new ActionDialog(dialogNewSingular,
+	    tr("Singular..."),
+	    this);
+	connect(actionFileNewSingular, &ActionDialog::execute,
+			this, &MainWindow::onExecute);
 	menuFileNew->addAction(actionFileNewSingular);
+
 	QAction* actionFileImport = new QAction(tr("Import..."), this);
 	menuFile->addAction(actionFileImport);
+
 	ActionFlagged* actionFileSaveAs = new ActionFlagged(tr("Save As..."), this);
 	ADD_ACTIONFLAGGED(menuFile, actionFileSaveAs, ActionFlagged::FLAG_FULL);
 
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
+
 	ActionScripted* actionEditSummon = new ActionScripted("print('summon')", "Summon", this);
 	connect(actionEditSummon, &ActionScripted::execute,
 	        this, &MainWindow::onExecute);
@@ -101,20 +120,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	});
 
 	// Menu actions
-	connect(actionFileNewSingular, &QAction::triggered,
-	        this, [this]()
-	{
-		DialogNewSingular* dialog = new DialogNewSingular(this);
-		if (dialog->exec())
-		{
-			auto values = dialog->values();
-			std::string script = std::string(PYTHON_KERNEL) + ".createSingular(" +
-			                     std::to_string(std::get<0>(values)) + ", " +
-			                     std::to_string(std::get<1>(values)) + ", \"" +
-			                     std::get<2>(values) + "\")";
-			this->terminal->onExecute(Script(script));
-		}
-	});
 	connect(actionFileImport, &QAction::triggered,
 	        this, [this]()
 	{
@@ -137,9 +142,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	connect(actionEditPreferences, &QAction::triggered,
 	        this, [this]()
 	{
-		// TODO: Make sure that only one instance of DialogPreferences can exist at
-		// a time.
-		(new DialogPreferences(this->config, this))->show();
+		dialogPreferences->onReload();
+		dialogPreferences->show();
 	});
 
 	// Connects the kernel's stdout and stderr to the corresponding signals of
@@ -267,8 +271,7 @@ void pg::MainWindow::onExecute(QString const& script)
 		terminal->onExecute(Script(s.toStdString()));
 	}
 	else
-		qDebug() << "[UI] Current editor null but command is called: "
-		         << script;
+		terminal->onExecute(Script(script.toStdString()));
 }
 
 void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)

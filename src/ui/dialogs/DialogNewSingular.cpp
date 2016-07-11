@@ -10,7 +10,7 @@
 constexpr std::size_t const sampleRates[] = {44100, 72000};
 
 pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
-	DialogOperation(parent),
+	DialogScriptArgs(parent),
 
 	comboChannelLayout(new QComboBox), comboSampleRate(new QComboBox),
 	lineEditDuration(new QLineEdit)
@@ -19,8 +19,8 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 	QLabel* labelSampleRate = new QLabel(tr("Sample Rate(/s)"));
 	QLabel* labelDuration = new QLabel(tr("Duration(s)"));
 
-	for (auto const& pair: channelNames)
-		comboChannelLayout->addItem(QString::fromStdString(pair.second));
+	for (auto const& channelName: channelNames)
+		comboChannelLayout->addItem(QString::fromStdString(boost::get<1>(channelName)));
 	for (std::size_t const sampleRate: sampleRates)
 		comboSampleRate->addItem(QString::number(sampleRate));
 
@@ -42,15 +42,18 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 	layoutMain->addWidget(buttonBox);
 }
 
-std::tuple<pg::ChannelLayout, std::size_t, std::string> pg::DialogNewSingular::values() const noexcept
+QString pg::DialogNewSingular::script()
 {
-	std::tuple<ChannelLayout, std::size_t, std::string> result;
+	QString result = QString(PYTHON_KERNEL) + ".createSingular(";
 	std::string channelLayoutName = comboChannelLayout->currentText().toStdString();
-	for (auto const& pair: channelNames)
-		if (channelLayoutName == pair.second) std::get<0>(result) = pair.first;
-	std::get<1>(result) = comboSampleRate->currentText().toULong();
-	std::get<2>(result) = lineEditDuration->text().toStdString();
-
+	for (auto const& channelName: channelNames)
+		if (channelLayoutName == boost::get<1>(channelName)) 
+		{
+			result += "pg." + QString::fromStdString(boost::get<2>(channelName)) + ", ";
+			break;
+		}
+	result += comboSampleRate->currentText() + ", \"" +
+		lineEditDuration->text() + "\")";
 	return result;
 }
 

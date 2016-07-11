@@ -6,23 +6,19 @@
 #include <QLineEdit>
 #include <QComboBox>
 
-#include "DialogOperation.hpp"
+#include "DialogScriptArgs.hpp"
 #include "../../singular/BufferSingular.hpp"
 
 namespace pg
 {
 
-class DialogNewSingular final: public DialogOperation
+class DialogNewSingular final: public DialogScriptArgs
 {
 	Q_OBJECT
 public:
 	explicit DialogNewSingular(QWidget* parent = 0);
 
-	/**
-	 * @return A tuple (channelLayout, sampleRate, duration)
-	 */
-	std::tuple<ChannelLayout, std::size_t, std::string> values() const noexcept;
-
+	virtual QString script() override;
 private:
 	QComboBox* comboChannelLayout;
 	QComboBox* comboSampleRate;

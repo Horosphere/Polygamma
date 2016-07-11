@@ -12,6 +12,8 @@
 #include "mainWindowAccessories.hpp"
 #include "editors/Editor.hpp"
 #include "util/actions.hpp"
+#include "dialogs/DialogPreferences.hpp"
+#include "dialogs/DialogNewSingular.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -56,6 +58,8 @@ private:
 	Kernel* const kernel;
 	Configuration* const config;
 
+	QString lineEditLog_stylesheetOut;
+	QString lineEditLog_stylesheetErr;
 	// UI Elements
 	
 	/**
@@ -67,8 +71,10 @@ private:
 	Terminal* terminal;
 	LineEditScript* lineEditScript;
 	QLineEdit* lineEditLog;
-	QString lineEditLog_stylesheetOut;
-	QString lineEditLog_stylesheetErr;
+
+	// Dialogs
+	DialogPreferences* const dialogPreferences;
+	DialogNewSingular* const dialogNewSingular;
 
 	// Dynamic
 	Editor* currentEditor;

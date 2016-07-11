@@ -1,7 +1,6 @@
 #ifndef _POLYGAMMA_CORE_TEXT_HPP__
 #define _POLYGAMMA_CORE_TEXT_HPP__
 
-#include <map>
 #include <vector>
 
 extern "C"
@@ -18,35 +17,43 @@ extern "C"
 namespace pg
 {
 
-std::map<ChannelLayout, std::string> const channelNames = boost::assign::map_list_of
-    (AV_CH_LAYOUT_MONO, "Mono")
-    (AV_CH_LAYOUT_STEREO, "Stereo")
-    (AV_CH_LAYOUT_2POINT1, "2 Point 1")
-    (AV_CH_LAYOUT_2_1, "2 1")
-    (AV_CH_LAYOUT_SURROUND, "Surround")
-    (AV_CH_LAYOUT_3POINT1, "3 Point 1")
-    (AV_CH_LAYOUT_4POINT0, "4 Point 0")
-    (AV_CH_LAYOUT_4POINT1, "4 POint 1")
-    (AV_CH_LAYOUT_2_2, "2 2")
-    (AV_CH_LAYOUT_QUAD, "Quad")
-    (AV_CH_LAYOUT_5POINT0, "5 Point 0")
-    (AV_CH_LAYOUT_5POINT1, "5 Point 1")
-    (AV_CH_LAYOUT_5POINT0_BACK, "5 Point 0 Back")
-    (AV_CH_LAYOUT_5POINT1_BACK, "5 Point 1 Back")
-    (AV_CH_LAYOUT_6POINT0, "6 Point 0")
-    (AV_CH_LAYOUT_6POINT0_FRONT, "6 Point 0 Front")
-    (AV_CH_LAYOUT_HEXAGONAL, "Hexagonal")
-    (AV_CH_LAYOUT_6POINT1, "6 Point 1")
-    (AV_CH_LAYOUT_6POINT1_BACK, "6 Point 1 Back")
-    (AV_CH_LAYOUT_6POINT1_FRONT, "6 Point 1 Front")
-    (AV_CH_LAYOUT_7POINT0, "7 Point 0")
-    (AV_CH_LAYOUT_7POINT0_FRONT, "7 Point 0 Front")
-    (AV_CH_LAYOUT_7POINT1, "7 Point 1")
-    (AV_CH_LAYOUT_7POINT1_WIDE, "7 Point 1 Wide")
-    (AV_CH_LAYOUT_7POINT1_WIDE_BACK, "7 Point 1 Wide Back")
-    (AV_CH_LAYOUT_OCTAGONAL, "Octagonal")
-    (AV_CH_LAYOUT_HEXADECAGONAL, "Hexadecagonal")
-    (AV_CH_LAYOUT_STEREO_DOWNMIX, "Stereo Downmix");
+/*
+ * Tuple elements:
+ * 1. Channel layout stored in \ref ChannelLayout
+ * 2. Human readable channel name stored in std::string
+ * 3. Channel name exposed to scripts
+ */
+std::vector<boost::tuple<ChannelLayout, std::string, std::string>> const channelNames = boost::assign::tuple_list_of
+    (AV_CH_LAYOUT_MONO, "Mono", "CH_LAYOUT_MONO")
+    (AV_CH_LAYOUT_STEREO, "Stereo", "CH_LAYOUT_STEREO")
+    (AV_CH_LAYOUT_2POINT1, "2 Point 1", "CH_LAYOUT_2POINT1")
+    (AV_CH_LAYOUT_2_1, "2 1", "CH_LAYOUT_2_1")
+    (AV_CH_LAYOUT_SURROUND, "Surround", "CH_LAYOUT_SURROUND")
+    (AV_CH_LAYOUT_3POINT1, "3 Point 1", "CH_LAYOUT_3POINT1")
+    (AV_CH_LAYOUT_4POINT0, "4 Point 0", "CH_LAYOUT_4POINT0")
+    (AV_CH_LAYOUT_4POINT1, "4 POint 1", "CH_LAYOUT_4POINT1")
+    (AV_CH_LAYOUT_2_2, "2 2", "CH_LAYOUT_2_2")
+    (AV_CH_LAYOUT_QUAD, "Quad", "CH_LAYOUT_QUAD")
+    (AV_CH_LAYOUT_5POINT0, "5 Point 0", "CH_LAYOUT_5POINT0")
+    (AV_CH_LAYOUT_5POINT1, "5 Point 1", "CH_LAYOUT_5POINT1")
+    (AV_CH_LAYOUT_5POINT0_BACK, "5 Point 0 Back", "CH_LAYOUT_5POINT0_BACK")
+    (AV_CH_LAYOUT_5POINT1_BACK, "5 Point 1 Back", "CH_LAYOUT_5POINT1_BACK")
+    (AV_CH_LAYOUT_6POINT0, "6 Point 0", "CH_LAYOUT_6POINT0")
+    (AV_CH_LAYOUT_6POINT0_FRONT, "6 Point 0 Front", "CH_LAYOUT_6POINT0_FRONT")
+    (AV_CH_LAYOUT_HEXAGONAL, "Hexagonal", "CH_LAYOUT_HEXAGONAL")
+    (AV_CH_LAYOUT_6POINT1, "6 Point 1", "CH_LAYOUT_6POINT1")
+    (AV_CH_LAYOUT_6POINT1_BACK, "6 Point 1 Back", "CH_LAYOUT_6POINT1_BACK")
+    (AV_CH_LAYOUT_6POINT1_FRONT, "6 Point 1 Front", "CH_LAYOUT_6POINT1_FRONT")
+    (AV_CH_LAYOUT_7POINT0, "7 Point 0", "CH_LAYOUT_7POINT0")
+    (AV_CH_LAYOUT_7POINT0_FRONT, "7 Point 0 Front", "CH_LAYOUT_7POINT0_FRONT")
+    (AV_CH_LAYOUT_7POINT1, "7 Point 1", "CH_LAYOUT_7POINT1")
+    (AV_CH_LAYOUT_7POINT1_WIDE, "7 Point 1 Wide", "CH_LAYOUT_7POINT1_WIDE")
+    (AV_CH_LAYOUT_7POINT1_WIDE_BACK, "7 Point 1 Wide Back", "CH_LAYOUT_7POINT1_WIDE_BACK")
+    (AV_CH_LAYOUT_OCTAGONAL, "Octagonal", "CH_LAYOUT_OCTAGONAL")
+    (AV_CH_LAYOUT_HEXADECAGONAL, "Hexadecagonal", "CH_LAYOUT_HEXADECAGONAL")
+    (AV_CH_LAYOUT_STEREO_DOWNMIX, "Stereo Downmix", "CH_LAYOUT_STEREO_DOWNMIX");
+
+std::string channelLayoutName(ChannelLayout const& channelLayout) noexcept;
 
 std::string timePointToString(std::size_t duration,
                              std::size_t sampleRate) noexcept;
@@ -64,6 +71,15 @@ std::size_t stringToTimePoint(std::string string) throw(PythonException);
 
 // Implementations
 
+inline std::string pg::channelLayoutName(ChannelLayout const& cl) noexcept
+{
+	for (auto const& channelName: channelNames)
+		if (boost::get<0>(channelName) == cl)
+			return boost::get<1>(channelName);
+
+	assert(false && "Unrecognised channel name");
+	return "";
+}
 inline std::string
 pg::timePointToString(std::size_t duration, std::size_t sampleRate) noexcept
 {

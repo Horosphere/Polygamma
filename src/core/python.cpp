@@ -10,6 +10,7 @@ extern "C"
 
 #include "Kernel.hpp"
 #include "Buffer.hpp"
+#include "text.hpp"
 #include "../singular/audio.hpp"
 #include "../singular/BufferSingular.hpp"
 
@@ -128,31 +129,6 @@ void pg::initPython()
 	using namespace boost::python;
 	object module = import("pg");
 
-	module.attr("CH_LAYOUT_MONO") = AV_CH_LAYOUT_MONO;
-	module.attr("CH_LAYOUT_2POINT1") = AV_CH_LAYOUT_2POINT1;
-	module.attr("CH_LAYOUT_2_1") = AV_CH_LAYOUT_2_1;
-	module.attr("CH_LAYOUT_SURROUND") = AV_CH_LAYOUT_SURROUND;
-	module.attr("CH_LAYOUT_3POINT1") = AV_CH_LAYOUT_3POINT1;
-	module.attr("CH_LAYOUT_4POINT0") = AV_CH_LAYOUT_4POINT0;
-	module.attr("CH_LAYOUT_4POINT1") = AV_CH_LAYOUT_4POINT1;
-	module.attr("CH_LAYOUT_2_2") = AV_CH_LAYOUT_2_2;
-	module.attr("CH_LAYOUT_QUAD") = AV_CH_LAYOUT_QUAD;
-	module.attr("CH_LAYOUT_5POINT0") = AV_CH_LAYOUT_5POINT0;
-	module.attr("CH_LAYOUT_5POINT1") = AV_CH_LAYOUT_5POINT1;
-	module.attr("CH_LAYOUT_5POINT0_BACK") = AV_CH_LAYOUT_5POINT0_BACK;
-	module.attr("CH_LAYOUT_5POINT1_BACK") = AV_CH_LAYOUT_5POINT1_BACK;
-	module.attr("CH_LAYOUT_6POINT0") = AV_CH_LAYOUT_6POINT0;
-	module.attr("CH_LAYOUT_6POINT0_FRONT") = AV_CH_LAYOUT_6POINT0_FRONT;
-	module.attr("CH_LAYOUT_HEXAGONAL") = AV_CH_LAYOUT_HEXAGONAL;
-	module.attr("CH_LAYOUT_6POINT1") = AV_CH_LAYOUT_6POINT1;
-	module.attr("CH_LAYOUT_6POINT1_BACK") = AV_CH_LAYOUT_6POINT1_BACK;
-	module.attr("CH_LAYOUT_6POINT1_FRONT") = AV_CH_LAYOUT_6POINT1_FRONT;
-	module.attr("CH_LAYOUT_7POINT0") = AV_CH_LAYOUT_7POINT0;
-	module.attr("CH_LAYOUT_7POINT0_FRONT") = AV_CH_LAYOUT_7POINT0_FRONT;
-	module.attr("CH_LAYOUT_7POINT1") = AV_CH_LAYOUT_7POINT1;
-	module.attr("CH_LAYOUT_7POINT1_WIDE") = AV_CH_LAYOUT_7POINT1_WIDE;
-	module.attr("CH_LAYOUT_7POINT1_WIDE_BACK") = AV_CH_LAYOUT_7POINT1_WIDE_BACK;
-	module.attr("CH_LAYOUT_OCTAGONAL") = AV_CH_LAYOUT_OCTAGONAL;
-	module.attr("CH_LAYOUT_HEXADECAGONAL") = AV_CH_LAYOUT_HEXADECAGONAL;
-	module.attr("CH_LAYOUT_STEREO_DOWNMIX") = AV_CH_LAYOUT_STEREO_DOWNMIX;
+	for (auto const& channelName: channelNames)
+		module.attr(boost::get<2>(channelName).c_str()) = boost::get<0>(channelName);
 }

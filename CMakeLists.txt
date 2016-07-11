@@ -60,6 +60,7 @@ set(SourceFiles
     src/ui/util/actions.cpp
     src/ui/util/ColourButton.cpp
     src/ui/dialogs/DialogNewSingular.cpp
+    src/ui/dialogs/DialogScriptArgs.cpp
     src/ui/dialogs/DialogPreferences.cpp
     src/singular/BufferSingular.cpp
     src/singular/audio.cpp
@@ -79,6 +80,7 @@ set(QObjectHeaders
     src/ui/util/SyntaxHighlighterPython.hpp
     src/ui/util/actions.hpp
     src/ui/util/Axis.hpp
+    src/ui/dialogs/DialogScriptArgs.hpp
     src/ui/dialogs/DialogNewSingular.hpp
     src/ui/dialogs/DialogPreferences.hpp
    )

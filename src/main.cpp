@@ -1,4 +1,6 @@
-// main.cpp
+/*
+ * Main Entry
+ */
 
 #include <iostream>
 #include <thread>
@@ -32,8 +34,9 @@ int main(int argc, char* argv[])
 	std::thread threadKernel(&pg::Kernel::start, &kernel);
 	threadKernel.detach();
 
-
 	QApplication application(argc, argv);
+	application.setApplicationName("Polygamma");
+
 	pg::MainWindow window(&kernel, &config);
 	window.show();
 

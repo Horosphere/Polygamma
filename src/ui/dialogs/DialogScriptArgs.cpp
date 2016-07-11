@@ -1,6 +1,6 @@
-#include "DialogOperation.hpp"
+#include "DialogScriptArgs.hpp"
 
-pg::DialogOperation::DialogOperation(QWidget* parent): QDialog(parent),
+pg::DialogScriptArgs::DialogScriptArgs(QWidget* parent): QDialog(parent),
 	buttonBox(new QDialogButtonBox(QDialogButtonBox::Ok))
 {
 	buttonBox->setOrientation(Qt::Horizontal);

@@ -1,5 +1,7 @@
 #include "actions.hpp"
 
+#include <QDialog>
+
 // ActionScripted
 pg::ActionScripted::ActionScripted(QString const& script, QObject* parent):
 	ActionFlagged(parent), script(script)

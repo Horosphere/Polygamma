@@ -413,7 +413,7 @@ pg::BufferSingular* pg::BufferSingular::create(ChannelLayout cl,
 noexcept
 {
 	std::cout << "[Ker] Creating BufferSingular with channel layout "
-	          << channelNames.at(cl)
+	          << channelLayoutName(cl)
 	          << ", Sample Rate: " << sampleRate
 	          << ", Duration: " << duration
 	          << std::endl;
