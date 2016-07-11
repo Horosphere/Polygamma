@@ -68,7 +68,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	        this, &MainWindow::onExecute);
 	menuEdit->addAction(actionEditSummon);
 
-	ActionScripted* actionEditSilence = new ActionScripted("pg.silence(pg.kernel.buffers[%1])", "Silence", this);
+	ActionScripted* actionEditSilence = new ActionScripted("pg.silence(%1)", "Silence", this);
 	ADD_ACTIONSCRIPTED(menuEdit, actionEditSilence, Buffer::Singular);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
@@ -109,9 +109,9 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		{
 			auto values = dialog->values();
 			std::string script = std::string(PYTHON_KERNEL) + ".createSingular(" +
-			std::to_string(std::get<0>(values)) + ", " +
-			std::to_string(std::get<1>(values)) + ", \"" +
-			std::get<2>(values) + "\")";
+			                     std::to_string(std::get<0>(values)) + ", " +
+			                     std::to_string(std::get<1>(values)) + ", \"" +
+			                     std::get<2>(values) + "\")";
 			this->terminal->onExecute(Script(script));
 		}
 	});
@@ -217,7 +217,7 @@ void pg::MainWindow::updateUIElements()
 	/*
 	 * "Bool To String" Converts a bool to a QString for using the stylesheet.
 	 */
-	auto bts = [](bool b) -> QString { return b ? "true" : "false"; };
+	static auto bts = [](bool b) -> QString { return b ? "true" : "false"; };
 	qApp->setStyleSheet(
 	  "QMainWindow, QDialog, QDockWidget, QStatusBar {"
 	  "background-color: " + abgrToString(config->uiBG) + ";"
@@ -249,6 +249,7 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 		                       "is not recognised by MainWindow");
 	}
 	editor->show();
+	editor->setFloating(true);
 	currentEditor = editor;
 
 	connect(editor, &Editor::execute,
@@ -260,8 +261,10 @@ void pg::MainWindow::onExecute(QString const& script)
 	if (currentEditor)
 	{
 		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
+		QString s = script.arg(QString(PYTHON_KERNEL) + '(' +
+		                       QString::number(index) + ')');
 
-		terminal->onExecute(Script(script.arg(index).toStdString()));
+		terminal->onExecute(Script(s.toStdString()));
 	}
 	else
 		qDebug() << "[UI] Current editor null but command is called: "

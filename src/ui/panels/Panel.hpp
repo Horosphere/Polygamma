@@ -10,6 +10,8 @@ namespace pg
 {
 
 /**
+ * When the close button is triggered, panels turn hidden instead of being
+ * destroyed.
  * @brief Base of all panels. Does not have a menu bar or a status bar.
  */
 class Panel: public QDockWidget
@@ -25,6 +27,7 @@ public:
 	Panel(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
 protected:
+	virtual void closeEvent(QCloseEvent*) final override;
 
 	/**
 	 * @brief addDockActions Called by subclasses to add dock options to their

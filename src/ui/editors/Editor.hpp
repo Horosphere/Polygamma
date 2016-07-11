@@ -2,8 +2,8 @@
 #define _POLYGAMMA_UI_EDITORS_EDITOR_HPP__
 
 #include <QString>
+#include <QDockWidget>
 
-#include "../panels/Panel.hpp"
 #include "../../core/Buffer.hpp"
 #include "../../core/Kernel.hpp"
 #include "../../core/Script.hpp"
@@ -16,7 +16,7 @@ namespace pg
  * an editor is done in the MainWindow
  * @brief Base class for all editors.
  */
-class Editor: public Panel
+class Editor: public QDockWidget
 {
 	Q_OBJECT
 public:

@@ -3,16 +3,16 @@
 
 #include <tuple>
 
-#include <QDialog>
 #include <QLineEdit>
 #include <QComboBox>
 
+#include "DialogOperation.hpp"
 #include "../../singular/BufferSingular.hpp"
 
 namespace pg
 {
 
-class DialogNewSingular final: public QDialog
+class DialogNewSingular final: public DialogOperation
 {
 	Q_OBJECT
 public:

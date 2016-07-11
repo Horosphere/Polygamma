@@ -9,7 +9,9 @@
 
 constexpr std::size_t const sampleRates[] = {44100, 72000};
 
-pg::DialogNewSingular::DialogNewSingular(QWidget* parent): QDialog(parent),
+pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
+	DialogOperation(parent),
+
 	comboChannelLayout(new QComboBox), comboSampleRate(new QComboBox),
 	lineEditDuration(new QLineEdit)
 {
@@ -37,18 +39,7 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent): QDialog(parent),
 	layoutDuration->addWidget(labelDuration);
 	layoutDuration->addWidget(lineEditDuration);
 	layoutMain->addLayout(layoutDuration);
-	
-
-	QDialogButtonBox* buttonBox = new QDialogButtonBox(
-			QDialogButtonBox::Ok |
-			QDialogButtonBox::Cancel);
-	buttonBox->setOrientation(Qt::Horizontal);
 	layoutMain->addWidget(buttonBox);
-
-	connect(buttonBox, &QDialogButtonBox::accepted,
-			this, &QDialog::accept);
-	connect(buttonBox, &QDialogButtonBox::rejected,
-			this, &QDialog::reject);
 }
 
 std::tuple<pg::ChannelLayout, std::size_t, std::string> pg::DialogNewSingular::values() const noexcept

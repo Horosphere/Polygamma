@@ -2,6 +2,7 @@
 
 #include <QMenu>
 #include <QMainWindow>
+#include <QCloseEvent>
 
 pg::Panel::Panel(QWidget* parent, Qt::WindowFlags flags):
 	QDockWidget(parent, flags)
@@ -12,9 +13,12 @@ pg::Panel::Panel(QWidget* parent, Qt::WindowFlags flags):
 	setAllowedAreas(Qt::AllDockWidgetAreas);
 	connect(this, &Panel::customContextMenuRequested,
 			this, &Panel::onContextMenuRequest);
-	setFloating(true);
 }
-
+void pg::Panel::closeEvent(QCloseEvent* event)
+{
+	hide();
+	event->ignore();
+}
 void pg::Panel::addDockActions(QMenu* const menu)
 {
 	QAction* action = new QAction("Dock left", this);
