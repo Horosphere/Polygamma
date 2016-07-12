@@ -253,7 +253,7 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 		                       "is not recognised by MainWindow");
 	}
 	editor->show();
-	editor->setFloating(true);
+	//editor->setFloating(true);
 	currentEditor = editor;
 
 	connect(editor, &Editor::execute,

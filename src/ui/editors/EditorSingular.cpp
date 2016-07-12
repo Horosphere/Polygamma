@@ -16,7 +16,8 @@ pg::EditorSingular::EditorSingular(Kernel* const kernel,
 {
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setLayout(mainLayout);
-	setWidget(centralWidget);
+	//setWidget(centralWidget) <- For QDockWidget base
+	setCentralWidget(centralWidget);
 
 	onUpdateAudioFormat();
 }

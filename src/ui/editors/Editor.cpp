@@ -3,11 +3,11 @@
 #include <QCloseEvent>
 
 pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
-                   QWidget* parent): QDockWidget(parent),
+                   QWidget* parent): QMainWindow(parent),
 	kernel(kernel)
 {
 	setFocusPolicy(Qt::StrongFocus);
-	setAllowedAreas(Qt::AllDockWidgetAreas);
+	//setAllowedAreas(Qt::AllDockWidgetAreas);
 
 	buffer->registerUpdateListener([this]()
 	{
