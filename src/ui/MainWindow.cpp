@@ -261,7 +261,7 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	//editor->setFloating(true);
 	editors.push_back(editor);
 
-	buffer->registerDestroyListener([this, editor]()
+	buffer->registerUIDestroyListener([this, editor]()
 	{
 		Q_EMIT this->bufferDestroy(editor);
 	});
@@ -292,8 +292,9 @@ void pg::MainWindow::onExecute(QString const& script)
 	if (currentEditorIndex != editors.size())
 	{
 		std::size_t index = kernel->bufferIndex(editors[currentEditorIndex]->getBuffer());
-		QString s = script.replace("{CU}", QString(PYTHON_KERNEL) + '(' +
-		                       QString::number(index) + ')');
+		QString s = script;
+		s.replace("{CU}", QString(PYTHON_KERNEL) + '(' +
+		          QString::number(index) + ')');
 
 		terminal->onExecute(Script(s.toStdString()));
 	}
@@ -331,7 +332,7 @@ void pg::MainWindow::reloadMenuWindows()
 	{
 		QAction* actionEditor = new QAction(editor->windowTitle(), this);
 		connect(actionEditor, &QAction::triggered,
-				editor, &QWidget::show);
+		        editor, &QWidget::show);
 		menuWindows->addAction(actionEditor);
 	}
 }

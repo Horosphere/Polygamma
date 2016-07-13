@@ -15,6 +15,7 @@ namespace pg
  * Each editor corresponds to a Buffer. The process of converting a buffer to
  * an editor is done in the MainWindow. All editors must be registered in the
  * MainWindow.
+ * @warning One buffer cannot correspond to multiple editors at a time.
  * @brief Base class for all editors.
  */
 class Editor: public QMainWindow

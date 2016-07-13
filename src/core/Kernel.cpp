@@ -97,14 +97,14 @@ void pg::Kernel::start()
 		Special special;
 		while (specialQueue.pop(special))
 		{
-			switch (special.type)
-			{
-			case Special::Deletion:
-				delete special.buffer;
-				buffers.erase(std::remove(buffers.begin(), buffers.end(), special.buffer),
-				              buffers.end());
-				break;
-			}
+		  switch (special.type)
+		  {
+		  case Special::Deletion:
+		    delete special.buffer;
+		    buffers.erase(std::remove(buffers.begin(), buffers.end(), special.buffer),
+		                  buffers.end());
+		    break;
+		  }
 		}
 		*/
 		std::this_thread::yield(); // Avoids busy waiting
@@ -117,9 +117,13 @@ void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
 {
 	if (buffers.size() <= index)
 		throw PythonException{"Buffer index out of range", PythonException::ValueError};
-	buffers[index]->destroy();
-	delete buffers[index];
-	buffers.erase(buffers.begin() + index);
+
+	buffers[index]->uiDestroy();
+	if (buffers[index]->nReferences == 0)
+	{
+		delete buffers[index];
+		buffers.erase(buffers.begin() + index);
+	}
 }
 void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
 {
