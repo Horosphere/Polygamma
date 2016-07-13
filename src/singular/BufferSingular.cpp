@@ -392,6 +392,7 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 
 	BufferSingular* buffer = new BufferSingular(codecContext->channel_layout);
 	buffer->sampleRate = codecContext->sample_rate;
+	buffer->title = fileName;
 	// Move channels into the buffer
 	for (std::size_t i = 0; i < (std::size_t)codecContext->channels; ++i)
 	{
@@ -424,6 +425,7 @@ noexcept
 	}
 	BufferSingular* buffer = new BufferSingular(cl);
 	buffer->sampleRate = sampleRate;
+	buffer->title = "Untitled";
 	for (auto& channel: buffer->audio)
 		channel = Vector<real>(duration, 0.0);
 	return buffer;

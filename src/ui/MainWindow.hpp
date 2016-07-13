@@ -34,26 +34,39 @@ Q_SIGNALS:
 	// a queued connection.
 	void stdOutFlush(QString);
 	void stdErrFlush(QString);
-	void newBuffer(Buffer*);
+	void bufferNew(Buffer*);
+	/**
+	 * The argument must be an element of std::vector<Editor*> editors.
+	 */
+	void bufferDestroy(Editor*);
 
 private Q_SLOTS:
 
 	// Triggered upon configuration change
 	void updateUIElements();
-	void onNewBuffer(Buffer*);
+	void onBufferNew(Buffer*);
 	/**
-	 * Replacements:
-	 * %1 -> Index of current buffer
+	 * The argument must be an element of std::vector<Editor*> editors.
+	 */
+	void onBufferDestroy(Editor*);
+	/**
+	 * The following combinations will be replaced
+	 * {CU} -> The current buffer. e.g. pg.kernel.buffers[4]
 	 *
 	 * @warning Must be called with at least one active buffer present.
-	 * @brief Converts a QString into a system command and calls 
-	 *	Terminal::onExecute
+	 * @brief Converts a QString into a system level script and calls 
+	 *	Terminal::onExecute to send it to the Kernel.
 	 */
 	void onExecute(QString const&);
 	void onFocusChanged(QWidget* old, QWidget* now);
 
 
 private:
+	/**
+	 * @brief Update menuWindows so its actions match the editors
+	 */
+	void reloadMenuWindows();
+
 	// Handlers
 	Kernel* const kernel;
 	Configuration* const config;
@@ -61,7 +74,7 @@ private:
 	QString lineEditLog_stylesheetOut;
 	QString lineEditLog_stylesheetErr;
 	// UI Elements
-	
+	QMenu* menuWindows;
 	/**
 	 * @brief Stores all actionFlagged that are deactivated upon particular editor
 	 *	changes.
@@ -77,7 +90,15 @@ private:
 	DialogNewSingular* const dialogNewSingular;
 
 	// Dynamic
-	Editor* currentEditor;
+	/**
+	 * @brief The index is editors.size() when no editor is selected.
+	 */
+	std::size_t currentEditorIndex;
+	/**
+	 * @warning Do not use editor index to index buffers in the Kernel.
+	 * @brief Each editor corresponds to a buffer in the Kernel or a subbuffer.
+	 */
+	std::vector<Editor*> editors;
 };
 
 } // namespace pg

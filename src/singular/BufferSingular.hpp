@@ -173,7 +173,7 @@ throw(PythonException)
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	for (auto& selection: selections)
 		selection = std::make_pair(begin, end);
-	signalUpdate();
+	notifyUpdate();
 }
 inline void
 pg::BufferSingular::select(std::size_t channel,
@@ -184,7 +184,7 @@ pg::BufferSingular::select(std::size_t channel,
 	if (begin > end || end >= nAudioSamples())
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	selections[channel] = std::make_pair(begin, end);
-	signalUpdate();
+	notifyUpdate();
 }
 inline void
 pg::BufferSingular::select(std::size_t channel, AudioInterval selection)
@@ -195,14 +195,14 @@ throw(PythonException)
 	if (selection.first > selection.second|| selection.second >= nAudioSamples())
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	selections[channel] = selection;
-	signalUpdate();
+	notifyUpdate();
 }
 inline void
 pg::BufferSingular::clearSelect()
 {
 	for (auto& selection: selections)
 		selection = std::make_pair(0, 0);
-	signalUpdate();
+	notifyUpdate();
 }
 inline void
 pg::BufferSingular::clearSelect(std::size_t channel) throw(PythonException)
@@ -210,7 +210,7 @@ pg::BufferSingular::clearSelect(std::size_t channel) throw(PythonException)
 	if (channel >= nAudioChannels())
 		throw PythonException{"Channel index out of range", PythonException::IndexError};
 	selections[channel] = std::make_pair(0, 0);
-	signalUpdate();
+	notifyUpdate();
 }
 inline pg::BufferSingular::AudioInterval
 pg::BufferSingular::getSelection(std::size_t channel) const throw(PythonException)

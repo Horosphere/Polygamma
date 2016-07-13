@@ -6,6 +6,7 @@ pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
                    QWidget* parent): QMainWindow(parent),
 	kernel(kernel)
 {
+	setWindowTitle(QString::fromStdString(buffer->getTitle()));
 	setFocusPolicy(Qt::StrongFocus);
 	//setAllowedAreas(Qt::AllDockWidgetAreas);
 
@@ -18,15 +19,6 @@ pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
 	{
 		this->repaint();
 	});
-	buffer->registerDestroyListener([this]()
-	{
-		Q_EMIT this->bufferDestoyed();
-	});
-	connect(this, &Editor::bufferDestoyed,
-	        this, [this]()
-	{
-		delete this;
-	}, Qt::QueuedConnection);
 }
 pg::Editor::~Editor()
 {

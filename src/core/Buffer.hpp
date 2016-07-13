@@ -34,6 +34,7 @@ public:
 	 *	and throws IOError upon failure.
 	 */
 	void saveToFile(std::string fileName) throw(PythonException);
+	std::string getTitle() const noexcept;
 
 	void notifyUpdate() noexcept;
 	void destroy() noexcept;
@@ -46,13 +47,11 @@ public:
 	registerUpdateListener(Listener listener) const noexcept;
 	template <typename Listener> void
 	registerDestroyListener(Listener listener) const noexcept;
-protected:
-	/**
-	 * Subclasses shall call this to signal a graphics update
-	 */
-	boost::signals2::signal<void ()> signalUpdate;
 
+protected:
+	std::string title;
 private:
+	boost::signals2::signal<void ()> signalUpdate;
 	boost::signals2::signal<void ()> signalDestroy;
 };
 
@@ -69,7 +68,10 @@ pg::Buffer::saveToFile(std::string fileName) throw(PythonException)
 		throw PythonException{error, PythonException::IOError};
 	}
 }
-
+inline std::string pg::Buffer::getTitle() const noexcept
+{
+	return title;
+}
 inline void pg::Buffer::notifyUpdate() noexcept
 {
 	signalUpdate();

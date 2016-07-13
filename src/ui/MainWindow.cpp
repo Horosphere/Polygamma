@@ -34,7 +34,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	dialogNewSingular(new DialogNewSingular(this)),
 
 	// Dynamics
-	currentEditor(nullptr)
+	currentEditorIndex(0)
 {
 	setFocusPolicy(Qt::NoFocus);
 	setWindowIcon(QIcon(":/icon.png"));
@@ -70,7 +70,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	    tr("Singular..."),
 	    this);
 	connect(actionFileNewSingular, &ActionDialog::execute,
-			this, &MainWindow::onExecute);
+	        this, &MainWindow::onExecute);
 	menuFileNew->addAction(actionFileNewSingular);
 
 	QAction* actionFileImport = new QAction(tr("Import..."), this);
@@ -87,10 +87,12 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	        this, &MainWindow::onExecute);
 	menuEdit->addAction(actionEditSummon);
 
-	ActionScripted* actionEditSilence = new ActionScripted("pg.silence(%1)", "Silence", this);
+	ActionScripted* actionEditSilence = new ActionScripted("pg.silence({CU})", "Silence", this);
 	ADD_ACTIONSCRIPTED(menuEdit, actionEditSilence, Buffer::Singular);
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
+
+	menuWindows = menuBar()->addMenu(tr("Windows"));
 	// Menu end
 #undef ADD_ACTIONFLAGGED
 #undef ADD_ACTIONSCRIPTED
@@ -150,15 +152,15 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	// this class
 	kernel->registerStdOutListener([this](std::string str)
 	{
-		Q_EMIT stdOutFlush(QString::fromStdString(str));
+		Q_EMIT this->stdOutFlush(QString::fromStdString(str));
 	});
 	kernel->registerStdErrListener([this](std::string str)
 	{
-		Q_EMIT stdErrFlush(QString::fromStdString(str));
+		Q_EMIT this->stdErrFlush(QString::fromStdString(str));
 	});
 	kernel->registerBufferListener([this](Buffer* buffer)
 	{
-		Q_EMIT newBuffer(buffer);
+		Q_EMIT this->bufferNew(buffer);
 	});
 	connect(this, &MainWindow::stdOutFlush,
 	        terminal->log, &TerminalLog::onStdOutFlush, Qt::QueuedConnection);
@@ -183,10 +185,13 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		lineEditLog->setText(lines.takeLast());
 		lineEditLog->setStyleSheet(lineEditLog_stylesheetErr);
 	}, Qt::QueuedConnection);
-	connect(this, &MainWindow::newBuffer,
-	        this, &MainWindow::onNewBuffer, Qt::QueuedConnection);
+	connect(this, &MainWindow::bufferNew,
+	        this, &MainWindow::onBufferNew, Qt::QueuedConnection);
+	connect(this, &MainWindow::bufferDestroy,
+	        this, &MainWindow::onBufferDestroy, Qt::QueuedConnection);
 
 	updateUIElements();
+	reloadMenuWindows();
 
 	// Set default states
 	setBaseSize(QSize(300, 500));
@@ -236,7 +241,7 @@ void pg::MainWindow::updateUIElements()
 	  "}");
 }
 
-void pg::MainWindow::onNewBuffer(Buffer* buffer)
+void pg::MainWindow::onBufferNew(Buffer* buffer)
 {
 	Editor* editor;
 
@@ -254,18 +259,40 @@ void pg::MainWindow::onNewBuffer(Buffer* buffer)
 	}
 	editor->show();
 	//editor->setFloating(true);
-	currentEditor = editor;
+	editors.push_back(editor);
 
+	buffer->registerDestroyListener([this, editor]()
+	{
+		Q_EMIT this->bufferDestroy(editor);
+	});
 	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
+	reloadMenuWindows();
+}
+void pg::MainWindow::onBufferDestroy(Editor* editor)
+{
+	auto it = editors.begin();
+	while (*it != editor)
+		++it;
+	auto current = editors.begin() + currentEditorIndex;
+
+	// Modify currentEditorIndex if necessary.
+	if (current > it)
+		--currentEditorIndex;
+	else if (current == it)
+		currentEditorIndex = editors.size() - 1;
+
+	delete *it;
+	editors.erase(it);
+	reloadMenuWindows();
 }
 
 void pg::MainWindow::onExecute(QString const& script)
 {
-	if (currentEditor)
+	if (currentEditorIndex != editors.size())
 	{
-		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
-		QString s = script.arg(QString(PYTHON_KERNEL) + '(' +
+		std::size_t index = kernel->bufferIndex(editors[currentEditorIndex]->getBuffer());
+		QString s = script.replace("{CU}", QString(PYTHON_KERNEL) + '(' +
 		                       QString::number(index) + ')');
 
 		terminal->onExecute(Script(s.toStdString()));
@@ -279,8 +306,14 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 	(void) old;
 	if (Editor* editor = dynamic_cast<Editor*>(now))
 	{
-//		qDebug() << "[UI] Focus changed to new editor";
-		currentEditor = editor;
+		// Change current editor index. Since all created editors are registered
+		// in the main window, this loop will break
+		for (std::size_t i = 0; i < editors.size(); ++i)
+			if (editors[i] == editor)
+			{
+				currentEditorIndex = i;
+				break;
+			}
 		Buffer::Type type = editor->getBuffer()->getType();
 		for (auto& action: actionsFlagged)
 		{
@@ -291,4 +324,14 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 		}
 	}
 }
-
+void pg::MainWindow::reloadMenuWindows()
+{
+	menuWindows->clear();
+	for (auto const& editor: editors)
+	{
+		QAction* actionEditor = new QAction(editor->windowTitle(), this);
+		connect(actionEditor, &QAction::triggered,
+				editor, &QWidget::show);
+		menuWindows->addAction(actionEditor);
+	}
+}

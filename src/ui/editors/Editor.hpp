@@ -13,7 +13,8 @@ namespace pg
 
 /**
  * Each editor corresponds to a Buffer. The process of converting a buffer to
- * an editor is done in the MainWindow
+ * an editor is done in the MainWindow. All editors must be registered in the
+ * MainWindow.
  * @brief Base class for all editors.
  */
 class Editor: public QMainWindow
@@ -35,11 +36,6 @@ Q_SIGNALS:
 	 */
 	void graphicsUpdate();
 
-	/**
-	 * Called in the Kernel thread. Editor intercepts this signal and calls
-	 * delete this
-	 */
-	void bufferDestoyed();
 
 protected:
 	virtual void closeEvent(QCloseEvent*) override;
