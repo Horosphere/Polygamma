@@ -18,6 +18,8 @@ public:
 
 	void loadConfiguration(Configuration const* const config);
 
+	void addBuffer(Editor*) noexcept;
+	void eraseBuffer(Editor*) noexcept;
 private:
 	QAudioDeviceInfo audioDeviceInput;
 	QAudioDeviceInfo audioDeviceOutput;
@@ -32,4 +34,15 @@ private:
 
 } // namespace pg
 
+
+// Implementations
+
+inline void pg::MultimediaEngine::addBuffer(Editor* buffer) noexcept
+{
+	caches[buffer] = PlaybackCache();
+}
+inline void pg::MultimediaEngine::eraseBuffer(Editor* buffer) noexcept
+{
+	caches.erase(buffer);
+}
 #endif // !_POLYGAMMA_UI_MULTIMEDIAENGINE_HPP__

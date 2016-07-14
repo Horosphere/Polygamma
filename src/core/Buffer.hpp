@@ -130,15 +130,15 @@ inline bool pg::Buffer::isDirty() const noexcept
 }
 inline void pg::Buffer::notifyUpdate() noexcept
 {
-	timeLastChange = std::chrono::steady_clock::now();
 	signalUpdate(IntervalIndex(0, duration()));
 	signalUIUpdate();
 	dirty = true;
 }
 inline void pg::Buffer::notifyUpdate(IntervalIndex interval) noexcept
 {
-	timeLastChange = std::chrono::steady_clock::now();
 	signalUpdate(interval);
+	signalUIUpdate();
+	dirty = true;
 }
 inline void pg::Buffer::notifyUIUpdate() noexcept
 {

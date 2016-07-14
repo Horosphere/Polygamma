@@ -39,7 +39,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	dialogNewSingular(new DialogNewSingular(this)),
 
 	// Dynamics
-	currentEditorIndex(0)
+	currentEditor(nullptr)
 {
 	setFocusPolicy(Qt::NoFocus);
 	setWindowIcon(QIcon(":/icon.png"));
@@ -267,6 +267,7 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	editor->show();
 	//editor->setFloating(true);
 	editors.insert(editor);
+	multimediaEngine.addBuffer(editor);
 
 	buffer->registerUIDestroyListener([this, editor]()
 	{
@@ -281,7 +282,8 @@ void pg::MainWindow::onBufferDestroy(Editor* editor)
 	if (editor == currentEditor)
 		currentEditor = nullptr;
 	delete editor;
-	editors.erase(it);
+	editors.erase(editor);
+	multimediaEngine.eraseBuffer(editor);
 	reloadMenuWindows();
 }
 

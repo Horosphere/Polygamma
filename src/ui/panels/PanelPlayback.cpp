@@ -6,6 +6,7 @@
 pg::PanelPlayback::PanelPlayback(QWidget* parent): Panel(parent),
 	buttonPlayPause(new QPushButton)
 {
+	setWindowTitle("Playback");
 	static QSize const buttonSize(64, 64);
 
 	QWidget* centralWidget = new QWidget;
