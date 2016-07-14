@@ -65,8 +65,11 @@ public:
 	 */
 	std::size_t nAudioChannels() const noexcept;
 
-	Vector<real>* getAudioChannel(std::size_t);
-	Vector<real> const* getAudioChannel(std::size_t) const;
+	/**
+	 * TODO: Will be exposed to Python
+	 */
+	Vector<real>* audioChannel(std::size_t);
+	Vector<real> const* audioChannel(std::size_t) const;
 
 	/**
 	 * Exposed to Python
@@ -157,12 +160,12 @@ pg::BufferSingular::nAudioChannels() const noexcept
 }
 
 inline pg::Vector<pg::real>*
-pg::BufferSingular::getAudioChannel(std::size_t index)
+pg::BufferSingular::audioChannel(std::size_t index)
 {
 	return &audio[index];
 }
 inline pg::Vector<pg::real> const*
-pg::BufferSingular::getAudioChannel(std::size_t index) const
+pg::BufferSingular::audioChannel(std::size_t index) const
 {
 	return &audio[index];
 }

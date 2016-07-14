@@ -12,7 +12,7 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
                        std::size_t channelId,
                        QWidget* parent): Viewport2(parent),
 	buffer(buffer), channelId(channelId),
-	channel(buffer->getAudioChannel(channelId))
+	channel(buffer->audioChannel(channelId))
 {
 	setDragging(true, false);
 	setZoomFac(1.1, 1.0);

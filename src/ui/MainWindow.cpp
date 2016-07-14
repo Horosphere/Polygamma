@@ -1,7 +1,5 @@
 #include "MainWindow.hpp"
 
-#include <exception>
-
 #include <QApplication>
 #include <QCloseEvent>
 #include <QMenuBar>
@@ -24,7 +22,7 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
-	kernel(kernel), config(config), multimediaEngine(),
+	kernel(kernel), config(config), multimediaEngine(this),
 
 	// UI
 	terminal(new Terminal(kernel, this)),
@@ -160,6 +158,16 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		dialogPreferences->show();
 	});
 
+	// Panels
+	connect(panelPlayback, &PanelPlayback::playPause,
+	        this, [this]()
+	{
+		// TODO: There are many problems to this design:
+		// Multiple playbacks can cause the application to crash
+		// there is no way to stop
+		// Crashes if currentEditor = nullptr
+		this->multimediaEngine.startPlayback(this->currentEditor);
+	});
 	// Connects the kernel's stdout and stderr to the corresponding signals of
 	// this class
 	kernel->registerStdOutListener([this](std::string str)
@@ -260,9 +268,7 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 		break;
 	default:
 		qDebug() << "[UI] Unrecognised Buffer Type";
-		throw std::logic_error("Buffer Type " +
-		                       std::to_string((int)buffer->getType()) +
-		                       "is not recognised by MainWindow");
+		assert(false && "Buffer type unrecognised by MainWindow");
 	}
 	editor->show();
 	//editor->setFloating(true);

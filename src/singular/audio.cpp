@@ -11,7 +11,7 @@ void pg::silence(BufferSingular* buffer)
 		if (!isEmpty(selection))
 		{
 			changed += selection;
-		pg::Vector<pg::real>* const channel = buffer->getAudioChannel(i);
+		pg::Vector<pg::real>* const channel = buffer->audioChannel(i);
 		for (std::size_t j = selection.begin; j < selection.end; ++j)
 		{
 			(*channel)[j] = 0.0;

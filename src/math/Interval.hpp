@@ -43,6 +43,7 @@ struct Interval
 	{
 		begin = std::min(begin, interval.begin);
 		end = std::max(end, interval.end);
+		return *this;
 	}
 	Interval<R>& operator-=(R v) noexcept
 	{

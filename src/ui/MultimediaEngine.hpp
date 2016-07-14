@@ -4,6 +4,8 @@
 #include <map>
 
 #include <QAudioDeviceInfo>
+#include <QAudioOutput>
+#include <QBuffer>
 
 #include "editors/Editor.hpp"
 #include "../core/Configuration.hpp"
@@ -14,20 +16,40 @@ namespace pg
 class MultimediaEngine final
 {
 public:
-	MultimediaEngine();
+	MultimediaEngine(QObject* parent = 0);
 
 	void loadConfiguration(Configuration const* const config);
 
 	void addBuffer(Editor*) noexcept;
 	void eraseBuffer(Editor*) noexcept;
+
+	/**
+	 * addBuffer(Editor*) must be called before this
+	 */
+	void startPlayback(Editor*) noexcept;
+	
 private:
+	/**
+	 * @brief As this class is not a QObject, the parent will only be used to
+	 *	create other QObjects
+	 */
+	QObject* parent;
+
 	QAudioDeviceInfo audioDeviceInput;
+
 	QAudioDeviceInfo audioDeviceOutput;
+	QBuffer audioBufferOutput;
 
 	struct PlaybackCache
 	{
-		QAudioFormat format;
-		QByteArray buffer;
+		PlaybackCache() noexcept: dirty(true), audioOutput(nullptr) {}
+
+		// TODO: Use a bitset so the entire buffer doesn't have to be updated
+		// everytime there is an update
+		bool dirty;
+		QAudioFormat audioFormat;
+		QByteArray audioSamples;
+		QAudioOutput* audioOutput;
 	};
 	std::map<Editor*, PlaybackCache> caches;
 };
@@ -37,6 +59,9 @@ private:
 
 // Implementations
 
+inline pg::MultimediaEngine::MultimediaEngine(QObject* parent): parent(parent)
+{
+}
 inline void pg::MultimediaEngine::addBuffer(Editor* buffer) noexcept
 {
 	caches[buffer] = PlaybackCache();
