@@ -60,8 +60,8 @@ void pg::TerminalInput::onPreserveInputToggled(bool checked)
 }
 
 // Terminal
-pg::Terminal::Terminal(Kernel* const kernel,
-                       QWidget* parent): QMainWindow(parent),
+pg::Terminal::Terminal(Kernel* const kernel, QWidget* parent):
+	QMainWindow(parent),
 	log(new TerminalLog), input(new TerminalInput),
 	kernel(kernel)
 {

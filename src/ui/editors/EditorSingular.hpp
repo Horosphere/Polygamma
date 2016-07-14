@@ -38,7 +38,7 @@ private:
 
 	BufferSingular const* const buffer;
 
-	QVBoxLayout* const mainLayout;
+	QVBoxLayout* const layoutMain;
 	Waveform** waveforms;
 
 };

@@ -14,6 +14,11 @@ pg::Panel::Panel(QWidget* parent, Qt::WindowFlags flags):
 	connect(this, &Panel::customContextMenuRequested,
 			this, &Panel::onContextMenuRequest);
 }
+void pg::Panel::show()
+{
+	setFloating(true);
+	QWidget::show();
+}
 void pg::Panel::closeEvent(QCloseEvent* event)
 {
 	hide();

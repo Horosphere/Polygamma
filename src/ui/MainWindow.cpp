@@ -4,6 +4,8 @@
 
 #include <QApplication>
 #include <QCloseEvent>
+#include <QMenuBar>
+#include <QStatusBar>
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -22,12 +24,15 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
-	kernel(kernel), config(config),
+	kernel(kernel), config(config), multimediaEngine(),
 
 	// UI
 	terminal(new Terminal(kernel, this)),
 	lineEditScript(new LineEditScript),
 	lineEditLog(new QLineEdit),
+
+	// Panels
+	panelPlayback(new PanelPlayback(this)),
 
 	// Dialogs
 	dialogPreferences(new DialogPreferences(config, this)),
@@ -92,7 +97,13 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	QAction* actionEditPreferences = new QAction(tr("Preferences..."), this);
 	menuEdit->addAction(actionEditPreferences);
 
-	menuWindows = menuBar()->addMenu(tr("Windows"));
+	QMenu* menuWindows = menuBar()->addMenu(tr("Windows"));
+	QAction* actionWindowsPlayback = new QAction(tr("Playback"), this);
+	connect(actionWindowsPlayback, &QAction::triggered,
+	        panelPlayback, &Panel::show);
+	menuWindows->addAction(actionWindowsPlayback);
+	menuEditors = menuWindows->addMenu(tr("Buffers"));
+
 	// Menu end
 #undef ADD_ACTIONFLAGGED
 #undef ADD_ACTIONSCRIPTED
@@ -103,8 +114,8 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	statusBar()->addPermanentWidget(lineEditLog, 1);
 	QPushButton* buttonTerminal = new QPushButton;
 	buttonTerminal->setIcon(QIcon(":/terminal.png"));
-	buttonTerminal->setFixedSize(QSize(25,25));
-	buttonTerminal->setIconSize(QSize(25,25));
+	buttonTerminal->setFixedSize(QSize(25, 25));
+	buttonTerminal->setIconSize(QSize(25, 25));
 	statusBar()->addPermanentWidget(buttonTerminal);
 	statusBar()->show();
 
@@ -112,6 +123,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	config->registerUpdateListener([this]()
 	{
 		this->updateUIElements();
+		this->multimediaEngine.loadConfiguration(this->config);
 	});
 	connect(qApp, &QApplication::focusChanged,
 	        this, &MainWindow::onFocusChanged);
@@ -191,6 +203,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	        this, &MainWindow::onBufferDestroy, Qt::QueuedConnection);
 
 	updateUIElements();
+	multimediaEngine.loadConfiguration(config);
 	reloadMenuWindows();
 
 	// Set default states
@@ -199,12 +212,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	terminal->setBaseSize(QSize(300, 500));
 	// Disable all actions since nothing is loaded
 	for (auto& action: actionsFlagged) action->setEnabled(false);
-}
-
-void pg::MainWindow::closeEvent(QCloseEvent* event)
-{
-	kernel->halt();
-	QMainWindow::closeEvent(event);
 }
 
 void pg::MainWindow::updateUIElements()
@@ -327,12 +334,12 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 }
 void pg::MainWindow::reloadMenuWindows()
 {
-	menuWindows->clear();
+	menuEditors->clear();
 	for (auto const& editor: editors)
 	{
 		QAction* actionEditor = new QAction(editor->windowTitle(), this);
 		connect(actionEditor, &QAction::triggered,
 		        editor, &QWidget::show);
-		menuWindows->addAction(actionEditor);
+		menuEditors->addAction(actionEditor);
 	}
 }

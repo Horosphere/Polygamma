@@ -5,15 +5,15 @@
 
 #include <QLineEdit>
 #include <QMainWindow>
-#include <QMenuBar>
-#include <QStatusBar>
 
+#include "MultimediaEngine.hpp"
 #include "Terminal.hpp"
-#include "mainWindowAccessories.hpp"
-#include "editors/Editor.hpp"
-#include "util/actions.hpp"
-#include "dialogs/DialogPreferences.hpp"
 #include "dialogs/DialogNewSingular.hpp"
+#include "dialogs/DialogPreferences.hpp"
+#include "editors/Editor.hpp"
+#include "panels/PanelPlayback.hpp"
+#include "mainWindowAccessories.hpp"
+#include "util/actions.hpp"
 #include "../core/Kernel.hpp"
 
 namespace pg
@@ -25,9 +25,6 @@ class MainWindow final: public QMainWindow
 public:
 	explicit MainWindow(Kernel* const, Configuration* const,
 			QWidget* parent = 0);
-
-protected:
-	virtual void closeEvent(QCloseEvent*) override;
 
 Q_SIGNALS:
 	// These signals are called in the Kernel thread, so connecting them requires
@@ -70,11 +67,12 @@ private:
 	// Handlers
 	Kernel* const kernel;
 	Configuration* const config;
+	MultimediaEngine multimediaEngine;
 
 	QString lineEditLog_stylesheetOut;
 	QString lineEditLog_stylesheetErr;
 	// UI Elements
-	QMenu* menuWindows;
+	QMenu* menuEditors;
 	/**
 	 * @brief Stores all actionFlagged that are deactivated upon particular editor
 	 *	changes.
@@ -84,6 +82,9 @@ private:
 	Terminal* terminal;
 	LineEditScript* lineEditScript;
 	QLineEdit* lineEditLog;
+
+	// Panels
+	PanelPlayback* const panelPlayback;
 
 	// Dialogs
 	DialogPreferences* const dialogPreferences;

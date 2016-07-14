@@ -1,26 +1,21 @@
 #include "DialogPreferences.hpp"
 
+#include <QAudioDeviceInfo>
 #include <QCloseEvent>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QListWidget>
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
+#include <QListWidget>
+#include <QVBoxLayout>
 #include <QDebug>
 
 #include "../ui.hpp"
 
 
-#define DP_ADD_PAGE(name, displayName) \
-	pageList->addItem(tr(displayName)); \
-	QWidget* page##name = new QWidget;\
-	QVBoxLayout* layout##name = new QVBoxLayout;\
-	layout##name->setAlignment(Qt::AlignTop);\
-	page##name->setLayout(layout##name)
-
 pg::DialogPreferences::DialogPreferences(Configuration* const config,
     QWidget* parent):
 	QDialog(parent), config(config),
 	// Various options:
+	ioAudioDeviceInput(new QComboBox), ioAudioDeviceOutput(new QComboBox),
 	uiBG(new ColourButton), uiTerminalBG(new ColourButton)
 {
 	QHBoxLayout* layoutMain = new QHBoxLayout;
@@ -31,15 +26,30 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 	QStackedWidget* pageStack = new QStackedWidget;
 	layoutMain->addWidget(pageStack);
 
+#define DP_ADD_PAGE(name, displayName) \
+	pageList->addItem(tr(displayName)); \
+	QWidget* page##name = new QWidget;\
+	QVBoxLayout* layout##name = new QVBoxLayout;\
+	layout##name->setAlignment(Qt::AlignTop);\
+	page##name->setLayout(layout##name)
+
 	// Pages begin
+	DP_ADD_PAGE(IO, "Devices");
+
+	layoutIO->addWidget(ioAudioDeviceInput);
+	layoutIO->addWidget(ioAudioDeviceOutput);
+
+	pageStack->addWidget(pageIO);
+
 	// Page::UI
-	DP_ADD_PAGE(UI, "UI");
+	DP_ADD_PAGE(UI, "Appearance");
 
 	layoutUI->addWidget(uiBG);
 	layoutUI->addWidget(uiTerminalBG);
 
 	pageStack->addWidget(pageUI);
 
+#undef DP_ADD_PAGE
 	// Pages end
 
 	// Configure pageList so it conforms to the size of its widest child
@@ -61,15 +71,37 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 	// Load settings from kernel
 	onReload();
 }
-#undef DP_ADD_PAGE
 
 void pg::DialogPreferences::onReload()
 {
+	ioAudioDeviceInput->clear();
+	QList<QAudioDeviceInfo> availableInputDevices =
+		QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+	for (std::size_t i = 0; i < availableInputDevices.size(); ++i)
+	{
+		QString deviceName = availableInputDevices[i].deviceName();
+		ioAudioDeviceInput->addItem(deviceName);
+		if (deviceName == QString::fromStdString(config->ioAudioDeviceInput))
+			ioAudioDeviceInput->setCurrentIndex(i);
+	}
+	ioAudioDeviceOutput->clear();
+	QList<QAudioDeviceInfo> availableOutputDevices =
+		QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+	for (std::size_t i = 0; i < availableOutputDevices.size(); ++i)
+	{
+		QString deviceName = availableOutputDevices[i].deviceName();
+		ioAudioDeviceOutput->addItem(deviceName);
+		if (deviceName == QString::fromStdString(config->ioAudioDeviceOutput))
+			ioAudioDeviceOutput->setCurrentIndex(i);
+	}
+
 	uiBG->onColourChanged(abgrToQColor(config->uiBG));
 	uiTerminalBG->onColourChanged(abgrToQColor(config->uiTerminalBG));
 }
 void pg::DialogPreferences::save()
 {
+	config->ioAudioDeviceInput = ioAudioDeviceInput->currentText().toStdString();
+	config->ioAudioDeviceOutput = ioAudioDeviceOutput->currentText().toStdString();
 	config->uiBG = qColorToABGR(uiBG->getColour());
 	config->uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
 

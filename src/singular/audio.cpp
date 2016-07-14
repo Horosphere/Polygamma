@@ -10,7 +10,7 @@ void pg::silence(BufferSingular* buffer)
 		auto selection = buffer->getSelection(i);
 		flag = flag || !isEmpty(selection);
 		pg::Vector<pg::real>* const channel = buffer->getAudioChannel(i);
-		for (std::size_t j = selection.first; j < selection.second; ++j)
+		for (std::size_t j = selection.begin; j < selection.end; ++j)
 		{
 			(*channel)[j] = 0.0;
 		}

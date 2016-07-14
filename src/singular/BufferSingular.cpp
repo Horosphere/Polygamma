@@ -423,6 +423,13 @@ noexcept
 		*error = "Duration too short";
 		return nullptr;
 	}
+	if (std::find(std::begin(SAMPLE_RATES), std::end(SAMPLE_RATES), sampleRate) ==
+			std::end(SAMPLE_RATES))
+	{
+		*error = "Invalid sample rate";
+		return nullptr;
+	}
+
 	BufferSingular* buffer = new BufferSingular(cl);
 	buffer->sampleRate = sampleRate;
 	buffer->title = "Untitled";

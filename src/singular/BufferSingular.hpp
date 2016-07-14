@@ -18,11 +18,10 @@ namespace pg
 {
 
 
+constexpr std::size_t const SAMPLE_RATES[] = {44100, 72000};
 class BufferSingular final: public Buffer
 {
 public:
-	typedef std::pair<std::size_t, std::size_t> AudioInterval;
-
 	/**
 	 * This factory method is not directly exposed to Python, as it is required
 	 * (in Python) to throw exceptions upon failure.
@@ -44,7 +43,7 @@ public:
 	 * @param[in] channelLayout See libavutil/channel_layout.h in ffmpeg's
 	 *  documentation.
 	 * @param[in] bitRate
-	 * @param[in] sampleRate
+	 * @param[in] sampleRate Must be a valid sample rate.
 	 * @param[out] error is filled when the creation fails.
 	 * @return A BufferSingular object if the construction is successiful.
 	 *  nullptr otherwise.
@@ -56,6 +55,8 @@ public:
 
 
 	virtual Type getType() const noexcept override;
+	virtual std::size_t duration() const noexcept override;
+	virtual std::size_t timeBase() const noexcept override;
 	virtual bool saveToFile(std::string fileName,
 	                        std::string* const error) override;
 
@@ -63,10 +64,6 @@ public:
 	 * Exposed to Python
 	 */
 	std::size_t nAudioChannels() const noexcept;
-	/**
-	 * Exposed to Python
-	 */
-	std::size_t nAudioSamples() const noexcept;
 
 	Vector<real>* getAudioChannel(std::size_t);
 	Vector<real> const* getAudioChannel(std::size_t) const;
@@ -88,7 +85,7 @@ public:
 	 * @brief Sets a selection on the channel given. Only one selection can exist
 	 *  on a channel at a time.
 	 */
-	void select(std::size_t channel, AudioInterval selection) throw(PythonException);
+	void select(std::size_t channel, IntervalIndex selection) throw(PythonException);
 	/**
 	 * Exposed to Python
 	 * Has the same effect as select(channel, std::make_pair(0, 0));
@@ -105,21 +102,20 @@ public:
 	 * Exposed to Python
 	 * @brief Obtain the selection on the given channel.
 	 */
-	AudioInterval getSelection(std::size_t channel) const throw(PythonException);
+	IntervalIndex getSelection(std::size_t channel) const throw(PythonException);
 
-	std::size_t sampleRate;
 private:
 	BufferSingular();
 	BufferSingular(ChannelLayout channelLayout);
 
+	std::size_t sampleRate;
 	ChannelLayout channelLayout;
 
 	// These two vectors must have the same length.
 	std::vector<Vector<real>> audio;
-	std::vector<AudioInterval> selections;
+	std::vector<IntervalIndex> selections;
 };
 
-bool isEmpty(BufferSingular::AudioInterval const&) noexcept;
 
 } // namespace pg
 
@@ -135,7 +131,7 @@ inline pg::BufferSingular::BufferSingular(ChannelLayout channelLayout):
 	selections(audio.size())
 {
 	for (auto& selection: selections)
-		selection.first = selection.second = 0;
+		selection.begin = selection.end = 0;
 }
 
 inline pg::Buffer::Type
@@ -143,16 +139,21 @@ pg::BufferSingular::getType() const noexcept
 {
 	return Singular;
 }
+inline std::size_t
+pg::BufferSingular::duration() const noexcept
+{
+	return audio.empty() ? 0 : audio[0].getSize();
+}
+inline std::size_t
+pg::BufferSingular::timeBase() const noexcept
+{
+	return sampleRate;
+}
 
 inline std::size_t
 pg::BufferSingular::nAudioChannels() const noexcept
 {
 	return audio.size();
-}
-inline std::size_t
-pg::BufferSingular::nAudioSamples() const noexcept
-{
-	return audio.empty() ? 0 : audio[0].getSize();
 }
 
 inline pg::Vector<pg::real>*
@@ -169,11 +170,11 @@ inline void
 pg::BufferSingular::select(std::size_t begin, std::size_t end)
 throw(PythonException)
 {
-	if (begin > end || end >= nAudioSamples())
+	if (begin > end || end >= duration())
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	for (auto& selection: selections)
-		selection = std::make_pair(begin, end);
-	notifyUpdate();
+		selection = IntervalIndex(begin, end); 
+	notifyUIUpdate();
 }
 inline void
 pg::BufferSingular::select(std::size_t channel,
@@ -181,46 +182,43 @@ pg::BufferSingular::select(std::size_t channel,
 {
 	if (channel >= nAudioChannels())
 		throw PythonException{"Channel index out of range", PythonException::IndexError};
-	if (begin > end || end >= nAudioSamples())
+	if (begin > end || end >= duration())
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
-	selections[channel] = std::make_pair(begin, end);
-	notifyUpdate();
+	selections[channel] = IntervalIndex(begin, end);
+	notifyUIUpdate();
 }
 inline void
-pg::BufferSingular::select(std::size_t channel, AudioInterval selection)
+pg::BufferSingular::select(std::size_t channel, IntervalIndex selection)
 throw(PythonException)
 {
 	if (channel >= nAudioChannels())
 		throw PythonException{"Channel index out of range", PythonException::IndexError};
-	if (selection.first > selection.second|| selection.second >= nAudioSamples())
+	if (selection.begin > selection.end|| selection.end>= duration())
 		throw PythonException{"Sample index out of range", PythonException::IndexError};
 	selections[channel] = selection;
-	notifyUpdate();
+	notifyUIUpdate();
 }
 inline void
 pg::BufferSingular::clearSelect()
 {
 	for (auto& selection: selections)
-		selection = std::make_pair(0, 0);
-	notifyUpdate();
+		selection.begin = selection.end = 0;
+	notifyUIUpdate();
 }
 inline void
 pg::BufferSingular::clearSelect(std::size_t channel) throw(PythonException)
 {
 	if (channel >= nAudioChannels())
 		throw PythonException{"Channel index out of range", PythonException::IndexError};
-	selections[channel] = std::make_pair(0, 0);
-	notifyUpdate();
+	selections[channel] = IntervalIndex(0, 0);
+	notifyUIUpdate();
 }
-inline pg::BufferSingular::AudioInterval
+inline pg::IntervalIndex
 pg::BufferSingular::getSelection(std::size_t channel) const throw(PythonException)
 {
 	if (channel >= nAudioChannels())
 		throw PythonException{"Channel index out of range", PythonException::IndexError};
 	return selections[channel];
 }
-inline bool pg::isEmpty(BufferSingular::AudioInterval const& ai) noexcept
-{
-	return ai.first >= ai.second;
-}
+
 #endif // !_POLYGAMMA_SINGULAR_BUFFERSINGULAR_HPP__

@@ -26,6 +26,9 @@ public:
 	 */
 	Panel(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
+public Q_SLOTS:
+	void show();
+
 protected:
 	virtual void closeEvent(QCloseEvent*) final override;
 

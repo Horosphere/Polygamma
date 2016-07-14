@@ -44,16 +44,6 @@ void exceptionTranslator(pg::PythonException const& exc)
 	}
 }
 
-class Buffer: public pg::Buffer,
-	public boost::python::wrapper<pg::Buffer>
-{
-public:
-	Type getType() const noexcept
-	{
-		return this->get_override("getType")();
-	}
-};
-
 
 }
 } // namespace pg::wrap
@@ -77,30 +67,35 @@ BOOST_PYTHON_MODULE(pg)
 	class_<std::vector<pg::Vector<pg::real>>>("stdvector_Vector_real")
 	.def(vector_indexing_suite<std::vector<pg::Vector<pg::real>>>());
 
+	class_<pg::IntervalIndex>("IntervalIndex", init<std::size_t, std::size_t>())
+	.def_readwrite("begin", &pg::IntervalIndex::begin)
+	.def_readwrite("end", &pg::IntervalIndex::end);
 
 	// Buffers
 
+	/*
+	 * Although pg::Buffer is a pure virtual class, its methods are not wrapped
+	 * since the user will not be inherting from it.
+	 */
 	enum_<pg::Buffer::Type>("BufferType")
 	.value("Singular", pg::Buffer::Singular);
-	class_<pg::wrap::Buffer, boost::noncopyable>("Buffer", no_init)
-	.def("getType", pure_virtual(&pg::Buffer::getType))
-	.def("saveToFile", (void (pg::Buffer::*)(std::string)) &pg::Buffer::saveToFile);
+	class_<pg::Buffer, boost::noncopyable>("Buffer", no_init)
+	.def_readonly("getType", &pg::Buffer::getType)
+	.def_readonly("duration", &pg::Buffer::duration)
+	.def_readonly("timeBase", &pg::Buffer::timeBase)
+	.def("saveToFile", (void (pg::Buffer::*)(std::string))
+				&pg::Buffer::saveToFile);
 	class_<std::vector<pg::Buffer*>>("stdvector_Buffer")
 	                              .def(vector_indexing_suite<std::vector<pg::Buffer*>>());
 
 	// BufferSingular
-	class_<pg::BufferSingular::AudioInterval>("AudioInterval", init<std::size_t, std::size_t>())
-	.def_readwrite("begin", &pg::BufferSingular::AudioInterval::first)
-	.def_readwrite("end", &pg::BufferSingular::AudioInterval::second);
 	class_<pg::BufferSingular, bases<pg::Buffer>, boost::noncopyable>(
 	  "BufferSingular", no_init)
-	.def_readonly("nAudioChannels", &pg::BufferSingular::nAudioChannels)
-	.def_readonly("nAudioSamples", &pg::BufferSingular::nAudioSamples)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t))
 	     &pg::BufferSingular::select)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, std::size_t, std::size_t))
 	     &pg::BufferSingular::select)
-	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::BufferSingular::AudioInterval))
+	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::IntervalIndex))
 	     &pg::BufferSingular::select)
 	.def("clearSelect", (void (pg::BufferSingular::*)())
 			&pg::BufferSingular::clearSelect)

@@ -7,6 +7,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 pg::Configuration::Configuration():
+	ioAudioDeviceInput(), ioAudioDeviceOutput(),
 	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiTerminalShowSystemLevel(true),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {
@@ -25,11 +26,17 @@ bool pg::Configuration::loadFile()
 			boost::property_tree::xml_parser::trim_whitespace);
 	file.close();
 	
+	boost::optional<boost::property_tree::ptree&> treeIO =
+		tree.get_child_optional("io");
+	if (treeIO)
+	{
+		ioAudioDeviceInput = treeIO->get("AudioDeviceInput", ioAudioDeviceInput);
+		ioAudioDeviceOutput = treeIO->get("AudioDeviceOutput", ioAudioDeviceOutput);
+	}
 	boost::optional<boost::property_tree::ptree&> treeUI =
 		tree.get_child_optional("ui");
 	if (treeUI)
 	{
-		boost::optional<Colour32> keyColour32;
 		uiBG = treeUI->get("BG", uiBG);
 		uiTerminalBG = treeUI->get("TerminalBG", uiTerminalBG);
 		uiTerminalShowSystemLevel = treeUI->get("ShowSystemLevel", uiTerminalShowSystemLevel);
@@ -38,14 +45,17 @@ bool pg::Configuration::loadFile()
 		uiWaveformEdge = treeUI->get("WaveformEdge", uiWaveformEdge);
 	}
 
-
-
 	return true;
 }
 void pg::Configuration::saveFile()
 {
 	std::cout << "Writing configuration to: " << fileName << std::endl;
 	boost::property_tree::ptree tree;
+
+	boost::property_tree::ptree treeIO;
+	treeIO.put("AudioDeviceInput", ioAudioDeviceInput);
+	treeIO.put("AudioDeviceInput", ioAudioDeviceOutput);
+
 	boost::property_tree::ptree treeUI;
 	treeUI.put("BG", uiBG);
 	treeUI.put("TerminalBG", uiTerminalBG);

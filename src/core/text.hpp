@@ -26,6 +26,7 @@ namespace pg
 std::vector<boost::tuple<ChannelLayout, std::string, std::string>> const channelNames = boost::assign::tuple_list_of
     (AV_CH_LAYOUT_MONO, "Mono", "CH_LAYOUT_MONO")
     (AV_CH_LAYOUT_STEREO, "Stereo", "CH_LAYOUT_STEREO")
+    (AV_CH_LAYOUT_STEREO_DOWNMIX, "Stereo Downmix", "CH_LAYOUT_STEREO_DOWNMIX")
     (AV_CH_LAYOUT_2POINT1, "2 Point 1", "CH_LAYOUT_2POINT1")
     (AV_CH_LAYOUT_2_1, "2 1", "CH_LAYOUT_2_1")
     (AV_CH_LAYOUT_SURROUND, "Surround", "CH_LAYOUT_SURROUND")
@@ -49,9 +50,9 @@ std::vector<boost::tuple<ChannelLayout, std::string, std::string>> const channel
     (AV_CH_LAYOUT_7POINT1, "7 Point 1", "CH_LAYOUT_7POINT1")
     (AV_CH_LAYOUT_7POINT1_WIDE, "7 Point 1 Wide", "CH_LAYOUT_7POINT1_WIDE")
     (AV_CH_LAYOUT_7POINT1_WIDE_BACK, "7 Point 1 Wide Back", "CH_LAYOUT_7POINT1_WIDE_BACK")
-    (AV_CH_LAYOUT_OCTAGONAL, "Octagonal", "CH_LAYOUT_OCTAGONAL")
-    (AV_CH_LAYOUT_HEXADECAGONAL, "Hexadecagonal", "CH_LAYOUT_HEXADECAGONAL")
-    (AV_CH_LAYOUT_STEREO_DOWNMIX, "Stereo Downmix", "CH_LAYOUT_STEREO_DOWNMIX");
+    (AV_CH_LAYOUT_OCTAGONAL, "Octagonal", "CH_LAYOUT_OCTAGONAL");
+// Hexadecagonal layout has 47 channels
+//    (AV_CH_LAYOUT_HEXADECAGONAL, "Hexadecagonal", "CH_LAYOUT_HEXADECAGONAL")
 
 std::string channelLayoutName(ChannelLayout const& channelLayout) noexcept;
 

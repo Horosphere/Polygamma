@@ -48,6 +48,7 @@ set(SourceFiles
     src/core/python.cpp
     src/ui/Terminal.cpp
     src/ui/mainWindowAccessories.cpp
+    src/ui/MultimediaEngine.cpp
     src/ui/MainWindow.cpp
     src/ui/ui.cpp
     src/ui/graphics/Viewport2.cpp
@@ -55,6 +56,7 @@ set(SourceFiles
     src/ui/editors/EditorSingular.cpp
     src/ui/editors/Editor.cpp
     src/ui/panels/Panel.cpp
+    src/ui/panels/PanelPlayback.cpp
     src/ui/util/Axis.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
     src/ui/util/actions.cpp
@@ -67,6 +69,7 @@ set(SourceFiles
     src/math/fourier.cpp
    )
 set(QObjectHeaders
+    src/ui/MultimediaEngine.hpp
     src/ui/mainWindowAccessories.hpp
     src/ui/Terminal.hpp
     src/ui/MainWindow.hpp
@@ -76,6 +79,7 @@ set(QObjectHeaders
     src/ui/editors/EditorSingular.hpp
     src/ui/editors/Editor.hpp
     src/ui/panels/Panel.hpp
+    src/ui/panels/PanelPlayback.hpp
     src/ui/util/ColourButton.hpp
     src/ui/util/SyntaxHighlighterPython.hpp
     src/ui/util/actions.hpp

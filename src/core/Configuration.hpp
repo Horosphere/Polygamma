@@ -44,6 +44,9 @@ public:
 
 	// The naming of the configurations must be consistent with
 	// ui/DialogPreferences.hpp.
+	std::string ioAudioDeviceInput;
+	std::string ioAudioDeviceOutput;
+
 	Colour32 uiBG;
 	Colour32 uiTerminalBG;
 	bool uiTerminalShowSystemLevel;

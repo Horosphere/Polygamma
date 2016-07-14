@@ -40,6 +40,11 @@ int main(int argc, char* argv[])
 	pg::MainWindow window(&kernel, &config);
 	window.show();
 
-	return application.exec();
+	int result = application.exec();
+
+	// Clean up
+	kernel.halt();
+
+	return result;
 }
 

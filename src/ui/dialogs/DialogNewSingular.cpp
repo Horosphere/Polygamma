@@ -7,8 +7,6 @@
 
 #include "../../core/text.hpp"
 
-constexpr std::size_t const sampleRates[] = {44100, 72000};
-
 pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 	DialogScriptArgs(parent),
 
@@ -20,8 +18,12 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 	QLabel* labelDuration = new QLabel(tr("Duration(s)"));
 
 	for (auto const& channelName: channelNames)
-		comboChannelLayout->addItem(QString::fromStdString(boost::get<1>(channelName)));
-	for (std::size_t const sampleRate: sampleRates)
+	{
+		int nChannels = av_get_channel_layout_nb_channels(boost::get<0>(channelName));
+		comboChannelLayout->addItem('[' + QString::number(nChannels) + "] " +
+		                            QString::fromStdString(boost::get<1>(channelName)));
+	}
+	for (std::size_t const sampleRate: SAMPLE_RATES)
 		comboSampleRate->addItem(QString::number(sampleRate));
 
 	QVBoxLayout* layoutMain = new QVBoxLayout;
@@ -44,16 +46,11 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 
 QString pg::DialogNewSingular::script()
 {
-	QString result = QString(PYTHON_KERNEL) + ".createSingular(";
-	std::string channelLayoutName = comboChannelLayout->currentText().toStdString();
-	for (auto const& channelName: channelNames)
-		if (channelLayoutName == boost::get<1>(channelName)) 
-		{
-			result += "pg." + QString::fromStdString(boost::get<2>(channelName)) + ", ";
-			break;
-		}
-	result += comboSampleRate->currentText() + ", \"" +
-		lineEditDuration->text() + "\")";
-	return result;
+	auto channelName = channelNames[comboChannelLayout->currentIndex()];
+
+	return QString(PYTHON_KERNEL) + ".createSingular(pg." +
+	       QString::fromStdString(boost::get<2>(channelName)) + ", " +
+	       comboSampleRate->currentText() + ", \"" +
+	       lineEditDuration->text() + "\")";
 }
 

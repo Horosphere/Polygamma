@@ -3,14 +3,18 @@
 #include <QCloseEvent>
 
 pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
-                   QWidget* parent): QMainWindow(parent),
+                   QWidget* parent): QDialog(parent),
 	kernel(kernel)
 {
 	setWindowTitle(QString::fromStdString(buffer->getTitle()));
 	setFocusPolicy(Qt::StrongFocus);
 	//setAllowedAreas(Qt::AllDockWidgetAreas);
 
-	buffer->registerUpdateListener([this]()
+	buffer->registerUpdateListener([this](IntervalIndex)
+	{
+		Q_EMIT this->graphicsUpdate();
+	});
+	buffer->registerUIUpdateListener([this]()
 	{
 		Q_EMIT this->graphicsUpdate();
 	});
@@ -18,7 +22,12 @@ pg::Editor::Editor(Kernel* const kernel, Buffer const* const buffer,
 	        this, [this]()
 	{
 		this->repaint();
-	});
+		Buffer const* const buffer = this->getBuffer();
+		if (buffer->isDirty())
+			this->setWindowTitle("+ " + QString::fromStdString(buffer->getTitle()));
+		else
+			setWindowTitle(QString::fromStdString(buffer->getTitle()));
+	}, Qt::QueuedConnection);
 }
 pg::Editor::~Editor()
 {

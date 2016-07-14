@@ -2,7 +2,7 @@
 #define _POLYGAMMA_UI_EDITORS_EDITOR_HPP__
 
 #include <QString>
-#include <QMainWindow>
+#include <QDialog>
 
 #include "../../core/Buffer.hpp"
 #include "../../core/Kernel.hpp"
@@ -18,7 +18,7 @@ namespace pg
  * @warning One buffer cannot correspond to multiple editors at a time.
  * @brief Base class for all editors.
  */
-class Editor: public QMainWindow
+class Editor: public QDialog
 {
 	Q_OBJECT
 public:

@@ -31,6 +31,9 @@ private:
 
 	// The naming of the configurations must be consistent with
 	// core/Configuration.hpp
+	QComboBox* ioAudioDeviceInput;
+	QComboBox* ioAudioDeviceOutput;
+
 	ColourButton* uiBG;
 	ColourButton* uiTerminalBG;
 };

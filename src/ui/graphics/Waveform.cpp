@@ -98,12 +98,12 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 	}
 
 	// Draw the selection
-	BufferSingular::AudioInterval selection = buffer->getSelection(channelId);
+	IntervalIndex selection = buffer->getSelection(channelId);
 	if (!isEmpty(selection))
 	{
 		painter.setCompositionMode(QPainter::CompositionMode_Difference);
-		int begin = axialToRasterX(selection.first);
-		int end = axialToRasterX(selection.second);
+		int begin = axialToRasterX(selection.begin);
+		int end = axialToRasterX(selection.end);
 		painter.fillRect(QRect(begin, 0, end - begin, height()), Qt::white);
 	}
 }
