@@ -21,23 +21,30 @@ struct Interval
 	 * The default construct shall never be called unless we are allocating new
 	 * memory.
 	 */
-	Interval()
+	Interval() noexcept
 	{
 	}
-	Interval(R begin, R end): begin(begin), end(end)
+	Interval(R begin, R end) noexcept:
+		begin(begin), end(end)
 	{
-		assert(begin <= end); // Sanity check
+		// Do not check begin <= end here since begin >= end is sometimes used in
+		// algorithms
 	}
 	R begin, end;
 
 	Interval<R>& operator=(Interval<R> const&) = default;
-	Interval<R>& operator+=(R v)
+	Interval<R>& operator+=(R v) noexcept
 	{
 		begin += v;
 		end += v;
 		return *this;
 	}
-	Interval<R>& operator-=(R v)
+	Interval<R>& operator+=(Interval<R> interval) noexcept
+	{
+		begin = std::min(begin, interval.begin);
+		end = std::max(end, interval.end);
+	}
+	Interval<R>& operator-=(R v) noexcept
 	{
 		begin -= v;
 		end -= v;
@@ -46,8 +53,6 @@ struct Interval
 
 };
 
-template <typename R> bool
-isValid(Interval<R> const&) noexcept;
 template <typename R> bool
 isEmpty(Interval<R> const&) noexcept;
 
@@ -77,6 +82,12 @@ clamp(Interval<R> const&, R lower, R upper);
 
 template <typename R> R length(Interval<R> const&);
 
+/**
+ * @brief Union of two intervals
+ */
+template <typename R> Interval<R>
+operator+(Interval<R> const&, Interval<R> const&);
+
 } // namespace pg
 
 
@@ -84,14 +95,9 @@ template <typename R> R length(Interval<R> const&);
 // Implementations
 
 template <typename R> inline bool
-pg::isValid(Interval<R> const& interval) noexcept
-{
-	return interval.begin <= interval.end;
-}
-template <typename R> inline bool
 pg::isEmpty(Interval<R> const& interval) noexcept
 {
-	return interval.begin == interval.end;
+	return interval.begin >= interval.end;
 }
 template <typename R> inline pg::Interval<R>
 pg::translate(Interval<R> const& interval, Interval<R> const& bound, R val)
@@ -146,5 +152,11 @@ pg::length(Interval<R> const& interval)
 	return interval.end - interval.begin;
 }
 
+template <typename R> inline pg::Interval<R>
+pg::operator+(Interval<R> const& i0, Interval<R> const& i1)
+{
+	return Interval<R>(std::min(i0.begin, i1.begin),
+	                   std::max(i0.end, i1.end));
+}
 #endif // !_POLYGAMMA_MATH_INTERVAL_HPP__
 

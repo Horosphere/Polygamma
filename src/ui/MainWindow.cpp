@@ -266,7 +266,7 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	}
 	editor->show();
 	//editor->setFloating(true);
-	editors.push_back(editor);
+	editors.insert(editor);
 
 	buffer->registerUIDestroyListener([this, editor]()
 	{
@@ -278,27 +278,19 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 }
 void pg::MainWindow::onBufferDestroy(Editor* editor)
 {
-	auto it = editors.begin();
-	while (*it != editor)
-		++it;
-	auto current = editors.begin() + currentEditorIndex;
-
-	// Modify currentEditorIndex if necessary.
-	if (current > it)
-		--currentEditorIndex;
-	else if (current == it)
-		currentEditorIndex = editors.size() - 1;
-
-	delete *it;
+	if (editor == currentEditor)
+		currentEditor = nullptr;
+	delete editor;
 	editors.erase(it);
 	reloadMenuWindows();
 }
 
 void pg::MainWindow::onExecute(QString const& script)
 {
-	if (currentEditorIndex != editors.size())
+	if (currentEditor)
 	{
-		std::size_t index = kernel->bufferIndex(editors[currentEditorIndex]->getBuffer());
+		// TODO: This is not very thread safe, as kernel->buffers may change.
+		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
 		QString s = script;
 		s.replace("{CU}", QString(PYTHON_KERNEL) + '(' +
 		          QString::number(index) + ')');
@@ -314,14 +306,7 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 	(void) old;
 	if (Editor* editor = dynamic_cast<Editor*>(now))
 	{
-		// Change current editor index. Since all created editors are registered
-		// in the main window, this loop will break
-		for (std::size_t i = 0; i < editors.size(); ++i)
-			if (editors[i] == editor)
-			{
-				currentEditorIndex = i;
-				break;
-			}
+		currentEditor = editor;
 		Buffer::Type type = editor->getBuffer()->getType();
 		for (auto& action: actionsFlagged)
 		{

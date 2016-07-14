@@ -4,11 +4,11 @@ An open source audio editing software.
 
 ## Building
 
-###### Dependencies
+#### Dependencies
 Polygamma dependes on Qt 5, Python 3.5, Boost 1.61, avcodec, avformat,
 avutil, and swscale. Boost.Python must be compiled with Python 3 support.
 
-###### Compilation
+#### Compilation
 It is best to do an out of source build at `build/` directory. Create a
 subdirectory `build` and run
 ```
@@ -29,7 +29,7 @@ them in the text based XML file.
 
 ## Developing
 
-###### Conventions and scripts
+#### Conventions and scripts
 
 The script `update.py` is used to introduce new source files or new QObject
 headers to `CMakeLists.txt`.
@@ -52,7 +52,7 @@ configuration:
 Polygamma's include guards are formatted according to the `.formatGen` file in
 the root directory.
 
-###### Structure
+#### Structure
 
 Polygamma usually run in two threads. The GUI/main thread contains all GUI
 interactions managed by Qt, and the Kernel thread which contains the function

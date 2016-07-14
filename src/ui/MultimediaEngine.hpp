@@ -19,12 +19,14 @@ public:
 	void loadConfiguration(Configuration const* const config);
 
 private:
-	struct PlaybackCache
-	{
-	};
 	QAudioDeviceInfo audioDeviceInput;
 	QAudioDeviceInfo audioDeviceOutput;
 
+	struct PlaybackCache
+	{
+		QAudioFormat format;
+		QByteArray buffer;
+	};
 	std::map<Editor*, PlaybackCache> caches;
 };
 

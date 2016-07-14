@@ -4,16 +4,20 @@
 
 void pg::silence(BufferSingular* buffer)
 {
-	bool flag = false;
+	IntervalIndex changed(std::numeric_limits<std::size_t>::max(), 0);
 	for (std::size_t i = 0; i < buffer->nAudioChannels(); ++i)
 	{
 		auto selection = buffer->getSelection(i);
-		flag = flag || !isEmpty(selection);
+		if (!isEmpty(selection))
+		{
+			changed += selection;
 		pg::Vector<pg::real>* const channel = buffer->getAudioChannel(i);
 		for (std::size_t j = selection.begin; j < selection.end; ++j)
 		{
 			(*channel)[j] = 0.0;
 		}
+		}
 	}
-	if (flag) buffer->notifyUpdate();
+	if (!isEmpty(changed))
+		buffer->notifyUpdate(changed);
 }

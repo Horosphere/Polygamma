@@ -1,7 +1,7 @@
 #ifndef _POLYGAMMA_UI_MAINWINDOW_HPP__
 #define _POLYGAMMA_UI_MAINWINDOW_HPP__
 
-#include <vector>
+#include <set>
 
 #include <QLineEdit>
 #include <QMainWindow>
@@ -92,14 +92,13 @@ private:
 
 	// Dynamic
 	/**
-	 * @brief The index is editors.size() when no editor is selected.
+	 * nullptr when no editor is selected
 	 */
-	std::size_t currentEditorIndex;
+	Editor* currentEditor;
 	/**
-	 * @warning Do not use editor index to index buffers in the Kernel.
 	 * @brief Each editor corresponds to a buffer in the Kernel or a subbuffer.
 	 */
-	std::vector<Editor*> editors;
+	std::set<Editor*> editors;
 };
 
 } // namespace pg

@@ -2,7 +2,6 @@
 #define _POLYGAMMA_CORE_BUFFER_HPP__
 
 #include <cstdint>
-#include <chrono>
 
 #include <boost/signals2.hpp>
 
@@ -107,8 +106,7 @@ private:
 	boost::signals2::signal<void ()> signalUIUpdate;
 	boost::signals2::signal<void ()> signalUIDestroy;
 
-	std::chrono::time_point<std::chrono::steady_clock> timeLastChange;
-	std::chrono::time_point<std::chrono::steady_clock> timeLastSave;
+	bool dirty;
 	std::size_t nReferences; // Used by the Kernel
 	friend class Kernel;
 };
@@ -118,8 +116,7 @@ private:
 // Implementations
 
 inline pg::Buffer::Buffer() noexcept:
-	timeLastChange(std::chrono::steady_clock::now()),
-	timeLastSave(std::chrono::steady_clock::now()),
+	dirty(false),
 	nReferences(0)
 {
 }
@@ -129,12 +126,14 @@ inline std::string pg::Buffer::getTitle() const noexcept
 }
 inline bool pg::Buffer::isDirty() const noexcept
 {
-	return timeLastChange > timeLastSave;
+	return dirty;
 }
 inline void pg::Buffer::notifyUpdate() noexcept
 {
 	timeLastChange = std::chrono::steady_clock::now();
 	signalUpdate(IntervalIndex(0, duration()));
+	signalUIUpdate();
+	dirty = true;
 }
 inline void pg::Buffer::notifyUpdate(IntervalIndex interval) noexcept
 {

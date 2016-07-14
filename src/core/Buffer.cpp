@@ -12,4 +12,5 @@ void pg::Buffer::saveToFile(std::string fileName) throw(PythonException)
 		throw PythonException{error, PythonException::IOError};
 	}
 	timeLastSave = std::chrono::steady_clock::now();
+	dirty = false;
 }
