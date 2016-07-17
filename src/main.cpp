@@ -7,6 +7,8 @@
 
 #include <QApplication>
 #include <QStandardPaths>
+#include <QtAV>
+#include <QtAVWidgets>
 
 extern "C"
 {
@@ -22,6 +24,7 @@ extern "C"
 int main(int argc, char* argv[])
 {
 	av_register_all();
+	QtAV::setLogLevel(QtAV::LogCritical);
 	pg::initPython();
 
 	pg::Configuration config;

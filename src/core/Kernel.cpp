@@ -77,7 +77,10 @@ void pg::Kernel::start()
 		Script script;
 		while (scriptQueue.pop(script))
 		{
-			std::cout << "[Ker] " << (std::string) script << std::endl;
+			if (script.level != Script::System)
+			{
+				std::cout << "[Ker] " << (std::string) script << std::endl;
+			}
 			try
 			{
 				using namespace boost::python;

@@ -30,10 +30,9 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 	Viewport2::paintEvent(event);
 	QPainter painter(this);
 
-	// Decides drawing mode. If the avaliable pixel per sample is less than
-	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform
+	
 	bool denseDrawing = width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX);
-	if (denseDrawing)
+	if (denseDrawing) // Draw lolipop diagram
 	{
 		std::size_t step = 1 + length(rangeX) / width() / UI_SAMPLE_DISPLAY_WIDTH / 512;
 		for (int x = 0; x < width(); ++x)
@@ -71,7 +70,7 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 			                 x, height() / 2 - (int)(averageMin * 0.5 * height()));
 		}
 	}
-	else
+	else // Connect the dots
 	{
 		painter.setRenderHint(QPainter::Antialiasing);
 		painter.setPen(penCore);

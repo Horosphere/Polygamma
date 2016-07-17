@@ -37,7 +37,7 @@ public:
 	/**
 	 * Exposed to Python
 	 * @brief duration() / timeBase() should be the duration of this buffer in
-	 *	seconds
+	 *  seconds
 	 */
 	virtual std::size_t duration() const noexcept = 0;
 	/**
@@ -49,16 +49,32 @@ public:
 	 */
 	virtual std::size_t timeBase() const noexcept = 0;
 
-	virtual bool saveToFile(std::string fileName, std::string* const error) = 0;
+	/**
+	 * @warning Do not change the dirty flag within this function
+	 * @brief Export as a project file
+	 */
+	virtual bool saveToFile(std::string fileName,
+	                        std::string* const error) noexcept = 0;
+	/**
+	 * @warning Do not change the dirty flag within this function
+	 * @brief Export as a playable multimedia file
+	 */
+	virtual bool exportToFile(std::string fileName,
+	                          std::string* const error) noexcept = 0;
 	/**
 	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
 	 *  and throws IOError upon failure.
 	 */
 	void saveToFile(std::string fileName) throw(PythonException);
+	void exportToFile(std::string fileName) throw(PythonException);
 	std::string getTitle() const noexcept;
-	bool isDirty() const noexcept; 
+	bool isDirty() const noexcept;
 
-
+	std::size_t getCursor() const noexcept;
+	/**
+	 * The argument must be less than duration().
+	 */
+	void setCursor(std::size_t) throw(PythonException);
 	/**
 	 * @brief Sends a notification signal and update timeLastChange.
 	 */
@@ -69,7 +85,7 @@ public:
 	void notifyUpdate(IntervalIndex interval) noexcept;
 	/**
 	 * @brief Sends a notification signal but does not update timeLastChange.
-	 *	Triggered when the selection changes;
+	 *  Triggered when the selection changes;
 	 */
 	void notifyUIUpdate() noexcept;
 	void uiDestroy() noexcept;
@@ -108,6 +124,8 @@ private:
 
 	bool dirty;
 	std::size_t nReferences; // Used by the Kernel
+
+	std::size_t cursor;
 	friend class Kernel;
 };
 
@@ -116,8 +134,7 @@ private:
 // Implementations
 
 inline pg::Buffer::Buffer() noexcept:
-	dirty(false),
-	nReferences(0)
+	dirty(false), nReferences(0), cursor(0)
 {
 }
 inline std::string pg::Buffer::getTitle() const noexcept
@@ -127,6 +144,18 @@ inline std::string pg::Buffer::getTitle() const noexcept
 inline bool pg::Buffer::isDirty() const noexcept
 {
 	return dirty;
+}
+inline std::size_t pg::Buffer::getCursor() const noexcept
+{
+	return cursor;
+}
+inline void pg::Buffer::setCursor(std::size_t c) throw(PythonException)
+{
+	if (c >= duration())
+		throw PythonException{"Cursor index is higher than duration",
+		                      PythonException::IndexError};
+	cursor = c;
+	notifyUIUpdate();
 }
 inline void pg::Buffer::notifyUpdate() noexcept
 {
@@ -152,7 +181,7 @@ template <typename Listener> inline void
 pg::Buffer::registerUpdateListener(Listener listener) const noexcept
 {
 	const_cast<boost::signals2::signal<void (IntervalIndex)>&>(signalUpdate)
-		.connect(listener);
+	.connect(listener);
 }
 template <typename Listener> inline void
 pg::Buffer::registerUIUpdateListener(Listener listener) const noexcept

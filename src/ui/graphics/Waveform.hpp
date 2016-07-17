@@ -27,6 +27,9 @@ public:
 	void setColourEdge(QColor) noexcept;
 	QColor getColourEdge() const noexcept;
 	
+Q_SIGNALS:
+	void cursorMove(std::size_t);
+
 protected:
 	void paintEvent(QPaintEvent*);
 

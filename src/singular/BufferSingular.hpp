@@ -58,7 +58,9 @@ public:
 	virtual std::size_t duration() const noexcept override;
 	virtual std::size_t timeBase() const noexcept override;
 	virtual bool saveToFile(std::string fileName,
-	                        std::string* const error) override;
+	                        std::string* const error) noexcept override;
+	virtual bool exportToFile(std::string fileName,
+	                        std::string* const error) noexcept override;
 
 	/**
 	 * Exposed to Python
@@ -152,7 +154,12 @@ pg::BufferSingular::timeBase() const noexcept
 {
 	return sampleRate;
 }
-
+inline bool
+pg::BufferSingular::exportToFile(std::string fileName, std::string* const error)
+	noexcept
+{
+	return saveToFile(fileName, error);
+}
 inline std::size_t
 pg::BufferSingular::nAudioChannels() const noexcept
 {

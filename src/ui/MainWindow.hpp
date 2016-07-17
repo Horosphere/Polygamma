@@ -6,12 +6,12 @@
 #include <QLineEdit>
 #include <QMainWindow>
 
-#include "MultimediaEngine.hpp"
 #include "Terminal.hpp"
 #include "dialogs/DialogNewSingular.hpp"
 #include "dialogs/DialogPreferences.hpp"
 #include "editors/Editor.hpp"
 #include "panels/PanelPlayback.hpp"
+#include "panels/PanelMultimedia.hpp"
 #include "mainWindowAccessories.hpp"
 #include "util/actions.hpp"
 #include "../core/Kernel.hpp"
@@ -67,7 +67,6 @@ private:
 	// Handlers
 	Kernel* const kernel;
 	Configuration* const config;
-	MultimediaEngine multimediaEngine;
 
 	QString lineEditLog_stylesheetOut;
 	QString lineEditLog_stylesheetErr;
@@ -85,6 +84,7 @@ private:
 
 	// Panels
 	PanelPlayback* const panelPlayback;
+	PanelMultimedia* const panelMultimedia;
 
 	// Dialogs
 	DialogPreferences* const dialogPreferences;

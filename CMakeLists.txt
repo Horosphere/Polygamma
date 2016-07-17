@@ -1,6 +1,6 @@
 project(Polygamma)
 # Pre-requisites:
-# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, Qt 5
+# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, Qt 5, QtAV
 cmake_minimum_required(VERSION 3.5)
 
 set(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -29,6 +29,8 @@ endif()
 # Qt
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Multimedia REQUIRED)
+#find_package(QtAV REQUIRED) # QtAV does not have a cmake file
+
 #add_definitions(-DQT_CONSOLE)
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -48,14 +50,15 @@ set(SourceFiles
     src/core/python.cpp
     src/ui/Terminal.cpp
     src/ui/mainWindowAccessories.cpp
-    src/ui/MultimediaEngine.cpp
     src/ui/MainWindow.cpp
     src/ui/ui.cpp
     src/ui/graphics/Viewport2.cpp
+    src/ui/graphics/Cursor.cpp
     src/ui/graphics/Waveform.cpp
     src/ui/editors/EditorSingular.cpp
     src/ui/editors/Editor.cpp
     src/ui/panels/Panel.cpp
+    src/ui/panels/PanelMultimedia.cpp
     src/ui/panels/PanelPlayback.cpp
     src/ui/util/Axis.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
@@ -69,15 +72,16 @@ set(SourceFiles
     src/math/fourier.cpp
    )
 set(QObjectHeaders
-    src/ui/MultimediaEngine.hpp
     src/ui/mainWindowAccessories.hpp
     src/ui/Terminal.hpp
     src/ui/MainWindow.hpp
     src/ui/ui.hpp
     src/ui/graphics/Waveform.hpp
     src/ui/graphics/Viewport2.hpp
+    src/ui/graphics/Cursor.hpp
     src/ui/editors/EditorSingular.hpp
     src/ui/editors/Editor.hpp
+    src/ui/panels/PanelMultimedia.hpp
     src/ui/panels/Panel.hpp
     src/ui/panels/PanelPlayback.hpp
     src/ui/util/ColourButton.hpp
@@ -99,6 +103,7 @@ add_executable(Polygamma
 target_link_libraries(Polygamma ${PYTHON_LIBRARIES})
 target_link_libraries(Polygamma ${Boost_LIBRARIES})
 target_link_libraries(Polygamma Qt5::Widgets Qt5::Multimedia Qt5::Core)
+target_link_libraries(Polygamma QtAV)
 target_link_libraries(Polygamma avcodec avformat avutil swscale)
 target_link_libraries(Polygamma ${CMAKE_THREAD_LIBS_INIT})
 

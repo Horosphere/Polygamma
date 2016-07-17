@@ -84,7 +84,12 @@ BOOST_PYTHON_MODULE(pg)
 	.def_readonly("duration", &pg::Buffer::duration)
 	.def_readonly("timeBase", &pg::Buffer::timeBase)
 	.def("saveToFile", (void (pg::Buffer::*)(std::string))
-				&pg::Buffer::saveToFile);
+				&pg::Buffer::saveToFile)
+	.def("exportToFile", (void (pg::Buffer::*)(std::string))
+				&pg::Buffer::exportToFile)
+	.add_property("title", &pg::Buffer::getTitle)
+	.add_property("dirty", &pg::Buffer::isDirty)
+	.add_property("cursor", &pg::Buffer::getCursor, &pg::Buffer::setCursor);
 	class_<std::vector<pg::Buffer*>>("stdvector_Buffer")
 	                              .def(vector_indexing_suite<std::vector<pg::Buffer*>>());
 

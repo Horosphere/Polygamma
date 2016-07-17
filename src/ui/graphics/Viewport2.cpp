@@ -51,12 +51,12 @@ void pg::Viewport2::mouseMoveEvent(QMouseEvent* event)
 		if (isDraggableX) // Dragging on X enabled
 		{
 			rangeX = translate(rangeX, maxRangeX,
-			                   (long)((dragPos.x() - event->pos().x()) * dragFacX));
+			                   (axial_coord)((dragPos.x() - event->pos().x()) * dragFacX));
 		}
 		if (isDraggableY) // Dragging on Y enabled
 		{
 			rangeY = translate(rangeY, maxRangeY,
-			                   (long)((dragPos.y() - event->pos().y()) * dragFacY));
+			                   (axial_coord)((dragPos.y() - event->pos().y()) * dragFacY));
 		}
 
 		if (isDraggable)
@@ -87,12 +87,12 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 		{
 			if (isSelectibleX)
 			{
-				Interval<long> iX(rasterToAxialX(rubberBand->x()),
+				Interval<axial_coord> iX(rasterToAxialX(rubberBand->x()),
 				                     rasterToAxialX(rubberBand->x() + selection.right()));
 				iX = clamp(iX, maxRangeX.begin, maxRangeX.end);
 				if (isSelectibleY)
 				{
-					Interval<long> iY(rasterToAxialY(rubberBand->y()),
+					Interval<axial_coord> iY(rasterToAxialY(rubberBand->y()),
 					                     rasterToAxialY(rubberBand->y() + selection.bottom()));
 					iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
 					Q_EMIT selectionXY(iX, iY);
@@ -102,7 +102,7 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 			}
 			else
 			{
-				Interval<long> iY(rasterToAxialY(rubberBand->y()),
+				Interval<axial_coord> iY(rasterToAxialY(rubberBand->y()),
 				                     rasterToAxialY(rubberBand->y() + selection.bottom()));
 				iY = clamp(iY, maxRangeY.begin, maxRangeY.end);
 				Q_EMIT selectionY(iY);
@@ -113,12 +113,12 @@ void pg::Viewport2::mouseReleaseEvent(QMouseEvent* event)
 			if (isSelectibleX)
 			{
 				if (isSelectibleY)
-					Q_EMIT selectionXY(Interval<long>(0, 0), Interval<long>(0, 0));
+					Q_EMIT selectionXY(Interval<axial_coord>(0, 0), Interval<axial_coord>(0, 0));
 				else
-					Q_EMIT selectionX(Interval<long>(0, 0));
+					Q_EMIT selectionX(Interval<axial_coord>(0, 0));
 			}
 			else
-				Q_EMIT selectionY(Interval<long>(0, 0));
+				Q_EMIT selectionY(Interval<axial_coord>(0, 0));
 		
 		}
 	}
@@ -133,7 +133,7 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 	{
 		if (zoomFacX != 1.0) // Zoom enabled
 		{
-			long axialX = rasterToAxialX(event->x());
+			axial_coord axialX = rasterToAxialX(event->x());
 			double fac = std::pow(zoomFacX, steps);
 			if (length(rangeX) * fac > width())
 			{
@@ -143,7 +143,7 @@ void pg::Viewport2::wheelEvent(QWheelEvent* event)
 		}
 		if (zoomFacY != 1.0)
 		{
-			long axialY = rasterToAxialY(event->y());
+			axial_coord axialY = rasterToAxialY(event->y());
 			double fac = std::pow(zoomFacY, steps);
 			if (length(rangeX) * fac > height())
 			{
@@ -182,9 +182,9 @@ void pg::Viewport2::resizeEvent(QResizeEvent* event)
 	// Recalculate ranges
 	if (event->oldSize().isValid())
 	{
-		long resultXLen = length(rangeX) * event->size().width()
+		axial_coord resultXLen = length(rangeX) * event->size().width()
 		                     / event->oldSize().width();
-		long resultYLen = length(rangeX) * event->size().height()
+		axial_coord resultYLen = length(rangeX) * event->size().height()
 		                     / event->oldSize().height();
 
 		if (resultXLen > length(maxRangeX))

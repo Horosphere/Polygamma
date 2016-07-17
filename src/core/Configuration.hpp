@@ -6,6 +6,8 @@
 
 #include <boost/signals2.hpp>
 
+#include "Script.hpp"
+
 namespace pg 
 {
 
@@ -44,12 +46,11 @@ public:
 
 	// The naming of the configurations must be consistent with
 	// ui/DialogPreferences.hpp.
-	std::string ioAudioDeviceInput;
-	std::string ioAudioDeviceOutput;
+	std::string cacheDirPlayback;
 
 	Colour32 uiBG;
 	Colour32 uiTerminalBG;
-	bool uiTerminalShowSystemLevel;
+	Script::Level uiScriptLevelMin;
 	Colour32 uiWaveformBG;
 	Colour32 uiWaveformCore;
 	Colour32 uiWaveformEdge;

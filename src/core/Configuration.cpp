@@ -7,8 +7,8 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 pg::Configuration::Configuration():
-	ioAudioDeviceInput(), ioAudioDeviceOutput(),
-	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiTerminalShowSystemLevel(true),
+	cacheDirPlayback(),
+	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiScriptLevelMin(Script::UI),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {
 }
@@ -26,12 +26,11 @@ bool pg::Configuration::loadFile()
 			boost::property_tree::xml_parser::trim_whitespace);
 	file.close();
 	
-	boost::optional<boost::property_tree::ptree&> treeIO =
-		tree.get_child_optional("io");
-	if (treeIO)
+	boost::optional<boost::property_tree::ptree&> treeCache =
+		tree.get_child_optional("cache");
+	if (treeCache)
 	{
-		ioAudioDeviceInput = treeIO->get("AudioDeviceInput", ioAudioDeviceInput);
-		ioAudioDeviceOutput = treeIO->get("AudioDeviceOutput", ioAudioDeviceOutput);
+		cacheDirPlayback = treeCache->get("cacheDirPlayback", cacheDirPlayback);
 	}
 	boost::optional<boost::property_tree::ptree&> treeUI =
 		tree.get_child_optional("ui");
@@ -39,7 +38,7 @@ bool pg::Configuration::loadFile()
 	{
 		uiBG = treeUI->get("BG", uiBG);
 		uiTerminalBG = treeUI->get("TerminalBG", uiTerminalBG);
-		uiTerminalShowSystemLevel = treeUI->get("ShowSystemLevel", uiTerminalShowSystemLevel);
+		uiScriptLevelMin = (Script::Level) treeUI->get<int>("ScriptLevelMin", uiScriptLevelMin);
 		uiWaveformBG = treeUI->get("WaveformBG", uiWaveformBG);
 		uiWaveformCore = treeUI->get("WaveformCore", uiWaveformCore);
 		uiWaveformEdge = treeUI->get("WaveformEdge", uiWaveformEdge);
@@ -52,14 +51,13 @@ void pg::Configuration::saveFile()
 	std::cout << "Writing configuration to: " << fileName << std::endl;
 	boost::property_tree::ptree tree;
 
-	boost::property_tree::ptree treeIO;
-	treeIO.put("AudioDeviceInput", ioAudioDeviceInput);
-	treeIO.put("AudioDeviceInput", ioAudioDeviceOutput);
+	boost::property_tree::ptree treeCache;
+	treeCache.put("cacheDirPlayback", cacheDirPlayback);
 
 	boost::property_tree::ptree treeUI;
 	treeUI.put("BG", uiBG);
 	treeUI.put("TerminalBG", uiTerminalBG);
-	treeUI.put("ShowSystemLevel", uiTerminalShowSystemLevel);
+	treeUI.put("ScriptLevelMin", uiScriptLevelMin);
 	treeUI.put("WaveformBG", uiWaveformBG);
 	treeUI.put("WaveformCore", uiWaveformCore);
 	treeUI.put("WaveformEdge", uiWaveformEdge);

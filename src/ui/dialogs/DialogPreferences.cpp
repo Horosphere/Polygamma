@@ -15,7 +15,6 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
     QWidget* parent):
 	QDialog(parent), config(config),
 	// Various options:
-	ioAudioDeviceInput(new QComboBox), ioAudioDeviceOutput(new QComboBox),
 	uiBG(new ColourButton), uiTerminalBG(new ColourButton)
 {
 	QHBoxLayout* layoutMain = new QHBoxLayout;
@@ -34,12 +33,14 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 	page##name->setLayout(layout##name)
 
 	// Pages begin
+	/*
 	DP_ADD_PAGE(IO, "Devices");
 
 	layoutIO->addWidget(ioAudioDeviceInput);
 	layoutIO->addWidget(ioAudioDeviceOutput);
 
 	pageStack->addWidget(pageIO);
+	*/
 
 	// Page::UI
 	DP_ADD_PAGE(UI, "Appearance");
@@ -74,6 +75,7 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 
 void pg::DialogPreferences::onReload()
 {
+	/*
 	ioAudioDeviceInput->clear();
 	QList<QAudioDeviceInfo> availableInputDevices =
 		QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
@@ -94,14 +96,15 @@ void pg::DialogPreferences::onReload()
 		if (deviceName == QString::fromStdString(config->ioAudioDeviceOutput))
 			ioAudioDeviceOutput->setCurrentIndex(i);
 	}
+	*/
 
 	uiBG->onColourChanged(abgrToQColor(config->uiBG));
 	uiTerminalBG->onColourChanged(abgrToQColor(config->uiTerminalBG));
 }
 void pg::DialogPreferences::save()
 {
-	config->ioAudioDeviceInput = ioAudioDeviceInput->currentText().toStdString();
-	config->ioAudioDeviceOutput = ioAudioDeviceOutput->currentText().toStdString();
+	//config->ioAudioDeviceInput = ioAudioDeviceInput->currentText().toStdString();
+	//config->ioAudioDeviceOutput = ioAudioDeviceOutput->currentText().toStdString();
 	config->uiBG = qColorToABGR(uiBG->getColour());
 	config->uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
 

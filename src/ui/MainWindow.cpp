@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QResource>
 #include <QVBoxLayout>
+#include <QtAVWidgets>
 
 #include "ui.hpp"
 #include "Terminal.hpp"
@@ -22,7 +23,7 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
-	kernel(kernel), config(config), multimediaEngine(this),
+	kernel(kernel), config(config), 
 
 	// UI
 	terminal(new Terminal(kernel, this)),
@@ -31,6 +32,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	panelPlayback(new PanelPlayback(this)),
+	panelMultimedia(new PanelMultimedia(this)),
 
 	// Dialogs
 	dialogPreferences(new DialogPreferences(config, this)),
@@ -96,10 +98,16 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	menuEdit->addAction(actionEditPreferences);
 
 	QMenu* menuWindows = menuBar()->addMenu(tr("Windows"));
-	QAction* actionWindowsPlayback = new QAction(tr("Playback"), this);
-	connect(actionWindowsPlayback, &QAction::triggered,
-	        panelPlayback, &Panel::show);
-	menuWindows->addAction(actionWindowsPlayback);
+#define ADD_ACTIONPANEL(name, string) \
+	QAction* actionWindows##name = new QAction(tr(string), this); \
+	connect(actionWindows##name, &QAction::triggered, \
+			panel##name, &Panel::show); \
+	menuWindows->addAction(actionWindows##name);
+
+	ADD_ACTIONPANEL(Playback, "Playback");
+	ADD_ACTIONPANEL(Multimedia, "Multimedia");
+#undef ADD_ACTIONPANEL
+
 	menuEditors = menuWindows->addMenu(tr("Buffers"));
 
 	// Menu end
@@ -121,7 +129,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	config->registerUpdateListener([this]()
 	{
 		this->updateUIElements();
-		this->multimediaEngine.loadConfiguration(this->config);
 	});
 	connect(qApp, &QApplication::focusChanged,
 	        this, &MainWindow::onFocusChanged);
@@ -160,14 +167,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	connect(panelPlayback, &PanelPlayback::playPause,
-	        this, [this]()
-	{
-		// TODO: There are many problems to this design:
-		// Multiple playbacks can cause the application to crash
-		// there is no way to stop
-		// Crashes if currentEditor = nullptr
-		this->multimediaEngine.startPlayback(this->currentEditor);
-	});
+	        panelMultimedia, &PanelMultimedia::onPlayPause);
 	// Connects the kernel's stdout and stderr to the corresponding signals of
 	// this class
 	kernel->registerStdOutListener([this](std::string str)
@@ -211,7 +211,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	        this, &MainWindow::onBufferDestroy, Qt::QueuedConnection);
 
 	updateUIElements();
-	multimediaEngine.loadConfiguration(config);
 	reloadMenuWindows();
 
 	// Set default states
@@ -238,6 +237,7 @@ void pg::MainWindow::updateUIElements()
 	terminal->input->setFont(fontMonospace);
 	terminal->input->setTabStopWidth(tabWidth);
 
+	terminal->setScriptLevelMin(config->uiScriptLevelMin);
 	/*
 	 * "Bool To String" Converts a bool to a QString for using the stylesheet.
 	 */
@@ -245,9 +245,6 @@ void pg::MainWindow::updateUIElements()
 	qApp->setStyleSheet(
 	  "QMainWindow, QDialog, QDockWidget, QStatusBar {"
 	  "background-color: " + abgrToString(config->uiBG) + ";"
-	  "}"
-	  "pg--Terminal {"
-	  "qproperty-showSystemLevel: " + bts(config->uiTerminalShowSystemLevel) + ";"
 	  "}"
 	  "pg--Waveform { "
 	  "qproperty-colourBG: " + abgrToString(config->uiWaveformBG) + ";"
@@ -273,7 +270,7 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	editor->show();
 	//editor->setFloating(true);
 	editors.insert(editor);
-	multimediaEngine.addBuffer(editor);
+	panelMultimedia->editorAdd(editor);
 
 	buffer->registerUIDestroyListener([this, editor]()
 	{
@@ -289,7 +286,7 @@ void pg::MainWindow::onBufferDestroy(Editor* editor)
 		currentEditor = nullptr;
 	delete editor;
 	editors.erase(editor);
-	multimediaEngine.eraseBuffer(editor);
+	panelMultimedia->editorErase(editor);
 	reloadMenuWindows();
 }
 

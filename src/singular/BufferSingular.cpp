@@ -524,7 +524,7 @@ pg::writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& cha
 	return true;
 }
 bool pg::BufferSingular::saveToFile(std::string fileName,
-                                    std::string* const error)
+                                    std::string* const error) noexcept
 {
 	boost::timer::auto_cpu_timer timer;
 
