@@ -59,8 +59,6 @@ interactions managed by Qt, and the Kernel thread which contains the function
 `void Kernel::start()`. The Kernel must be halted with `void Kernel::halt()`,
 otherwise segmentation faults occur upon application exit.
 
-Kernel communicates with the GUI through two channels. Kernel sends message
-to the GUI through `Qt::QueuedConnection`s relayed by lambda functions in
-`class MainWindow`. Conversely, GUI sends Kernel commands through
-`boost::lockfree:spsc_queue`s.
-
+Interthread communication is done with `boost::spsc_queue`s. The Kernel
+contains one queue for commands going in and two queues for outputs going
+into the GUI.

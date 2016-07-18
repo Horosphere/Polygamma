@@ -115,14 +115,16 @@ void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
 	if (buffers.size() <= index)
 		throw PythonException{"Buffer index out of range", PythonException::ValueError};
 
-	if (buffers[index]->nReferences == 0)
+	Buffer* const buffer = buffers[index];
+	if (buffer->nReferences == 0)
 	{
+		std::cout << "[Ker] Erase buffer: " << buffer->getTitle() << std::endl;
 		buffers.erase(buffers.begin() + index);
 		SpecialOutput so(SpecialOutput::BufferErase);
-		so.buffer = buffers[index];
+		so.buffer = buffer;
 		queueOutSpecial.push(so);
 
-		delete buffers[index];
+		delete buffer;
 	}
 }
 void pg::Kernel::createSingular(ChannelLayout channelLayout,
@@ -151,16 +153,17 @@ void pg::Kernel::pushBuffer(Buffer* buffer) noexcept
 	if (buffer && std::find(buffers.begin(), buffers.end(), buffer)
 	    == buffers.end())
 	{
-		buffer->title += std::to_string(buffers.size());
+		std::cout << "[Ker] Create buffer: " << buffer->getTitle() << std::endl;
 		buffers.push_back(buffer);
 		SpecialOutput so(SpecialOutput::BufferNew);
 		so.buffer = buffer;
 		queueOutSpecial.push(so);
 
-		buffer->signalUpdate.connect([buffer, this](Buffer::Update)
+		buffer->signalUpdate.connect([buffer, this](Buffer::Update update)
 		{
 			SpecialOutput so(SpecialOutput::BufferUpdate);
 			so.buffer = buffer;
+			so.update = update;
 			queueOutSpecial.push(so);
 		});
 	}

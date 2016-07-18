@@ -45,7 +45,8 @@ public:
 			// TODO: Implement config changing in python.
 			ConfigUpdate, // Configuration has changed
 			BufferNew, // A new buffer has been created
-			BufferErase, // A buffer has been deleted
+			BufferErase, // A buffer has been deleted. In this case, the buffer
+			             // pointer shall not be dereferenced.
 			BufferUpdate // A buffer has been updated
 		};
 		SpecialOutput() noexcept {}

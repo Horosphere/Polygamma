@@ -17,7 +17,9 @@ typedef Interval<std::size_t> IntervalIndex;
  * TODO: Use reference counted buffer
  * This class uses a case pattern. E.g. if getType() == Singular, the instance
  * must be an instance of BufferSingular.
- * All buffers must be registed in the Kernel
+ * It is suggested to use dynamic_cast to determine the buffer type instead of
+ * getType(). getType() is mainly used in the GUI for disabling certain
+ * actions.
  * @brief Each instance of Buffer corresponds to a file or editable content.
  */
 class Buffer

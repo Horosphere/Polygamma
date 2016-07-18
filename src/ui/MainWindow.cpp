@@ -238,13 +238,12 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 {
 	Editor* editor;
 
-	switch (buffer->getType())
+	if (BufferSingular* b = dynamic_cast<BufferSingular*>(buffer))
 	{
-	case Buffer::Singular:
-		qDebug() << "[UI] BufferSingular detected";
-		editor = new EditorSingular(kernel, (BufferSingular*) buffer, this);
-		break;
-	default:
+		editor = new EditorSingular(kernel, b, this);
+	}
+	else
+	{
 		qDebug() << "[UI] Unrecognised Buffer Type";
 		assert(false && "Buffer type unrecognised by MainWindow");
 	}
@@ -258,11 +257,14 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	connect(editor, &Editor::destroy,
 	        this, [this, buffer, editor]()
 	{
+		assert(editor->getBuffer() == buffer);
+
 		this->editors.erase(editor);
 		if (this->currentEditor == editor)
 		this->currentEditor = nullptr;
+		QString index = QString::number(kernel->bufferIndex(buffer)); 
 		this->onExecute(PYTHON_KERNEL + QString(".eraseBuffer(") +
-		                QString::number(kernel->bufferIndex(buffer)) + ')');
+		                index + ')');
 	});
 	reloadMenuWindows();
 }
@@ -271,8 +273,6 @@ void pg::MainWindow::onBufferErase(Buffer* buffer)
 	for (auto editor: editors)
 	{
 		if (editor->getBuffer() != buffer) continue;
-
-		qDebug() << "Found";
 
 		if (editor == currentEditor)
 			currentEditor = nullptr;
@@ -300,7 +300,6 @@ void pg::MainWindow::onExecute(QString const& script)
 	{
 		// TODO: This is not very thread safe, as kernel->buffers may change.
 		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
-		qDebug() << "Index " << index;
 		QString s = script;
 		s.replace("{CU}", QString(PYTHON_KERNEL) + ".buffers[" +
 		          QString::number(index) + ']');
