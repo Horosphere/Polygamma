@@ -109,5 +109,6 @@ void pg::DialogPreferences::save()
 	config->uiTerminalBG = qColorToABGR(uiTerminalBG->getColour());
 
 	config->update();
+	Q_EMIT configUpdate();
 }
 

@@ -23,7 +23,7 @@
 
 pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
-	kernel(kernel), config(config), 
+	kernel(kernel), config(config),
 
 	// UI
 	terminal(new Terminal(kernel, this)),
@@ -101,7 +101,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 #define ADD_ACTIONPANEL(name, string) \
 	QAction* actionWindows##name = new QAction(tr(string), this); \
 	connect(actionWindows##name, &QAction::triggered, \
-			panel##name, &Panel::show); \
+	        panel##name, &Panel::show); \
 	menuWindows->addAction(actionWindows##name);
 
 	ADD_ACTIONPANEL(Playback, "Playback");
@@ -126,10 +126,6 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	statusBar()->show();
 
 	// Connects the GUI.
-	config->registerUpdateListener([this]()
-	{
-		this->updateUIElements();
-	});
 	connect(qApp, &QApplication::focusChanged,
 	        this, &MainWindow::onFocusChanged);
 	connect(buttonTerminal, &QPushButton::clicked,
@@ -168,47 +164,35 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	// Panels
 	connect(panelPlayback, &PanelPlayback::playPause,
 	        panelMultimedia, &PanelMultimedia::onPlayPause);
-	// Connects the kernel's stdout and stderr to the corresponding signals of
-	// this class
-	kernel->registerStdOutListener([this](std::string str)
-	{
-		Q_EMIT this->stdOutFlush(QString::fromStdString(str));
-	});
-	kernel->registerStdErrListener([this](std::string str)
-	{
-		Q_EMIT this->stdErrFlush(QString::fromStdString(str));
-	});
-	kernel->registerBufferListener([this](Buffer* buffer)
-	{
-		Q_EMIT this->bufferNew(buffer);
-	});
-	connect(this, &MainWindow::stdOutFlush,
-	        terminal->log, &TerminalLog::onStdOutFlush, Qt::QueuedConnection);
-	connect(this, &MainWindow::stdErrFlush,
-	        terminal->log, &TerminalLog::onStdErrFlush, Qt::QueuedConnection);
 	// Script line
 	connect(lineEditScript, &LineEditScript::execute,
 	        terminal, &Terminal::onExecute);
-	connect(this, &MainWindow::stdOutFlush,
+	connect(terminal, &Terminal::stdOutFlush,
 	        this, [this](QString const& str)
 	{
 		QStringList lines = str.split('\n', QString::SkipEmptyParts);
 		if (lines.isEmpty()) return;
 		lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
 		lineEditLog->setText(lines.takeLast());
-	}, Qt::QueuedConnection);
-	connect(this, &MainWindow::stdErrFlush,
+	});
+	connect(terminal, &Terminal::stdErrFlush,
 	        this, [this](QString const& str)
 	{
 		QStringList lines = str.split('\n', QString::SkipEmptyParts);
 		if (lines.isEmpty()) return;
 		lineEditLog->setText(lines.takeLast());
 		lineEditLog->setStyleSheet(lineEditLog_stylesheetErr);
-	}, Qt::QueuedConnection);
-	connect(this, &MainWindow::bufferNew,
-	        this, &MainWindow::onBufferNew, Qt::QueuedConnection);
-	connect(this, &MainWindow::bufferDestroy,
-	        this, &MainWindow::onBufferDestroy, Qt::QueuedConnection);
+	});
+	connect(terminal, &Terminal::configUpdate,
+	        this, &MainWindow::updateUIElements);
+	connect(dialogPreferences, &DialogPreferences::configUpdate,
+	        this, &MainWindow::updateUIElements);
+	connect(terminal, &Terminal::bufferNew,
+	        this, &MainWindow::onBufferNew);
+	connect(terminal, &Terminal::bufferErase,
+	        this, &MainWindow::onBufferErase);
+	connect(terminal, &Terminal::bufferUpdate,
+	        this, &MainWindow::onBufferUpdate);
 
 	updateUIElements();
 	reloadMenuWindows();
@@ -232,10 +216,7 @@ void pg::MainWindow::updateUIElements()
 	lineEditLog->setFont(fontMonospace);
 	lineEditLog_stylesheetOut = QString("color: white; background-color: black");
 	lineEditLog_stylesheetErr = QString("color: white; background-color: #220000");
-	terminal->log->setFont(fontMonospace);
-	terminal->log->setTabStopWidth(tabWidth);
-	terminal->input->setFont(fontMonospace);
-	terminal->input->setTabStopWidth(tabWidth);
+	terminal->setFontMonospace(fontMonospace, tabWidth);
 
 	terminal->setScriptLevelMin(config->uiScriptLevelMin);
 	/*
@@ -272,22 +253,45 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 	editors.insert(editor);
 	panelMultimedia->editorAdd(editor);
 
-	buffer->registerUIDestroyListener([this, editor]()
-	{
-		Q_EMIT this->bufferDestroy(editor);
-	});
 	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
+	connect(editor, &Editor::destroy,
+	        this, [this, buffer, editor]()
+	{
+		this->editors.erase(editor);
+		if (this->currentEditor == editor)
+		this->currentEditor = nullptr;
+		this->onExecute(PYTHON_KERNEL + QString(".eraseBuffer(") +
+		                QString::number(kernel->bufferIndex(buffer)) + ')');
+	});
 	reloadMenuWindows();
 }
-void pg::MainWindow::onBufferDestroy(Editor* editor)
+void pg::MainWindow::onBufferErase(Buffer* buffer)
 {
-	if (editor == currentEditor)
-		currentEditor = nullptr;
-	delete editor;
-	editors.erase(editor);
-	panelMultimedia->editorErase(editor);
-	reloadMenuWindows();
+	for (auto editor: editors)
+	{
+		if (editor->getBuffer() != buffer) continue;
+
+		qDebug() << "Found";
+
+		if (editor == currentEditor)
+			currentEditor = nullptr;
+		delete editor;
+		editors.erase(editor);
+		panelMultimedia->editorErase(editor);
+		reloadMenuWindows();
+		break;
+	}
+	// Do not place an assert(false) here since the routine will reach this point
+	// if the editor is closed using the close button
+}
+void pg::MainWindow::onBufferUpdate(Buffer* buffer, Buffer::Update update)
+{
+	for (auto& editor: editors)
+	{
+		if (editor->getBuffer() != buffer) continue;
+		editor->update(update);
+	}
 }
 
 void pg::MainWindow::onExecute(QString const& script)
@@ -296,9 +300,10 @@ void pg::MainWindow::onExecute(QString const& script)
 	{
 		// TODO: This is not very thread safe, as kernel->buffers may change.
 		std::size_t index = kernel->bufferIndex(currentEditor->getBuffer());
+		qDebug() << "Index " << index;
 		QString s = script;
-		s.replace("{CU}", QString(PYTHON_KERNEL) + '(' +
-		          QString::number(index) + ')');
+		s.replace("{CU}", QString(PYTHON_KERNEL) + ".buffers[" +
+		          QString::number(index) + ']');
 
 		terminal->onExecute(Script(s.toStdString()));
 	}

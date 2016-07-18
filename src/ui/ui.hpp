@@ -34,7 +34,7 @@ QString abgrToString(Configuration::Colour32);
  */
 constexpr int64_t const UI_SAMPLE_DISPLAY_WIDTH = 1;
 
-
+constexpr int const UI_EVENTLOOP_INTERVAL = 10;
 } // namespace pg
 
 // Implementations

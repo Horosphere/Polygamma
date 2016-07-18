@@ -26,26 +26,14 @@ public:
 	explicit MainWindow(Kernel* const, Configuration* const,
 			QWidget* parent = 0);
 
-Q_SIGNALS:
-	// These signals are called in the Kernel thread, so connecting them requires
-	// a queued connection.
-	void stdOutFlush(QString);
-	void stdErrFlush(QString);
-	void bufferNew(Buffer*);
-	/**
-	 * The argument must be an element of std::vector<Editor*> editors.
-	 */
-	void bufferDestroy(Editor*);
-
 private Q_SLOTS:
 
 	// Triggered upon configuration change
 	void updateUIElements();
 	void onBufferNew(Buffer*);
-	/**
-	 * The argument must be an element of std::vector<Editor*> editors.
-	 */
-	void onBufferDestroy(Editor*);
+	void onBufferErase(Buffer*);
+	void onBufferUpdate(Buffer*, Buffer::Update);
+
 	/**
 	 * The following combinations will be replaced
 	 * {CU} -> The current buffer. e.g. pg.kernel.buffers[4]
@@ -55,9 +43,8 @@ private Q_SLOTS:
 	 *	Terminal::onExecute to send it to the Kernel.
 	 */
 	void onExecute(QString const&);
+
 	void onFocusChanged(QWidget* old, QWidget* now);
-
-
 private:
 	/**
 	 * @brief Update menuWindows so its actions match the editors

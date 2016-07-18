@@ -34,9 +34,9 @@ void pg::Kernel::start()
 	class Redirector
 	{
 	public:
-		Redirector(boost::signals2::signal<void (std::string)>* signal,
+		Redirector(std::function<void (std::string)> func,
 		           std::string prepend):
-			signal(signal), prepend(prepend), newLine(true)
+			func(func), prepend(prepend), newLine(true)
 		{
 		}
 		void write(std::string const& str)
@@ -55,18 +55,26 @@ void pg::Kernel::start()
 			newLine = str.back() == '\n';
 			if (newLine) result += '\n';
 
-			signal->operator()(result);
+			func(result);
 		}
 	private:
-		boost::signals2::signal<void (std::string)>* signal;
+		std::function<void (std::string)> func;
 		std::string prepend;
 		bool newLine;
 	};
 	dictMain["Redirector"] = boost::python::class_<Redirector>("Redirector",
 	                         boost::python::no_init)
 	                         .def("write", &Redirector::write);
-	boost::python::import("sys").attr("stdout") = Redirector(&signalOut, "[Out] ");
-	boost::python::import("sys").attr("stderr") = Redirector(&signalErr, "[Err] ");
+	boost::python::import("sys").attr("stdout") =
+	  Redirector([this](std::string str)
+	{
+		this->streamOut(ScriptOutput::StdOut, str);
+	} , "[Out] ");
+	boost::python::import("sys").attr("stderr") =
+	  Redirector([this](std::string str)
+	{
+		this->streamOut(ScriptOutput::StdErr, str);
+	} , "[Err] ");
 	boost::python::exec("import pg", dictMain);
 
 	std::cout << "[Ker] starting..." << std::endl;
@@ -74,42 +82,28 @@ void pg::Kernel::start()
 	running = true;
 	while (running)
 	{
-		Script script;
-		while (scriptQueue.pop(script))
+		if (script)
 		{
-			if (script.level != Script::System)
+			if (script->level != Script::System)
 			{
-				std::cout << "[Ker] " << (std::string) script << std::endl;
+				std::cout << "[Ker] " << (std::string)(*script) << std::endl;
 			}
 			try
 			{
 				using namespace boost::python;
 
-				object result = eval(((std::string) script).c_str(), dictMain);
+				object result = eval(((std::string)(*script)).c_str(), dictMain);
 				if (!result.is_none())
-					signalOut(extract<std::string>(str(result))());
+					streamOut(ScriptOutput::StdOut, extract<std::string>(str(result))());
 			}
 			catch (boost::python::error_already_set&)
 			{
-				signalErr(pythonTraceBack());
+				streamOut(ScriptOutput::StdErr, pythonTraceBack());
 				PyErr_Clear();
 			}
+			queueOutSpecial.push(SpecialOutput(SpecialOutput::Completion));
+			script = boost::none;
 		}
-		// Currently unused
-		/*
-		Special special;
-		while (specialQueue.pop(special))
-		{
-		  switch (special.type)
-		  {
-		  case Special::Deletion:
-		    delete special.buffer;
-		    buffers.erase(std::remove(buffers.begin(), buffers.end(), special.buffer),
-		                  buffers.end());
-		    break;
-		  }
-		}
-		*/
 		std::this_thread::yield(); // Avoids busy waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
@@ -121,22 +115,16 @@ void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
 	if (buffers.size() <= index)
 		throw PythonException{"Buffer index out of range", PythonException::ValueError};
 
-	buffers[index]->uiDestroy();
 	if (buffers[index]->nReferences == 0)
 	{
-		delete buffers[index];
 		buffers.erase(buffers.begin() + index);
+		SpecialOutput so(SpecialOutput::BufferErase);
+		so.buffer = buffers[index];
+		queueOutSpecial.push(so);
+
+		delete buffers[index];
 	}
 }
-void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
-{
-	// TODO: Prevent user from importing the same file multiple times.
-	std::string error;
-	BufferSingular* buffer = BufferSingular::fromFile(fileName, &error);
-	if (buffer) pushBuffer(buffer);
-	else throw PythonException{error, PythonException::IOError};
-}
-
 void pg::Kernel::createSingular(ChannelLayout channelLayout,
                                 std::size_t sampleRate,
                                 std::string duration) throw(PythonException)
@@ -148,4 +136,32 @@ void pg::Kernel::createSingular(ChannelLayout channelLayout,
 	                         &error);
 	if (buffer) pushBuffer(buffer);
 	else throw PythonException{error, PythonException::ValueError};
+}
+void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
+{
+	// TODO: Prevent user from importing the same file multiple times.
+	std::string error;
+	BufferSingular* buffer = BufferSingular::fromFile(fileName, &error);
+	if (buffer) pushBuffer(buffer);
+	else throw PythonException{error, PythonException::IOError};
+}
+
+void pg::Kernel::pushBuffer(Buffer* buffer) noexcept
+{
+	if (buffer && std::find(buffers.begin(), buffers.end(), buffer)
+	    == buffers.end())
+	{
+		buffer->title += std::to_string(buffers.size());
+		buffers.push_back(buffer);
+		SpecialOutput so(SpecialOutput::BufferNew);
+		so.buffer = buffer;
+		queueOutSpecial.push(so);
+
+		buffer->signalUpdate.connect([buffer, this](Buffer::Update)
+		{
+			SpecialOutput so(SpecialOutput::BufferUpdate);
+			so.buffer = buffer;
+			queueOutSpecial.push(so);
+		});
+	}
 }

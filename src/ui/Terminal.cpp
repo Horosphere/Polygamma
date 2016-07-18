@@ -7,30 +7,35 @@
 #include <QFont>
 #include <QDebug>
 #include <QCloseEvent>
+#include <QTimer>
 
 #include "util/SyntaxHighlighterPython.hpp"
+#include "ui.hpp"
+
+namespace pg
+{
 
 // Terminal Log
-pg::TerminalLog::TerminalLog(QWidget* parent): QTextEdit(parent)
+TerminalLog::TerminalLog(QWidget* parent): QTextEdit(parent)
 {
 	setReadOnly(true);
 }
 
-void pg::TerminalLog::onStdOutFlush(QString str)
+void TerminalLog::onStdOutFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#000000;\">" + str.toHtmlEscaped().replace('\n', "<br>") + "</span>");
+	insertHtml("<span style=\"color:#000000;\">" + str.replace('\n', "<br>") + "</span>");
 	moveCursor(QTextCursor::End);
 }
-void pg::TerminalLog::onStdErrFlush(QString str)
+void TerminalLog::onStdErrFlush(QString str)
 {
 	moveCursor(QTextCursor::End);
-	insertHtml("<span style=\"color:#FF0000;\">" + str.toHtmlEscaped().replace('\n', "<br>") + "</span>");
+	insertHtml("<span style=\"color:#FF0000;\">" + str.replace('\n', "<br>") + "</span>");
 	moveCursor(QTextCursor::End);
 }
 
 // Terminal Input
-pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent),
+TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent),
 	preserveInput(true)
 {
 	// Required for detecting key combinations
@@ -39,7 +44,7 @@ pg::TerminalInput::TerminalInput(QWidget* parent): QPlainTextEdit(parent),
 	new SyntaxHighlighterPython(document());
 }
 
-void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
+void TerminalInput::keyPressEvent(QKeyEvent* event)
 {
 	// Shift + Enter executes the command
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
@@ -54,16 +59,16 @@ void pg::TerminalInput::keyPressEvent(QKeyEvent* event)
 		QPlainTextEdit::keyPressEvent(event);
 	}
 }
-void pg::TerminalInput::onPreserveInputToggled(bool checked)
+void TerminalInput::onPreserveInputToggled(bool checked)
 {
 	preserveInput = checked;
 }
 
 // Terminal
-pg::Terminal::Terminal(Kernel* const kernel, QWidget* parent):
+Terminal::Terminal(Kernel* const kernel, QWidget* parent):
 	QMainWindow(parent),
-	log(new TerminalLog), input(new TerminalInput),
-	kernel(kernel)
+	log(new TerminalLog), input(new TerminalInput), kernel(kernel),
+	acceptingScripts(true)
 {
 	setWindowTitle(tr("Terminal"));
 	// Register layout items
@@ -87,17 +92,61 @@ pg::Terminal::Terminal(Kernel* const kernel, QWidget* parent):
 	        this, &Terminal::onExecute);
 	connect(actionPreserveInput, &QAction::toggled,
 	        input, &TerminalInput::onPreserveInputToggled);
+	connect(this, &Terminal::stdOutFlush, log, &TerminalLog::onStdOutFlush);
+	connect(this, &Terminal::stdErrFlush, log, &TerminalLog::onStdErrFlush);
+
+	// Event loop
+	QTimer* timer = new QTimer(this);
+	timer->setInterval(UI_EVENTLOOP_INTERVAL);
+	timer->setSingleShot(false);
+	connect(timer, &QTimer::timeout, this, &Terminal::eventLoop);
+	timer->start();
 }
 
-void pg::Terminal::closeEvent(QCloseEvent* event)
+void Terminal::onExecute(Script const& script)
 {
-	this->hide();
-	event->ignore();
-}
-void pg::Terminal::onExecute(Script const& script)
-{
+	assert(acceptingScripts);
 	if (script.level >= scriptLevelMin)
 		log->onStdOutFlush(QString::fromStdString("\n>> " + (std::string)script + "\n"));
-	this->kernel->pushScript(script);
+	kernel->execute(script);
+	acceptingScripts = false;
 }
+
+void Terminal::eventLoop()
+{
+	Kernel::ScriptOutput scriptOutput;
+	while (kernel->popScriptOutput(&scriptOutput))
+	{
+		if (scriptOutput.stream == Kernel::ScriptOutput::StdOut)
+			Q_EMIT stdOutFlush(QString::fromStdString(scriptOutput.string));
+		else
+			Q_EMIT stdErrFlush(QString::fromStdString(scriptOutput.string));
+	}
+	Kernel::SpecialOutput specialOutput;
+	while (kernel->popSpecialOutput(&specialOutput))
+	{
+		switch (specialOutput.type)
+		{
+		case Kernel::SpecialOutput::Completion:
+			acceptingScripts = true;
+			break;
+		case Kernel::SpecialOutput::ConfigUpdate:
+			Q_EMIT configUpdate();
+			break;
+		case Kernel::SpecialOutput::BufferNew:
+			Q_EMIT bufferNew(specialOutput.buffer);
+			break;
+		case Kernel::SpecialOutput::BufferErase:
+			Q_EMIT bufferErase(specialOutput.buffer);
+			break;
+		case Kernel::SpecialOutput::BufferUpdate:
+			Q_EMIT bufferUpdate(specialOutput.buffer, specialOutput.update);
+			break;
+		default:
+			assert(false && "Unrecognised SpecialOutput");
+		}
+	}
+}
+
+} // namespace pg
 

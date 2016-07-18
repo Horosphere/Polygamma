@@ -1,6 +1,7 @@
 #ifndef _POLYGAMMA_CORE_KERNEL_HPP__
 #define _POLYGAMMA_CORE_KERNEL_HPP__
 
+#include <boost/optional.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/signals2.hpp>
 
@@ -25,19 +26,45 @@ class Kernel final
 {
 public:
 	static constexpr std::size_t EVENTLOOP_SIZE = 16;
-	/**
-	 * @warning Currently has no usage.
-	 * @brief Each instance represents a special operation for the Kernel.
-	 */
-	struct Special
+
+	struct ScriptOutput
+	{
+		enum Stream
+		{
+			StdOut,
+			StdErr
+		};
+		Stream stream;
+		std::string string;
+	};
+	struct SpecialOutput
 	{
 		enum Type
 		{
-			Compute
-		} type;
+			Completion, // The previous script execution has finished
+			// TODO: Implement config changing in python.
+			ConfigUpdate, // Configuration has changed
+			BufferNew, // A new buffer has been created
+			BufferErase, // A buffer has been deleted
+			BufferUpdate // A buffer has been updated
+		};
+		SpecialOutput() noexcept {}
+		SpecialOutput(Type t) noexcept: type(t) {}
+		Type type;
+
 		union
 		{
-			Buffer* buffer; // type = Deletion
+			struct
+			{
+				/*
+				 * Valid for: BufferNew, BufferErase
+				 */
+				Buffer* buffer;
+				/*
+				 * Valid for: BufferUpdate
+				 */
+				Buffer::Update update;
+			};
 		};
 	};
 
@@ -63,50 +90,21 @@ public:
 	void halt();
 
 	/**
-	 * @brief Register a callback to receive the stdout output of the kernel.
-	 * @tparam Listener A function that accepts (std::string).
-	 * @param listener Listener::operator()(std::string) will be called
-	 *  occasionally.
+	 * @warning Do not call this function again until an Output object with type
+	 *  Complete is pushed into the output queue.
+	 * @brief Execute the script.
 	 */
-	template<typename Listener> void
-	registerStdOutListener(Listener const& listener) noexcept;
-	/**
-	 * @brief Register a callback to receive the stdout output of the kernel.
-	 * @tparam Listener A function that accepts (std::string).
-	 * @param listener Listener::operator()(std::string) will be called
-	 *  occasionally.
-	 */
-	template<typename Listener> void
-	registerStdErrListener(Listener const& listener) noexcept;
+	void execute(Script const&);
 
-	/**
-	 * @brief Register a callback to receive the newly created Buffers. The
-	 *  ownership of the buffer object remains in the Kernel.
-	 * @tparam Listener A function that accepts (Buffer*).
-	 * @param listener Listener::operator()(Buffer*) will be called
-	 *  occasionally.
-	 */
-	template<typename Listener> void
-	registerBufferListener(Listener const& listener) noexcept;
-
-	/**
-	 * This function shall be called from only one thread.
-	 * @brief Pushes a script into the script queue.
-	 */
-	void pushScript(Script const&);
-	/**
-	 * This function shall be called from only one thread.
-	 * @brief Pushes a Special into the Special queue.
-	 */
-	void pushSpecial(Special const&);
-
+	bool popScriptOutput(ScriptOutput* const) noexcept;
+	bool popSpecialOutput(SpecialOutput* const) noexcept;
 	/**
 	 * Exposed to Python
 	 * @brief Erases a existing buffer in the buffers.
 	 */
 	void eraseBuffer(std::size_t index) throw(PythonException);
 	/**
-	 * Exposed to Python 
+	 * Exposed to Python
 	 * @brief Gets a immutable list of buffers.
 	 */
 	std::vector<Buffer*> getBuffers() noexcept;
@@ -119,15 +117,18 @@ public:
 
 
 	/**
-	 * Exposed to Script
+	 * Exposed to Python
+	 */
+	void createSingular(ChannelLayout channelLayout,
+	                    std::size_t sampleRate,
+	                    std::string duration) throw(PythonException);
+	/**
+	 * Exposed to Python
 	 * @brief "Import" as opposed to "Open" a file. It does not work on internal
 	 *  Polygamma project files.
 	 */
 	void fromFileImport(std::string fileName) throw(PythonException);
 
-	void createSingular(ChannelLayout channelLayout,
-	                    std::size_t sampleRate,
-	                    std::string duration) throw(PythonException);
 
 private:
 	// Not public since they are not thread safe
@@ -136,77 +137,61 @@ private:
 	 * signalBuffer signal.
 	 * @brief Add a buffer to the buffers.
 	 */
-	void pushBuffer(Buffer*);
+	void pushBuffer(Buffer*) noexcept;
+	void streamOut(ScriptOutput::Stream, std::string) noexcept;
 
 
 	Configuration* config;
 
+	boost::optional<Script> script;
+	template <typename Element>
+	using Queue = boost::lockfree::spsc_queue<Element, boost::lockfree::capacity<EVENTLOOP_SIZE>>;
+	Queue<ScriptOutput> queueOutScript;
+	Queue<SpecialOutput> queueOutSpecial;
 
-	/**
-	 * Concurrent event queue
-	 */
-	boost::lockfree::spsc_queue<Script, boost::lockfree::capacity<EVENTLOOP_SIZE>> scriptQueue;
-	boost::lockfree::spsc_queue<Special, boost::lockfree::capacity<EVENTLOOP_SIZE>> specialQueue;
-	// Signals
-	boost::signals2::signal<void (std::string)> signalOut;
-	boost::signals2::signal<void (std::string)> signalErr;
-	boost::signals2::signal<void (Buffer*)> signalBuffer;
 
 	std::atomic_bool running;
 
 	// Buffers
 	// TODO: Consider if it is necessary to convert this to a set in the future.
 	std::vector<Buffer*> buffers;
-
-	// Script
 	boost::python::dict dictMain;
 };
-
-} // namespace pg
-
 
 // Implementations
 
 inline void
-pg::Kernel::halt()
+Kernel::halt()
 {
 	running = false;
 }
 
-template<typename Listener> inline void
-pg::Kernel::registerStdOutListener(Listener const& listener) noexcept
+
+inline void Kernel::execute(Script const& s)
 {
-	signalOut.connect(listener);
+	/*
+	 * execute shall not be called when there is a script that has not finished
+	 * executing
+	 */
+	assert(!script);
+	script = s;
 }
-template<typename Listener> inline void
-pg::Kernel::registerStdErrListener(Listener const& listener) noexcept
+inline bool Kernel::popScriptOutput(ScriptOutput* so) noexcept
 {
-	signalErr.connect(listener);
+	return queueOutScript.pop(*so);
 }
-template<typename Listener> inline void
-pg::Kernel::registerBufferListener(Listener const& listener) noexcept
+inline bool Kernel::popSpecialOutput(SpecialOutput* so) noexcept
 {
-	signalBuffer.connect(listener);
+	return queueOutSpecial.pop(*so);
 }
 
-inline void
-pg::Kernel::pushScript(Script const& command)
-{
-	scriptQueue.push(command);
-}
-inline void
-pg::Kernel::pushSpecial(Special const& command)
-{
-	specialQueue.push(command);
-}
-
-inline std::vector<pg::Buffer*>
-pg::Kernel::getBuffers() noexcept
+inline std::vector<Buffer*>
+Kernel::getBuffers() noexcept
 {
 	return buffers;
 }
 inline std::size_t
-pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
+Kernel::bufferIndex(Buffer const* buffer) const noexcept
 {
 	std::size_t i = 0;
 	for (i = 0; i < buffers.size(); ++i)
@@ -214,14 +199,13 @@ pg::Kernel::bufferIndex(Buffer const* buffer) const noexcept
 	return i;
 }
 
+// Kernel private
 inline void
-pg::Kernel::pushBuffer(Buffer* buffer)
+Kernel::streamOut(ScriptOutput::Stream stream, std::string string) noexcept
 {
-	if (buffer && std::find(buffers.begin(), buffers.end(), buffer)
-			== buffers.end())
-	{
-		buffers.push_back(buffer);
-		signalBuffer(buffer);
-	}
+	queueOutScript.push(ScriptOutput{ScriptOutput::StdOut, string});
+
 }
+
+} // namespace pg
 #endif // !_POLYGAMMA_CORE_KERNEL_HPP__

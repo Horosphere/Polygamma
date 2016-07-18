@@ -23,6 +23,18 @@ typedef Interval<std::size_t> IntervalIndex;
 class Buffer
 {
 public:
+	struct Update
+	{
+		enum Level
+		{
+			Data, // The underlying data has been modified
+			Surface	// Only the selection/cursor has been modified
+		};
+
+		Level level;
+		IntervalIndex indices;
+	};
+
 	Buffer() noexcept;
 	virtual ~Buffer();
 	enum Type
@@ -78,36 +90,12 @@ public:
 	/**
 	 * @brief Sends a notification signal and update timeLastChange.
 	 */
-	void notifyUpdate() noexcept;
+	void notifyUpdate(Update::Level) noexcept;
 	/**
 	 * @brief Sends a notification signal and update timeLastChange.
 	 */
-	void notifyUpdate(IntervalIndex interval) noexcept;
-	/**
-	 * @brief Sends a notification signal but does not update timeLastChange.
-	 *  Triggered when the selection changes;
-	 */
-	void notifyUIUpdate() noexcept;
-	void uiDestroy() noexcept;
+	void notifyUpdate(Update::Level, IntervalIndex interval) noexcept;
 
-	/**
-	 * @brief Registers a listener that is notified (operator()(IntervalIndex))
-	 * when the Buffer requires a graphics update.
-	 */
-	template <typename Listener> void
-	registerUpdateListener(Listener listener) const noexcept;
-	/**
-	 * @brief Registers a listener that is notified (operator()()) when
-	 *  the Buffer requires a graphics update.
-	 */
-	template <typename Listener> void
-	registerUIUpdateListener(Listener listener) const noexcept;
-	/**
-	 * @brief Registers a listener that is notified when the UI corresponding to
-	 *  this buffer needs to be closed.
-	 */
-	template <typename Listener> void
-	registerUIDestroyListener(Listener listener) const noexcept;
 
 protected:
 	std::string title;
@@ -118,9 +106,7 @@ protected:
 	void referenceDecrease() noexcept;
 
 private:
-	boost::signals2::signal<void (IntervalIndex)> signalUpdate;
-	boost::signals2::signal<void ()> signalUIUpdate;
-	boost::signals2::signal<void ()> signalUIDestroy;
+	boost::signals2::signal<void (Update)> signalUpdate;
 
 	bool dirty;
 	std::size_t nReferences; // Used by the Kernel
@@ -155,43 +141,18 @@ inline void pg::Buffer::setCursor(std::size_t c) throw(PythonException)
 		throw PythonException{"Cursor index is higher than duration",
 		                      PythonException::IndexError};
 	cursor = c;
-	notifyUIUpdate();
+	notifyUpdate(Update::Surface);
 }
-inline void pg::Buffer::notifyUpdate() noexcept
+inline void pg::Buffer::notifyUpdate(Update::Level level) noexcept
 {
-	signalUpdate(IntervalIndex(0, duration()));
-	signalUIUpdate();
+	signalUpdate(Update{level, IntervalIndex(0, duration())});
 	dirty = true;
 }
-inline void pg::Buffer::notifyUpdate(IntervalIndex interval) noexcept
+inline void pg::Buffer::notifyUpdate(Update::Level level,
+		IntervalIndex interval) noexcept
 {
-	signalUpdate(interval);
-	signalUIUpdate();
+	signalUpdate(Update{level, interval});
 	dirty = true;
-}
-inline void pg::Buffer::notifyUIUpdate() noexcept
-{
-	signalUIUpdate();
-}
-inline void pg::Buffer::uiDestroy() noexcept
-{
-	signalUIDestroy();
-}
-template <typename Listener> inline void
-pg::Buffer::registerUpdateListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void (IntervalIndex)>&>(signalUpdate)
-	.connect(listener);
-}
-template <typename Listener> inline void
-pg::Buffer::registerUIUpdateListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void ()>&>(signalUIUpdate).connect(listener);
-}
-template <typename Listener> inline void
-pg::Buffer::registerUIDestroyListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void ()>&>(signalUIDestroy).connect(listener);
 }
 
 inline void pg::Buffer::referenceIncrease() noexcept

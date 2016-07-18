@@ -18,6 +18,8 @@ class DialogPreferences final: public QDialog
 public:
 	explicit DialogPreferences(Configuration* const, QWidget* parent = 0);
 
+Q_SIGNALS:
+	void configUpdate();
 
 public Q_SLOTS:
 	void onReload();
