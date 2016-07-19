@@ -92,18 +92,16 @@ operator*(Vector<T> const&, Vector<T> const&);
 template <typename T> inline Vector<T>
 operator/(Vector<T> const&, Vector<T> const&);
 
-} // namespace pg
-
 
 // Implementations
 
 
 template <typename T> inline
-pg::Vector<T>::Vector(): size(0), data(nullptr)
+Vector<T>::Vector(): size(0), data(nullptr)
 {
 }
 template <typename T> inline
-pg::Vector<T>::Vector(std::size_t size):
+Vector<T>::Vector(std::size_t size):
 	size(size),
 #ifdef VECTOR_CPP_ALLOC
 	data(size ? new T[size] : nullptr)
@@ -113,19 +111,19 @@ pg::Vector<T>::Vector(std::size_t size):
 {
 }
 template <typename T> inline
-pg::Vector<T>::Vector(std::size_t size, T const& value): Vector(size)
+Vector<T>::Vector(std::size_t size, T const& value): Vector(size)
 {
 	for (std::size_t i = 0; i < size ; ++i)
 		data[i] = value;
 }
 template <typename T> inline
-pg::Vector<T>::Vector(std::size_t size, T* const data):
+Vector<T>::Vector(std::size_t size, T* const data):
 	size(size), data(data)
 {
 }
 
 template <typename T> inline
-pg::Vector<T>::~Vector()
+Vector<T>::~Vector()
 {
 #ifdef VECTOR_CPP_ALLOC
 	delete[] data;
@@ -136,7 +134,7 @@ pg::Vector<T>::~Vector()
 
 // Duplications
 template <typename T> inline
-pg::Vector<T>::Vector(Vector<T> const& vector):
+Vector<T>::Vector(Vector<T> const& vector):
 	size(vector.size),
 #ifdef VECTOR_CPP_ALLOC
 	data(new T[size])
@@ -146,13 +144,13 @@ pg::Vector<T>::Vector(Vector<T> const& vector):
 {
 }
 template <typename T> inline
-pg::Vector<T>::Vector(Vector<T>&& vector):
+Vector<T>::Vector(Vector<T>&& vector):
 	size(vector.size), data(vector.data)
 {
 	vector.data = nullptr;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator=(Vector<T> const& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator=(Vector<T> const& vector)
 {
 	delete[] data;
 	size = vector.size;
@@ -164,37 +162,37 @@ pg::Vector<T>::operator=(Vector<T> const& vector)
 	std::memcpy(data, vector.data, size * sizeof(T));
 	return *this;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator=(Vector<T>&& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator=(Vector<T>&& vector)
 {
 	size = vector.size;
 	data = vector.data;
 	vector.data = nullptr;
 	return *this;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator+=(Vector<T> const& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator+=(Vector<T> const& vector)
 {
 	for (std::size_t i = 0; i < std::min(size, vector.size); ++i)
 		data[i] += vector.data[i];
 	return *this;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator-=(Vector<T> const& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator-=(Vector<T> const& vector)
 {
 	for (std::size_t i = 0; i < std::min(size, vector.size); ++i)
 		data[i] += vector.data[i];
 	return *this;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator*=(Vector<T> const& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator*=(Vector<T> const& vector)
 {
 	for (std::size_t i = 0; i < std::min(size, vector.size); ++i)
 		data[i] += vector.data[i];
 	return *this;
 }
-template <typename T> inline pg::Vector<T>&
-pg::Vector<T>::operator/=(Vector<T> const& vector)
+template <typename T> inline Vector<T>&
+Vector<T>::operator/=(Vector<T> const& vector)
 {
 	for (std::size_t i = 0; i < std::min(size, vector.size); ++i)
 		data[i] += vector.data[i];
@@ -202,41 +200,41 @@ pg::Vector<T>::operator/=(Vector<T> const& vector)
 }
 
 template <typename T> inline void
-pg::Vector<T>::clear() noexcept
+Vector<T>::clear() noexcept
 {
 	data = nullptr;
 	size = 0;
 }
 
 template <typename T> inline std::size_t
-pg::Vector<T>::getSize() const noexcept
+Vector<T>::getSize() const noexcept
 {
 	return size;
 }
 template <typename T> inline bool
-pg::Vector<T>::isEmpty() const noexcept
+Vector<T>::isEmpty() const noexcept
 {
 	return size == 0;
 }
 
 template <typename T> inline T const*
-pg::Vector<T>::getData() const noexcept
+Vector<T>::getData() const noexcept
 {
 	return data;
 }
 template <typename T> inline T*
-pg::Vector<T>::getData() noexcept
+Vector<T>::getData() noexcept
 {
 	return data;
 }
 
 template <typename T> inline T
-pg::Vector<T>::operator[](std::size_t index) const
+Vector<T>::operator[](std::size_t index) const
 {
 	return data[index];
 }
 template <typename T> inline T&
-pg::Vector<T>::operator[](std::size_t index)
+Vector<T>::operator[](std::size_t index)
 {
 	return data[index];
 }
@@ -244,7 +242,7 @@ pg::Vector<T>::operator[](std::size_t index)
 // Comparisons and arithmetics
 
 template <typename T> inline bool
-pg::operator==(Vector<T> const& v0, Vector<T> const& v1)
+operator==(Vector<T> const& v0, Vector<T> const& v1)
 {
 	if (v0.getSize() != v1.getSize()) return false;
 	for (std::size_t i = 0; i < v0.getSize(); ++i)
@@ -252,44 +250,46 @@ pg::operator==(Vector<T> const& v0, Vector<T> const& v1)
 	return true;
 }
 template <typename T> inline bool
-pg::operator!=(Vector<T> const& v0, Vector<T> const& v1)
+operator!=(Vector<T> const& v0, Vector<T> const& v1)
 {
 	if (v0.size != v1.size) return true;
 	for (std::size_t i = 0; i < v0.size; ++i)
 		if (v0.data[i] != v1.data[i]) return true;
 	return false;
 }
-template <typename T> inline pg::Vector<T>
-pg::operator+(Vector<T> const& v0, Vector<T> const& v1)
+template <typename T> inline Vector<T>
+operator+(Vector<T> const& v0, Vector<T> const& v1)
 {
 	Vector<T> result(std::min(v0, v1));
 	for (std::size_t i = 0; i < result.size; ++i)
 		result.data[i] = v0.data[i] + v1.data[i];
 	return result;
 }
-template <typename T> inline pg::Vector<T>
-pg::operator-(Vector<T> const& v0, Vector<T> const& v1)
+template <typename T> inline Vector<T>
+operator-(Vector<T> const& v0, Vector<T> const& v1)
 {
 	Vector<T> result(std::min(v0, v1));
 	for (std::size_t i = 0; i < result.size; ++i)
 		result.data[i] = v0.data[i] - v1.data[i];
 	return result;
 }
-template <typename T> inline pg::Vector<T>
-pg::operator*(Vector<T> const& v0, Vector<T> const& v1)
+template <typename T> inline Vector<T>
+operator*(Vector<T> const& v0, Vector<T> const& v1)
 {
 	Vector<T> result(std::min(v0, v1));
 	for (std::size_t i = 0; i < result.size; ++i)
 		result.data[i] = v0.data[i] * v1.data[i];
 	return result;
 }
-template <typename T> inline pg::Vector<T>
-pg::operator/(Vector<T> const& v0, Vector<T> const& v1)
+template <typename T> inline Vector<T>
+operator/(Vector<T> const& v0, Vector<T> const& v1)
 {
 	Vector<T> result(std::min(v0, v1));
 	for (std::size_t i = 0; i < result.size; ++i)
 		result.data[i] = v0.data[i] / v1.data[i];
 	return result;
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_MATH_VECTOR_HPP__

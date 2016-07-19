@@ -137,7 +137,7 @@ public:
 	/**
 	 * @param Registers a callback that turns the index of the label into labels
 	 */
-	void setLabelingFunction(std::function<QString (int)>) noexcept;
+	void setLabelingFunction(std::function<QString(int)>) noexcept;
 
 	/**
 	 * @brief Gets the effective length (in px) of this axis. Returns width()
@@ -150,7 +150,7 @@ public:
 
 Q_SIGNALS:
 	void recalculationComplete();
-	
+
 protected:
 	virtual void paintEvent(QPaintEvent*) final;
 
@@ -197,8 +197,8 @@ public:
 	 */
 	void setModuli(std::vector<long> moduli) noexcept;
 	// Arguments: 1. Multiplier 2.Modulus
-	void setIntervalLabelingFunction(std::function<QString (long, long)>) noexcept;
-	void setIntervalLabelingFunction(std::function<std::string (long, long)>) noexcept;
+	void setIntervalLabelingFunction(std::function<QString(long, long)>) noexcept;
+	void setIntervalLabelingFunction(std::function<std::string(long, long)>) noexcept;
 
 	Interval<long> interval;
 
@@ -229,19 +229,18 @@ private:
 
 };
 
-} // namespace pg
 
 // Implementations
 
 // Axis
 
 inline void
-pg::Axis::setLabelingFunction(std::function<QString (int)> f) noexcept
+Axis::setLabelingFunction(std::function<QString(int)> f) noexcept
 {
 	labelingFunction = f;
 }
 inline int
-pg::Axis::effectiveLength() const noexcept
+Axis::effectiveLength() const noexcept
 {
 	return  getOrientation() == Qt::TopEdge ||
 	        getOrientation() == Qt::BottomEdge ? width() : height();
@@ -250,12 +249,12 @@ pg::Axis::effectiveLength() const noexcept
 // AxisInterval
 
 inline void
-pg::AxisInterval::setModuli(std::vector<long> m) noexcept
+AxisInterval::setModuli(std::vector<long> m) noexcept
 {
 	moduli = std::move(m);
 }
 inline void
-pg::AxisInterval::setIntervalLabelingFunction(std::function<QString (long, long)> f) noexcept
+AxisInterval::setIntervalLabelingFunction(std::function<QString(long, long)> f) noexcept
 {
 	auto lambda = [this, f](int index) -> QString
 	{
@@ -264,7 +263,7 @@ pg::AxisInterval::setIntervalLabelingFunction(std::function<QString (long, long)
 	setLabelingFunction(lambda);
 }
 inline void
-pg::AxisInterval::setIntervalLabelingFunction(std::function<std::string (long, long)> f) noexcept
+AxisInterval::setIntervalLabelingFunction(std::function<std::string(long, long)> f) noexcept
 {
 	auto lambda = [this, f](int index) -> QString
 	{
@@ -273,10 +272,12 @@ pg::AxisInterval::setIntervalLabelingFunction(std::function<std::string (long, l
 	setLabelingFunction(lambda);
 }
 inline void
-pg::AxisInterval::onIntervalChanged(Interval<long> i) noexcept
+AxisInterval::onIntervalChanged(Interval<long> i) noexcept
 {
 	interval = i;
 	recalculate();
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_UI_GRAPHICS_AXIS_HPP__

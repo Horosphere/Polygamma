@@ -2,8 +2,11 @@
 
 #include <QDialog>
 
+namespace pg
+{
+
 // ActionScripted
-pg::ActionScripted::ActionScripted(QString const& script, QObject* parent):
+ActionScripted::ActionScripted(QString const& script, QObject* parent):
 	ActionFlagged(parent), script(script)
 {
 	connect(this, &QAction::triggered,
@@ -12,7 +15,7 @@ pg::ActionScripted::ActionScripted(QString const& script, QObject* parent):
 		Q_EMIT execute(this->script);
 	});
 }
-pg::ActionScripted::ActionScripted(QString const& script, QString const& text,
+ActionScripted::ActionScripted(QString const& script, QString const& text,
                                QObject* parent):
 	ActionFlagged(text, parent), script(script)
 {
@@ -22,7 +25,7 @@ pg::ActionScripted::ActionScripted(QString const& script, QString const& text,
 		Q_EMIT execute(this->script);
 	});
 }
-pg::ActionScripted::ActionScripted(QString const& script, QIcon const& icon,
+ActionScripted::ActionScripted(QString const& script, QIcon const& icon,
                                QString const& text, QObject* parent):
 	ActionFlagged(icon, text, parent), script(script)
 {
@@ -33,3 +36,5 @@ pg::ActionScripted::ActionScripted(QString const& script, QIcon const& icon,
 	});
 }
 
+
+} // namespace pg

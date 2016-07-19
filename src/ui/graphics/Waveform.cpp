@@ -8,9 +8,12 @@
 
 #include "../ui.hpp"
 
-pg::Waveform::Waveform(BufferSingular const* const buffer,
-                       std::size_t channelId,
-                       QWidget* parent): Viewport2(parent),
+namespace pg
+{
+
+Waveform::Waveform(BufferSingular const* const buffer,
+                   std::size_t channelId,
+                   QWidget* parent): Viewport2(parent),
 	buffer(buffer), channelId(channelId),
 	channel(buffer->audioChannel(channelId))
 {
@@ -25,12 +28,12 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
 	maximise();
 }
 
-void pg::Waveform::paintEvent(QPaintEvent* event)
+void Waveform::paintEvent(QPaintEvent* event)
 {
 	Viewport2::paintEvent(event);
 	QPainter painter(this);
 
-	
+
 	bool denseDrawing = width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX);
 	if (denseDrawing) // Draw lolipop diagram
 	{
@@ -106,3 +109,5 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 		painter.fillRect(QRect(begin, 0, end - begin, height()), Qt::white);
 	}
 }
+
+} // namespace pg

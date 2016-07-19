@@ -11,8 +11,11 @@
 #include "../ui.hpp"
 
 
-pg::DialogPreferences::DialogPreferences(Configuration* const config,
-    QWidget* parent):
+namespace pg
+{
+
+DialogPreferences::DialogPreferences(Configuration* const config,
+                                     QWidget* parent):
 	QDialog(parent), config(config),
 	// Various options:
 	uiBG(new ColourButton), uiTerminalBG(new ColourButton)
@@ -73,35 +76,35 @@ pg::DialogPreferences::DialogPreferences(Configuration* const config,
 	onReload();
 }
 
-void pg::DialogPreferences::onReload()
+void DialogPreferences::onReload()
 {
 	/*
 	ioAudioDeviceInput->clear();
 	QList<QAudioDeviceInfo> availableInputDevices =
-		QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+	  QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
 	for (std::size_t i = 0; i < availableInputDevices.size(); ++i)
 	{
-		QString deviceName = availableInputDevices[i].deviceName();
-		ioAudioDeviceInput->addItem(deviceName);
-		if (deviceName == QString::fromStdString(config->ioAudioDeviceInput))
-			ioAudioDeviceInput->setCurrentIndex(i);
+	  QString deviceName = availableInputDevices[i].deviceName();
+	  ioAudioDeviceInput->addItem(deviceName);
+	  if (deviceName == QString::fromStdString(config->ioAudioDeviceInput))
+	    ioAudioDeviceInput->setCurrentIndex(i);
 	}
 	ioAudioDeviceOutput->clear();
 	QList<QAudioDeviceInfo> availableOutputDevices =
-		QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+	  QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
 	for (std::size_t i = 0; i < availableOutputDevices.size(); ++i)
 	{
-		QString deviceName = availableOutputDevices[i].deviceName();
-		ioAudioDeviceOutput->addItem(deviceName);
-		if (deviceName == QString::fromStdString(config->ioAudioDeviceOutput))
-			ioAudioDeviceOutput->setCurrentIndex(i);
+	  QString deviceName = availableOutputDevices[i].deviceName();
+	  ioAudioDeviceOutput->addItem(deviceName);
+	  if (deviceName == QString::fromStdString(config->ioAudioDeviceOutput))
+	    ioAudioDeviceOutput->setCurrentIndex(i);
 	}
 	*/
 
 	uiBG->onColourChanged(abgrToQColor(config->uiBG));
 	uiTerminalBG->onColourChanged(abgrToQColor(config->uiTerminalBG));
 }
-void pg::DialogPreferences::save()
+void DialogPreferences::save()
 {
 	//config->ioAudioDeviceInput = ioAudioDeviceInput->currentText().toStdString();
 	//config->ioAudioDeviceOutput = ioAudioDeviceOutput->currentText().toStdString();
@@ -112,3 +115,5 @@ void pg::DialogPreferences::save()
 	Q_EMIT configUpdate();
 }
 
+
+} // namespace pg

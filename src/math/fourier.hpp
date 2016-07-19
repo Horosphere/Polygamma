@@ -17,7 +17,7 @@ void windowRect(real* const window, std::size_t length);
  * @param[in] sigma The sigma value for the distribution. Must be <= 0.5
  */
 void windowGaussian(real* const window, std::size_t length,
-					real sigma);
+                    real sigma);
 /**
  * Implemented using fft algorithms. This function is not responsible for any
  * allocation and padding.
@@ -50,10 +50,10 @@ void dft(complex* const spectrum, real const* const signal, std::size_t length);
  * @param integrand Temporary memory allocated with size 2 * windowRadius
  */
 void dstft(complex* const* const spectrogram,
-		   real const* const signal, std::size_t length,
-		   real const* const window, std::size_t windowRadius,
-		   std::size_t start, std::size_t end,
-		   real* const integrand);
+           real const* const signal, std::size_t length,
+           real const* const window, std::size_t windowRadius,
+           std::size_t start, std::size_t end,
+           real* const integrand);
 
 } // namespace pg
 

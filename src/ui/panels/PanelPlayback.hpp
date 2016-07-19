@@ -27,16 +27,18 @@ private:
 	QPushButton* buttonPlayPause;
 };
 
-} // namespace pg
 
 // Implementations
 
-inline void pg::PanelPlayback::setPlay()
+inline void PanelPlayback::setPlay()
 {
 	buttonPlayPause->setIcon(QIcon(":/play.png"));
 }
-inline void pg::PanelPlayback::setPause()
+inline void PanelPlayback::setPause()
 {
 	buttonPlayPause->setIcon(QIcon(":/pause.png"));
 }
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_UI_PANELS_PANELPLAYBACK_HPP__

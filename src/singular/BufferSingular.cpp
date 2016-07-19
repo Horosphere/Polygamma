@@ -75,13 +75,11 @@ writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channel
                  AVCodecContext* const codecContext, AVFrame* const frame,
                  Value* const samples);
 
-} // namespace pg
 
 
 // Implementations
 
-
-template<typename Value> inline pg::real pg::dequantise(Value value)
+template<typename Value> inline real dequantise(Value value)
 {
 	// TODO: Use hexadecimal floating point literals
 	// Unsigned integer
@@ -109,7 +107,7 @@ template<typename Value> inline pg::real pg::dequantise(Value value)
 	return (real) value;
 }
 
-template<typename Value> inline Value pg::quantise(real value)
+template<typename Value> inline Value quantise(real value)
 {
 	// Unsigned integer
 	if (typeid(Value) == typeid(uint8_t))
@@ -132,10 +130,10 @@ template<typename Value> inline Value pg::quantise(real value)
 }
 
 template<typename Value, bool planar> inline bool
-pg::readAudioStream(real** const channels, std::size_t* nSamples,
-                    AVFormatContext* const formatContext,
-                    AVCodecContext* const codecContext,
-                    AVFrame* const frame, int stream)
+readAudioStream(real** const channels, std::size_t* nSamples,
+                AVFormatContext* const formatContext,
+                AVCodecContext* const codecContext,
+                AVFrame* const frame, int stream)
 {
 	AVPacket readingPacket;
 	av_init_packet(&readingPacket);
@@ -272,7 +270,7 @@ pg::readAudioStream(real** const channels, std::size_t* nSamples,
 	}
 	return true;
 }
-pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
+BufferSingular* BufferSingular::fromFile(std::string fileName,
     std::string* const error) noexcept
 {
 	std::cout << "[IO] Reading BufferSingular from file " << fileName
@@ -409,8 +407,8 @@ pg::BufferSingular* pg::BufferSingular::fromFile(std::string fileName,
 
 	return buffer;
 }
-pg::BufferSingular* pg::BufferSingular::create(ChannelLayout cl,
-    std::size_t sampleRate, std::size_t duration, std::string* const error)
+BufferSingular* BufferSingular::create(ChannelLayout cl,
+                                       std::size_t sampleRate, std::size_t duration, std::string* const error)
 noexcept
 {
 	std::cout << "[Ker] Creating BufferSingular with channel layout "
@@ -424,7 +422,7 @@ noexcept
 		return nullptr;
 	}
 	if (std::find(std::begin(SAMPLE_RATES), std::end(SAMPLE_RATES), sampleRate) ==
-			std::end(SAMPLE_RATES))
+	    std::end(SAMPLE_RATES))
 	{
 		*error = "Invalid sample rate";
 		return nullptr;
@@ -438,9 +436,9 @@ noexcept
 	return buffer;
 }
 template<typename Value, bool planar> inline bool
-pg::writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
-                     AVCodecContext* const codecContext, AVFrame* const frame,
-                     Value* const samples)
+writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channels,
+                 AVCodecContext* const codecContext, AVFrame* const frame,
+                 Value* const samples)
 {
 	// Encode audio into frame
 	std::size_t nSamples = channels[0].getSize();
@@ -523,8 +521,8 @@ pg::writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& cha
 	}
 	return true;
 }
-bool pg::BufferSingular::saveToFile(std::string fileName,
-                                    std::string* const error) noexcept
+bool BufferSingular::saveToFile(std::string fileName,
+                                std::string* const error) noexcept
 {
 	boost::timer::auto_cpu_timer timer;
 
@@ -682,3 +680,5 @@ bool pg::BufferSingular::saveToFile(std::string fileName,
 	avcodec_close(codecContext);
 	return flag;
 }
+
+} // namespace pg

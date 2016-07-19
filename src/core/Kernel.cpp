@@ -7,14 +7,17 @@
 
 #include "text.hpp"
 
-pg::Kernel::Kernel(Configuration* config): config(config)
+namespace pg
+{
+
+Kernel::Kernel(Configuration* config): config(config)
 {
 	// Must be placed here instead of the initialiser list to avoid crashing.
 	boost::python::object moduleMain = boost::python::import("__main__");
 	dictMain = boost::python::extract<boost::python::dict>(
 	             moduleMain.attr("__dict__"));
 }
-pg::Kernel::~Kernel()
+Kernel::~Kernel()
 {
 	// Releases all buffers
 	// TODO: Call each buffer's destruction signal
@@ -22,7 +25,7 @@ pg::Kernel::~Kernel()
 		delete buffer;
 }
 
-void pg::Kernel::start()
+void Kernel::start()
 {
 	// Sets the Kernel variable in the Polygamma module. The Kernel can be
 	// accessed in python with PYTHON_KERNEL
@@ -110,7 +113,7 @@ void pg::Kernel::start()
 	std::cout << "[Ker] stopping..." << std::endl;
 }
 
-void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
+void Kernel::eraseBuffer(std::size_t index) throw(PythonException)
 {
 	if (buffers.size() <= index)
 		throw PythonException{"Buffer index out of range", PythonException::ValueError};
@@ -127,9 +130,9 @@ void pg::Kernel::eraseBuffer(std::size_t index) throw(PythonException)
 		delete buffer;
 	}
 }
-void pg::Kernel::createSingular(ChannelLayout channelLayout,
-                                std::size_t sampleRate,
-                                std::string duration) throw(PythonException)
+void Kernel::createSingular(ChannelLayout channelLayout,
+                            std::size_t sampleRate,
+                            std::string duration) throw(PythonException)
 {
 	std::string error;
 
@@ -139,7 +142,7 @@ void pg::Kernel::createSingular(ChannelLayout channelLayout,
 	if (buffer) pushBuffer(buffer);
 	else throw PythonException{error, PythonException::ValueError};
 }
-void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
+void Kernel::fromFileImport(std::string fileName) throw(PythonException)
 {
 	// TODO: Prevent user from importing the same file multiple times.
 	std::string error;
@@ -148,7 +151,7 @@ void pg::Kernel::fromFileImport(std::string fileName) throw(PythonException)
 	else throw PythonException{error, PythonException::IOError};
 }
 
-void pg::Kernel::pushBuffer(Buffer* buffer) noexcept
+void Kernel::pushBuffer(Buffer* buffer) noexcept
 {
 	if (buffer && std::find(buffers.begin(), buffers.end(), buffer)
 	    == buffers.end())
@@ -168,3 +171,5 @@ void pg::Kernel::pushBuffer(Buffer* buffer) noexcept
 		});
 	}
 }
+
+} // namespace pg

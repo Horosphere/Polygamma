@@ -1,6 +1,9 @@
 #include "SyntaxHighlighterPython.hpp"
 
-pg::SyntaxHighlighterPython::SyntaxHighlighterPython(QTextDocument* parent):
+namespace pg
+{
+
+SyntaxHighlighterPython::SyntaxHighlighterPython(QTextDocument* parent):
 	QSyntaxHighlighter(parent)
 {
 	Rule rule;
@@ -9,14 +12,14 @@ pg::SyntaxHighlighterPython::SyntaxHighlighterPython(QTextDocument* parent):
 	QStringList patternKeywords;
 
 	for (auto&& keyword :
-	        {"and", "as", "assert", "break", "class",
-	        "continue", "def", "del", "elif", "else",
-	        "except", "exec", "finally", "for", "from",
-	        "global", "if", "import", "in", "is",
-	        "lambda", "not", "or", "pass", "print",
-	        "raise", "return", "try", "while", "with",
-	        "yield"
-	        })
+	     {"and", "as", "assert", "break", "class",
+	      "continue", "def", "del", "elif", "else",
+	      "except", "exec", "finally", "for", "from",
+	      "global", "if", "import", "in", "is",
+	      "lambda", "not", "or", "pass", "print",
+	      "raise", "return", "try", "while", "with",
+	      "yield"
+	     })
 	{
 		patternKeywords << "\\b" + QString(keyword) + "\\b";
 	}
@@ -41,7 +44,7 @@ pg::SyntaxHighlighterPython::SyntaxHighlighterPython(QTextDocument* parent):
 
 }
 
-void pg::SyntaxHighlighterPython::highlightBlock(QString const& text)
+void SyntaxHighlighterPython::highlightBlock(QString const& text)
 {
 	for (auto const& pattern: patternsKeyword)
 	{
@@ -54,3 +57,5 @@ void pg::SyntaxHighlighterPython::highlightBlock(QString const& text)
 		}
 	}
 }
+
+} // namespace pg

@@ -55,4 +55,3 @@ private:
 
 
 #endif // !_POLYGAMMA_UI_PANELS_PANEL_HPP__
-

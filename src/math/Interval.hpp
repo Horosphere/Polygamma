@@ -89,19 +89,17 @@ template <typename R> R length(Interval<R> const&);
 template <typename R> Interval<R>
 operator+(Interval<R> const&, Interval<R> const&);
 
-} // namespace pg
-
 
 
 // Implementations
 
 template <typename R> inline bool
-pg::isEmpty(Interval<R> const& interval) noexcept
+isEmpty(Interval<R> const& interval) noexcept
 {
 	return interval.begin >= interval.end;
 }
-template <typename R> inline pg::Interval<R>
-pg::translate(Interval<R> const& interval, Interval<R> const& bound, R val)
+template <typename R> inline Interval<R>
+translate(Interval<R> const& interval, Interval<R> const& bound, R val)
 {
 	if (val > bound.end - interval.end)
 		return Interval<R>(bound.end - length(interval), bound.end);
@@ -111,16 +109,16 @@ pg::translate(Interval<R> const& interval, Interval<R> const& bound, R val)
 	return Interval<R>(interval.begin + val, interval.end + val);
 }
 
-template <typename R, typename Fac> inline pg::Interval<R>
-pg::scale(Interval<R> const& interval, Fac fac, R centre)
+template <typename R, typename Fac> inline Interval<R>
+scale(Interval<R> const& interval, Fac fac, R centre)
 {
 	return Interval<R>((R)((interval.begin - centre) * fac) + centre,
 	                   (R)((interval.end - centre) * fac) + centre);
 }
 
-template <typename R, typename Fac> inline pg::Interval<R>
-pg::scale(Interval<R> const& interval, Interval<R> const& limits,
-          Fac fac, R centre)
+template <typename R, typename Fac> inline Interval<R>
+scale(Interval<R> const& interval, Interval<R> const& limits,
+      Fac fac, R centre)
 {
 	// The std::min here is introduced to prevent overflow
 	// Overflow on left
@@ -141,23 +139,25 @@ pg::scale(Interval<R> const& interval, Interval<R> const& limits,
 
 }
 
-template <typename R> inline pg::Interval<R>
-pg::clamp(Interval<R> const& interval, R lower, R upper)
+template <typename R> inline Interval<R>
+clamp(Interval<R> const& interval, R lower, R upper)
 {
 	return Interval<R>(lower < interval.begin ? interval.begin : lower,
 	                   upper > interval.end ? interval.end : upper);
 }
 template <typename R> inline R
-pg::length(Interval<R> const& interval)
+length(Interval<R> const& interval)
 {
 	return interval.end - interval.begin;
 }
 
-template <typename R> inline pg::Interval<R>
-pg::operator+(Interval<R> const& i0, Interval<R> const& i1)
+template <typename R> inline Interval<R>
+operator+(Interval<R> const& i0, Interval<R> const& i1)
 {
 	return Interval<R>(std::min(i0.begin, i1.begin),
 	                   std::max(i0.end, i1.end));
 }
-#endif // !_POLYGAMMA_MATH_INTERVAL_HPP__
 
+} // namespace pg
+
+#endif // !_POLYGAMMA_MATH_INTERVAL_HPP__

@@ -5,7 +5,7 @@
 
 namespace pg
 {
-	
+
 /**
  * @brief Container for a python command.
  */
@@ -26,20 +26,23 @@ struct Script
 	std::string str;
 };
 
-} // namespace pg
+// Implementations
 
-// pg::Script
-inline pg::Script::Script(): level(UI), str()
+
+inline Script::Script(): level(UI), str()
 {
 }
 
-inline pg::Script::Script(std::string const& str): level(UI), str(str)
+inline Script::Script(std::string const& str): level(UI), str(str)
 {
 }
 
-inline pg::Script::operator std::string() const noexcept
+inline Script::operator std::string() const noexcept
 {
 	return str;
 }
+
+} // namespace pg
+
 
 #endif // !_POLYGAMMA_CORE_SCRIPT_HPP__

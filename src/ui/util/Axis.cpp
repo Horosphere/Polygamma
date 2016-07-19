@@ -10,17 +10,15 @@
 namespace pg
 {
 
-inline QString
-defaultLabelingFunction(int val) noexcept
+inline QString defaultLabelingFunction(int val) noexcept
 {
 	return QString::number(val);
 }
 
-}
 
 // Axis
 
-pg::Axis::Axis(QWidget* parent): QWidget(parent),
+Axis::Axis(QWidget* parent): QWidget(parent),
 	orientation(Qt::TopEdge), invLogBase(0.0), nTicksMinor(3),
 	penTick(Qt::black, 2), penTickMinor(Qt::black), penText(Qt::black),
 	tickLength(12), tickLengthMinor(6), nSegments(0),
@@ -30,7 +28,7 @@ pg::Axis::Axis(QWidget* parent): QWidget(parent),
 }
 
 inline void
-pg::Axis::setMarks(int r0, int r1, int n)
+Axis::setMarks(int r0, int r1, int n)
 {
 	// assert(r0 != r1);
 	assert(n >= 0);
@@ -91,7 +89,7 @@ pg::Axis::setMarks(int r0, int r1, int n)
 	repaint();
 }
 
-void pg::Axis::paintEvent(QPaintEvent*)
+void Axis::paintEvent(QPaintEvent*)
 {
 	QPainter painter(this);
 	painter.setFont(font());
@@ -177,7 +175,7 @@ void pg::Axis::paintEvent(QPaintEvent*)
 }
 
 // AxisInterval
-pg::AxisInterval::AxisInterval(QWidget* parent): Axis(parent),
+AxisInterval::AxisInterval(QWidget* parent): Axis(parent),
 	interval(0, effectiveLength()),
 	minTickWidth(150)
 {
@@ -190,7 +188,7 @@ pg::AxisInterval::AxisInterval(QWidget* parent): Axis(parent),
 	});
 }
 
-void pg::AxisInterval::recalculate()
+void AxisInterval::recalculate()
 {
 	int l = effectiveLength();
 
@@ -220,9 +218,10 @@ void pg::AxisInterval::recalculate()
 	         tHigh - tLow);
 }
 
-void pg::AxisInterval::resizeEvent(QResizeEvent* event)
+void AxisInterval::resizeEvent(QResizeEvent* event)
 {
 	recalculate();
 	QWidget::resizeEvent(event);
 }
 
+} // namespace pg

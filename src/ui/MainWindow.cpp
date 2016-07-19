@@ -21,7 +21,10 @@
 #include "editors/EditorSingular.hpp"
 
 
-pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
+namespace pg
+{
+
+MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 , QWidget* parent): QMainWindow(parent),
 	kernel(kernel), config(config),
 
@@ -205,7 +208,7 @@ pg::MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	for (auto& action: actionsFlagged) action->setEnabled(false);
 }
 
-void pg::MainWindow::updateUIElements()
+void MainWindow::updateUIElements()
 {
 	// Load
 	QFont fontMonospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -234,7 +237,7 @@ void pg::MainWindow::updateUIElements()
 	  "}");
 }
 
-void pg::MainWindow::onBufferNew(Buffer* buffer)
+void MainWindow::onBufferNew(Buffer* buffer)
 {
 	Editor* editor;
 
@@ -261,14 +264,14 @@ void pg::MainWindow::onBufferNew(Buffer* buffer)
 
 		this->editors.erase(editor);
 		if (this->currentEditor == editor)
-		this->currentEditor = nullptr;
-		QString index = QString::number(kernel->bufferIndex(buffer)); 
+			this->currentEditor = nullptr;
+		QString index = QString::number(kernel->bufferIndex(buffer));
 		this->onExecute(PYTHON_KERNEL + QString(".eraseBuffer(") +
 		                index + ')');
 	});
 	reloadMenuWindows();
 }
-void pg::MainWindow::onBufferErase(Buffer* buffer)
+void MainWindow::onBufferErase(Buffer* buffer)
 {
 	for (auto editor: editors)
 	{
@@ -285,7 +288,7 @@ void pg::MainWindow::onBufferErase(Buffer* buffer)
 	// Do not place an assert(false) here since the routine will reach this point
 	// if the editor is closed using the close button
 }
-void pg::MainWindow::onBufferUpdate(Buffer* buffer, Buffer::Update update)
+void MainWindow::onBufferUpdate(Buffer* buffer, Buffer::Update update)
 {
 	for (auto& editor: editors)
 	{
@@ -294,7 +297,7 @@ void pg::MainWindow::onBufferUpdate(Buffer* buffer, Buffer::Update update)
 	}
 }
 
-void pg::MainWindow::onExecute(QString const& script)
+void MainWindow::onExecute(QString const& script)
 {
 	if (currentEditor)
 	{
@@ -310,7 +313,7 @@ void pg::MainWindow::onExecute(QString const& script)
 		terminal->onExecute(Script(script.toStdString()));
 }
 
-void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
+void MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 {
 	(void) old;
 	if (Editor* editor = dynamic_cast<Editor*>(now))
@@ -326,7 +329,7 @@ void pg::MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 		}
 	}
 }
-void pg::MainWindow::reloadMenuWindows()
+void MainWindow::reloadMenuWindows()
 {
 	menuEditors->clear();
 	for (auto const& editor: editors)
@@ -337,3 +340,5 @@ void pg::MainWindow::reloadMenuWindows()
 		menuEditors->addAction(actionEditor);
 	}
 }
+
+} // namespace pg

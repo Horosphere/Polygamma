@@ -1,10 +1,13 @@
 #include "Buffer.hpp"
 
-pg::Buffer::~Buffer()
+namespace pg
+{
+
+Buffer::~Buffer()
 {
 }
 
-void pg::Buffer::saveToFile(std::string fileName) throw(PythonException)
+void Buffer::saveToFile(std::string fileName) throw(PythonException)
 {
 	std::string error;
 	if (!saveToFile(fileName, &error))
@@ -13,7 +16,7 @@ void pg::Buffer::saveToFile(std::string fileName) throw(PythonException)
 	}
 	dirty = false;
 }
-void pg::Buffer::exportToFile(std::string fileName) throw(PythonException)
+void Buffer::exportToFile(std::string fileName) throw(PythonException)
 {
 	std::string error;
 	if (!exportToFile(fileName, &error))
@@ -22,3 +25,5 @@ void pg::Buffer::exportToFile(std::string fileName) throw(PythonException)
 	}
 	dirty = false;
 }
+
+} // namespace pg

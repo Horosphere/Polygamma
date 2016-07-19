@@ -24,7 +24,7 @@ class MainWindow final: public QMainWindow
 	Q_OBJECT
 public:
 	explicit MainWindow(Kernel* const, Configuration* const,
-			QWidget* parent = 0);
+	                    QWidget* parent = 0);
 
 private Q_SLOTS:
 
@@ -39,8 +39,8 @@ private Q_SLOTS:
 	 * {CU} -> The current buffer. e.g. pg.kernel.buffers[4]
 	 *
 	 * @warning Must be called with at least one active buffer present.
-	 * @brief Converts a QString into a system level script and calls 
-	 *	Terminal::onExecute to send it to the Kernel.
+	 * @brief Converts a QString into a system level script and calls
+	 *  Terminal::onExecute to send it to the Kernel.
 	 */
 	void onExecute(QString const&);
 
@@ -61,7 +61,7 @@ private:
 	QMenu* menuEditors;
 	/**
 	 * @brief Stores all actionFlagged that are deactivated upon particular editor
-	 *	changes.
+	 *  changes.
 	 */
 	std::vector<ActionFlagged*> actionsFlagged;
 

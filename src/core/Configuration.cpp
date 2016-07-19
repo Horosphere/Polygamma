@@ -6,7 +6,10 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-pg::Configuration::Configuration():
+namespace pg
+{
+
+Configuration::Configuration():
 	cacheDirPlayback(),
 	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiScriptLevelMin(Script::UI),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
@@ -15,7 +18,7 @@ pg::Configuration::Configuration():
 
 // XML Convention: Trees start with lower case letter, entries start with upper
 // case letter
-bool pg::Configuration::loadFile()
+bool Configuration::loadFile()
 {
 	std::cout << "Reading configuration from: " << fileName << std::endl;
 	std::ifstream file;
@@ -23,17 +26,17 @@ bool pg::Configuration::loadFile()
 	if (!file.is_open()) return false;
 	boost::property_tree::ptree tree;
 	boost::property_tree::read_xml(file, tree,
-			boost::property_tree::xml_parser::trim_whitespace);
+	                               boost::property_tree::xml_parser::trim_whitespace);
 	file.close();
-	
+
 	boost::optional<boost::property_tree::ptree&> treeCache =
-		tree.get_child_optional("cache");
+	  tree.get_child_optional("cache");
 	if (treeCache)
 	{
 		cacheDirPlayback = treeCache->get("cacheDirPlayback", cacheDirPlayback);
 	}
 	boost::optional<boost::property_tree::ptree&> treeUI =
-		tree.get_child_optional("ui");
+	  tree.get_child_optional("ui");
 	if (treeUI)
 	{
 		uiBG = treeUI->get("BG", uiBG);
@@ -46,7 +49,7 @@ bool pg::Configuration::loadFile()
 
 	return true;
 }
-void pg::Configuration::saveFile()
+void Configuration::saveFile()
 {
 	std::cout << "Writing configuration to: " << fileName << std::endl;
 	boost::property_tree::ptree tree;
@@ -62,7 +65,9 @@ void pg::Configuration::saveFile()
 	treeUI.put("WaveformCore", uiWaveformCore);
 	treeUI.put("WaveformEdge", uiWaveformEdge);
 	tree.put_child("ui", treeUI);
-	
+
 	boost::property_tree::xml_writer_settings<std::string> settings('\t', 1);
 	boost::property_tree::write_xml(fileName, tree, std::locale(), settings);
 }
+
+} // namespace pg

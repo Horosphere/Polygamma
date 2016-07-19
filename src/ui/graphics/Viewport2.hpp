@@ -16,7 +16,7 @@ namespace pg
 /**
  * @brief The Viewport2 class is the base class for editors. It allows
  * navigation by MMB + drag (pan) and scroll (zoom). Viewport2 stores the
- * "view" in two \ref pg::Interval<axial_coord> objects which represent the
+ * "view" in two \ref Interval<axial_coord> objects which represent the
  * "view coordinate"
  */
 class Viewport2: public QWidget
@@ -31,12 +31,30 @@ public:
 
 	explicit Viewport2(QWidget* parent = 0);
 
-	QColor getColourBG() const noexcept { return colourBG; }
-	void setColourBG(QColor c) noexcept { colourBG = c; }
-	QPen getPenGrid() const noexcept { return penGrid; }
-	void setPenGrid(QPen p) noexcept { penGrid = p; }
-	QPen getPenGridMinor() const noexcept { return penGridMinor; }
-	void setPenGridMinor(QPen p) noexcept { penGridMinor = p; }
+	QColor getColourBG() const noexcept
+	{
+		return colourBG;
+	}
+	void setColourBG(QColor c) noexcept
+	{
+		colourBG = c;
+	}
+	QPen getPenGrid() const noexcept
+	{
+		return penGrid;
+	}
+	void setPenGrid(QPen p) noexcept
+	{
+		penGrid = p;
+	}
+	QPen getPenGridMinor() const noexcept
+	{
+		return penGridMinor;
+	}
+	void setPenGridMinor(QPen p) noexcept
+	{
+		penGridMinor = p;
+	}
 
 	void setDragging(bool dragX, bool dragY) noexcept;
 
@@ -100,7 +118,7 @@ public Q_SLOTS:
 	void setRangeY(Interval<axial_coord>);
 	/**
 	 * @brief Automatically acquire the x and y intervals from the axes. The axes
-	 *	must be instances of AxisInterval for this to work
+	 *  must be instances of AxisInterval for this to work
 	 */
 	void updateFromAxes();
 
@@ -116,7 +134,7 @@ private:
 	bool isZoomable;
 	bool isSelectibleX, isSelectibleY;
 	Axis* axisX;
-	Axis* axisY;	
+	Axis* axisY;
 	Interval<axial_coord> maxRangeX, maxRangeY;
 
 	// Dynamic variables
@@ -126,12 +144,10 @@ private:
 	QRubberBand* rubberBand;
 };
 
-} // namespace pg
-
 
 // Implementations
 
-inline void pg::Viewport2::setDragging(bool dragX, bool dragY) noexcept
+inline void Viewport2::setDragging(bool dragX, bool dragY) noexcept
 {
 	isDraggable = dragX || dragY;
 	isDraggableX = dragX;
@@ -139,71 +155,74 @@ inline void pg::Viewport2::setDragging(bool dragX, bool dragY) noexcept
 	dragFacX = length(rangeX) / (double)width();
 	dragFacY = length(rangeY) / (double)height();
 }
-inline void pg::Viewport2::setZoomFac(double x, double y) noexcept
+inline void Viewport2::setZoomFac(double x, double y) noexcept
 {
 	assert(x >= 1.0 && y >= 1.0);
 	zoomFacX = x;
 	zoomFacY = y;
 	isZoomable = zoomFacX != 1.0 || zoomFacY != 1.0;
 }
-inline void pg::Viewport2::setMaximumRange(axial_coord x0, axial_coord x1,
-    axial_coord y0, axial_coord y1) noexcept
+inline void Viewport2::setMaximumRange(axial_coord x0, axial_coord x1,
+                                       axial_coord y0, axial_coord y1) noexcept
 {
 	maxRangeX = Interval<axial_coord>(x0, x1);
 	maxRangeY = Interval<axial_coord>(y0, y1);
 }
-inline void pg::Viewport2::setSelecting(bool x, bool y) noexcept
+inline void Viewport2::setSelecting(bool x, bool y) noexcept
 {
 	isSelectibleX = x;
 	isSelectibleY = y;
 	if (isSelectibleX || isSelectibleY)
 		rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
-	else 
+	else
 	{
 		delete rubberBand;
 		rubberBand = nullptr;
 	}
 }
-inline void pg::Viewport2::setAxisX(Axis* a) noexcept
+inline void Viewport2::setAxisX(Axis* a) noexcept
 {
 	axisX = a;
 }
-inline void pg::Viewport2::setAxisY(Axis* a) noexcept
+inline void Viewport2::setAxisY(Axis* a) noexcept
 {
 	axisY = a;
 }
-inline void pg::Viewport2::maximise() noexcept
+inline void Viewport2::maximise() noexcept
 {
 	rangeX = maxRangeX;
 	rangeY = maxRangeY;
 }
 
-inline pg::Viewport2::axial_coord pg::Viewport2::rasterToAxialX(int v) const noexcept
+inline Viewport2::axial_coord Viewport2::rasterToAxialX(int v) const noexcept
 {
 	return v * length(rangeX) / width() + rangeX.begin;
 }
-inline int pg::Viewport2::axialToRasterX(axial_coord v) const noexcept
+inline int Viewport2::axialToRasterX(axial_coord v) const noexcept
 {
 	return (int)((v - rangeX.begin) * width() / length(rangeX));
 }
-inline pg::Viewport2::axial_coord pg::Viewport2::rasterToAxialY(int v) const noexcept
+inline Viewport2::axial_coord Viewport2::rasterToAxialY(int v) const noexcept
 {
 	return v * length(rangeY) / width() + rangeY.begin;
 }
-inline int pg::Viewport2::axialToRasterY(axial_coord v) const noexcept
+inline int Viewport2::axialToRasterY(axial_coord v) const noexcept
 {
 	return (int)((v - rangeY.begin) * height() / length(rangeY));
 }
 
-inline void pg::Viewport2::setRangeX(Interval<axial_coord> range)
+inline void Viewport2::setRangeX(Interval<axial_coord> range)
 {
 	rangeX = range;
 	repaint();
 }
-inline void pg::Viewport2::setRangeY(Interval<axial_coord> range)
+inline void Viewport2::setRangeY(Interval<axial_coord> range)
 {
 	rangeY = range;
 	repaint();
 }
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_UI_GRAPHICS_VIEWPORT2_HPP__
 

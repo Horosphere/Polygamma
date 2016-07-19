@@ -8,7 +8,7 @@ namespace pg
 {
 
 /**
- * This class implements a colour picker 
+ * This class implements a colour picker
  */
 class ColourButton: public QPushButton
 {
@@ -18,7 +18,7 @@ public:
 	explicit ColourButton(QWidget* parent = 0);
 
 	void setAlpha(bool isEnabled);
-	
+
 	QColor getColour() const;
 Q_SIGNALS:
 	/**
@@ -40,20 +40,19 @@ private:
 	bool enableAlpha;
 };
 
-} // namespace pg
 
 // Implementations
 
-inline void
-pg::ColourButton::setAlpha(bool isEnabled)
+inline void ColourButton::setAlpha(bool isEnabled)
 {
 	enableAlpha = isEnabled;
 }
 
-inline QColor
-pg::ColourButton::getColour() const
+inline QColor ColourButton::getColour() const
 {
 	return colour;
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_UI_UTIL_COLOURBUTTON_HPP__

@@ -31,8 +31,8 @@ protected:
 
 /**
  * @brief \ref ActionFlagged with a \ref DialogScriptArgs. When triggered,
- *	dialog->exec() is called and if the user accepts, the signal
- *	execute(dialog->script()) is emitted.
+ *  dialog->exec() is called and if the user accepts, the signal
+ *  execute(dialog->script()) is emitted.
  */
 class ActionDialog: public ActionFlagged
 {
@@ -40,9 +40,9 @@ class ActionDialog: public ActionFlagged
 public:
 	explicit ActionDialog(DialogScriptArgs* const dialog, QObject* parent = 0);
 	explicit ActionDialog(DialogScriptArgs* const dialog, QString const& text,
-	                        QObject* parent = 0);
+	                      QObject* parent = 0);
 	explicit ActionDialog(DialogScriptArgs* const dialog, QIcon const&,
-	                        QString const& text, QObject* parent = 0);
+	                      QString const& text, QObject* parent = 0);
 
 	DialogScriptArgs* const dialog;
 

@@ -27,16 +27,16 @@ typedef uint64_t ChannelLayout;
 std::string about();
 
 
-} // namespace pg
-
 // Implementations
 
-inline std::string pg::about()
+inline std::string about()
 {
 	return "Polygamma 0.0.1\n"
 	       "Author: Horosphere\n";
 }
 
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_CORE_POLYGAMMA_HPP__
 

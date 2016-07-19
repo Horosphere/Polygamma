@@ -46,8 +46,8 @@ inline PanelMultimedia::PlaybackCache::PlaybackCache() noexcept: dirty(true)
 {
 }
 
-} // namespace pg
 
+} // namespace pg
 
 
 #endif // !_POLYGAMMA_UI_PANELS_PANELMULTIMEDIA_HPP__

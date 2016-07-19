@@ -8,7 +8,7 @@
 
 #include "Script.hpp"
 
-namespace pg 
+namespace pg
 {
 
 class Configuration final
@@ -37,7 +37,7 @@ public:
 	void update();
 	/**
 	 * @brief Registers a listener that will be notified (calling the
-	 *	operator()() member function) when the configuration changes.
+	 *  operator()() member function) when the configuration changes.
 	 * @tparam Listener must have operator()() implemented.
 	 */
 	template <typename Listener>
@@ -66,22 +66,23 @@ private:
  */
 // bool init(std::string fileName);
 
-} // namespace pg::config
-
 // Implementations
 
-inline void pg::Configuration::setFileName(std::string fileName) noexcept
+inline void Configuration::setFileName(std::string fileName) noexcept
 {
 	this->fileName = fileName;
 }
-inline void pg::Configuration::update()
+inline void Configuration::update()
 {
 	signalChanged();
 	saveFile();
 }
 template <typename Listener> inline void
-pg::Configuration::registerUpdateListener(Listener listener)
+Configuration::registerUpdateListener(Listener listener)
 {
 	signalChanged.connect(listener);
 }
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_CORE_CONFIGURATION_HPP__

@@ -119,4 +119,5 @@ inline void Terminal::closeEvent(QCloseEvent* event)
 }
 
 } // namespace pg
+
 #endif // !_POLYGAMMA_UI_TERMINAL_HPP__

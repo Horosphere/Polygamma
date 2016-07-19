@@ -30,7 +30,7 @@ public:
 		enum Level
 		{
 			Data, // The underlying data has been modified
-			Surface	// Only the selection/cursor has been modified
+			Surface // Only the selection/cursor has been modified
 		};
 
 		Level level;
@@ -117,27 +117,26 @@ private:
 	friend class Kernel;
 };
 
-} // namespace pg
 
 // Implementations
 
-inline pg::Buffer::Buffer() noexcept:
+inline Buffer::Buffer() noexcept:
 	dirty(false), nReferences(0), cursor(0)
 {
 }
-inline std::string pg::Buffer::getTitle() const noexcept
+inline std::string Buffer::getTitle() const noexcept
 {
 	return title;
 }
-inline bool pg::Buffer::isDirty() const noexcept
+inline bool Buffer::isDirty() const noexcept
 {
 	return dirty;
 }
-inline std::size_t pg::Buffer::getCursor() const noexcept
+inline std::size_t Buffer::getCursor() const noexcept
 {
 	return cursor;
 }
-inline void pg::Buffer::setCursor(std::size_t c) throw(PythonException)
+inline void Buffer::setCursor(std::size_t c) throw(PythonException)
 {
 	if (c >= duration())
 		throw PythonException{"Cursor index is higher than duration",
@@ -145,24 +144,27 @@ inline void pg::Buffer::setCursor(std::size_t c) throw(PythonException)
 	cursor = c;
 	notifyUpdate(Update::Surface);
 }
-inline void pg::Buffer::notifyUpdate(Update::Level level) noexcept
+inline void Buffer::notifyUpdate(Update::Level level) noexcept
 {
 	signalUpdate(Update{level, IntervalIndex(0, duration())});
 	dirty = true;
 }
-inline void pg::Buffer::notifyUpdate(Update::Level level,
-		IntervalIndex interval) noexcept
+inline void Buffer::notifyUpdate(Update::Level level,
+                                 IntervalIndex interval) noexcept
 {
 	signalUpdate(Update{level, interval});
 	dirty = true;
 }
 
-inline void pg::Buffer::referenceIncrease() noexcept
+inline void Buffer::referenceIncrease() noexcept
 {
 	++nReferences;
 }
-inline void pg::Buffer::referenceDecrease() noexcept
+inline void Buffer::referenceDecrease() noexcept
 {
 	if (nReferences) --nReferences;
 }
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_CORE_BUFFER_HPP__

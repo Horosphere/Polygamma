@@ -2,12 +2,17 @@
 
 #include <QPainter>
 
-pg::Cursor::Cursor(QWidget* parent): QWidget(parent)
+namespace pg
+{
+
+Cursor::Cursor(QWidget* parent): QWidget(parent)
 {
 }
 
-void pg::Cursor::paintEvent(QPaintEvent*)
+void Cursor::paintEvent(QPaintEvent*)
 {
 	QPainter painter(this);
 	painter.fillRect(rect(), Qt::red);
 }
+
+} // namespace pg

@@ -8,9 +8,12 @@
 #include "../ui.hpp"
 #include "../util/Axis.hpp"
 
-pg::EditorSingular::EditorSingular(Kernel* const kernel,
-                                   BufferSingular const* const buffer,
-                                   QWidget* parent):
+namespace pg
+{
+
+EditorSingular::EditorSingular(Kernel* const kernel,
+                               BufferSingular const* const buffer,
+                               QWidget* parent):
 	Editor(kernel, buffer, parent), buffer(buffer),
 	layoutMain(new QVBoxLayout), waveforms(nullptr)
 {
@@ -19,13 +22,13 @@ pg::EditorSingular::EditorSingular(Kernel* const kernel,
 	onUpdateAudioFormat();
 }
 
-bool pg::EditorSingular::saveAs(QString* const error)
+bool EditorSingular::saveAs(QString* const error)
 {
 	*error = "Unsupported operation";
 	return false;
 }
 
-void pg::EditorSingular::onUpdateAudioFormat()
+void EditorSingular::onUpdateAudioFormat()
 {
 	QLayoutItem* child;
 	while ((child = layoutMain->takeAt(0)))
@@ -56,26 +59,26 @@ void pg::EditorSingular::onUpdateAudioFormat()
 		layoutMain->addWidget(waveforms[i]);
 
 		connect(waveforms[i], &Viewport2::rangeXChanged,
-				axis, &AxisInterval::onIntervalChanged);
+		        axis, &AxisInterval::onIntervalChanged);
 		connect(axis, &AxisInterval::recalculationComplete,
-				waveforms[i], &Viewport2::updateFromAxes);
+		        waveforms[i], &Viewport2::updateFromAxes);
 		waveforms[i]->updateFromAxes();
 	}
 }
 
-void pg::EditorSingular::onSelection(Interval<long> selection,
-		std::size_t index)
+void EditorSingular::onSelection(Interval<long> selection,
+                                 std::size_t index)
 {
 	std::string string = std::string(PYTHON_KERNEL) + ".buffers[" +
-		std::to_string(kernel->bufferIndex(buffer)) + "].select(" +
-		std::to_string(index) + ", " + std::to_string(selection.begin) +
-		", " + std::to_string(selection.end) + ')';
+	                     std::to_string(kernel->bufferIndex(buffer)) + "].select(" +
+	                     std::to_string(index) + ", " + std::to_string(selection.begin) +
+	                     ", " + std::to_string(selection.end) + ')';
 	Q_EMIT execute(Script(string));
 
 }
 
-std::function<QString (long, long)>
-pg::EditorSingular::timecodeCallback(int sampleRate) noexcept
+std::function<QString(long, long)>
+EditorSingular::timecodeCallback(int sampleRate) noexcept
 {
 	return [sampleRate](long base, long mod) -> QString
 	{
@@ -99,3 +102,4 @@ pg::EditorSingular::timecodeCallback(int sampleRate) noexcept
 	};
 }
 
+} // namespace pg

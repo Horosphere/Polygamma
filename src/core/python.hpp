@@ -12,10 +12,10 @@ void initPython();
 
 /**
  * @warning This function uses global functions from the python library and is
- *	thus not pure. It does not have any side effects though.
+ *  thus not pure. It does not have any side effects though.
  * @brief Produces a traceback string of the python exception.
  */
-std::string pythonTraceBack();
+std::string pythonTraceBack() noexcept;
 
 struct PythonException
 {
@@ -34,16 +34,12 @@ struct PythonException
 /**
  * The command that references the Polygamma Kernel in Python.
  */
-constexpr char PYTHON_KERNEL[] = "pg.kernel";
-
-} // namespace pg
+constexpr char const PYTHON_KERNEL[] = "pg.kernel";
 
 
 // Implementations
 
-
-inline std::string
-pg::pythonTraceBack()
+inline std::string pythonTraceBack() noexcept
 {
 	using namespace boost::python;
 
@@ -69,5 +65,7 @@ pg::pythonTraceBack()
 	PyErr_Restore(exType, value, traceBack);
 	return result;
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_CORE_PYTHON_HPP__

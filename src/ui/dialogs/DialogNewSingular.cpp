@@ -7,7 +7,10 @@
 
 #include "../../core/text.hpp"
 
-pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
+namespace pg
+{
+
+DialogNewSingular::DialogNewSingular(QWidget* parent):
 	DialogScriptArgs(parent),
 
 	comboChannelLayout(new QComboBox), comboSampleRate(new QComboBox),
@@ -44,7 +47,7 @@ pg::DialogNewSingular::DialogNewSingular(QWidget* parent):
 	layoutMain->addWidget(buttonBox);
 }
 
-QString pg::DialogNewSingular::script()
+QString DialogNewSingular::script()
 {
 	auto channelName = channelNames[comboChannelLayout->currentIndex()];
 
@@ -54,3 +57,5 @@ QString pg::DialogNewSingular::script()
 	       lineEditDuration->text() + "\")";
 }
 
+
+} // namespace pg

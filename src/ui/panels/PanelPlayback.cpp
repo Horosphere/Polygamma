@@ -3,7 +3,10 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-pg::PanelPlayback::PanelPlayback(QWidget* parent): Panel(parent),
+namespace pg
+{
+
+PanelPlayback::PanelPlayback(QWidget* parent): Panel(parent),
 	buttonPlayPause(new QPushButton)
 {
 	setWindowTitle("Playback");
@@ -27,9 +30,10 @@ pg::PanelPlayback::PanelPlayback(QWidget* parent): Panel(parent),
 
 	centralWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	connect(buttonPlayPause, &QPushButton::clicked,
-			this, &PanelPlayback::playPause);
+	        this, &PanelPlayback::playPause);
 	connect(buttonStop, &QPushButton::clicked,
-			this, &PanelPlayback::stop);
+	        this, &PanelPlayback::stop);
 };
 
 
+} // namespace pg

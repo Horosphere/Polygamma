@@ -84,9 +84,9 @@ BOOST_PYTHON_MODULE(pg)
 	.def_readonly("duration", &pg::Buffer::duration)
 	.def_readonly("timeBase", &pg::Buffer::timeBase)
 	.def("saveToFile", (void (pg::Buffer::*)(std::string))
-				&pg::Buffer::saveToFile)
+	     &pg::Buffer::saveToFile)
 	.def("exportToFile", (void (pg::Buffer::*)(std::string))
-				&pg::Buffer::exportToFile)
+	     &pg::Buffer::exportToFile)
 	.add_property("title", &pg::Buffer::getTitle)
 	.add_property("dirty", &pg::Buffer::isDirty)
 	.add_property("cursor", &pg::Buffer::getCursor, &pg::Buffer::setCursor);
@@ -103,9 +103,9 @@ BOOST_PYTHON_MODULE(pg)
 	.def("select", (void (pg::BufferSingular::*)(std::size_t, pg::IntervalIndex))
 	     &pg::BufferSingular::select)
 	.def("clearSelect", (void (pg::BufferSingular::*)())
-			&pg::BufferSingular::clearSelect)
+	     &pg::BufferSingular::clearSelect)
 	.def("clearSelect", (void (pg::BufferSingular::*)(std::size_t))
-			&pg::BufferSingular::clearSelect)
+	     &pg::BufferSingular::clearSelect)
 	.def("getSelection", &pg::BufferSingular::getSelection);
 
 	// BufferSingular associated functions
