@@ -51,12 +51,16 @@ void PanelMultimedia::play(Buffer const* const buffer)
 	PlaybackCache* cache = &caches[buffer];
 	if (cache->dirty != INTERVALINDEX_NULL)
 		updateCache(buffer);
-	if (cache->cacheFile.empty())
+	if (!error.empty())
 	{
-		QMessageBox::warning(0, tr("Cache error"),
-		                     tr("Unable to write cache"));
+		QMessageBox::warning(0, tr("Playback error"), tr(error.c_str()));
 		return;
 	}
+	if (cache->cacheFile.empty())
+	{
+		return;
+	}
+	qDebug() << "[UI] Playback started";
 	avPlayer->play(QString::fromStdString(cache->cacheFile));
 }
 
@@ -70,9 +74,11 @@ void PanelMultimedia::updateCache(Buffer const* const buffer) noexcept
 	if (auto const* b = dynamic_cast<BufferSingular const*>(buffer))
 	{
 		cache->cacheFile = cachingDirectory + "/cache_" +
-		                   std::to_string(cacheIndex) + ".mp3";
+		                   std::to_string(cacheIndex) + ".avi";
 		bool flag = b->exportToFile(cache->cacheFile, &error);
-		if (!flag)
+		if (flag)
+			error.clear();
+		else
 		{
 			cache->cacheFile = "";
 			return;
