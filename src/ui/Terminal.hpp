@@ -60,9 +60,9 @@ Q_SIGNALS:
 	void stdErrFlush(QString);
 
 	void configUpdate();
-	void bufferNew(Buffer*);
-	void bufferErase(Buffer*);
-	void bufferUpdate(Buffer*, Buffer::Update);
+	void bufferNew(Buffer const*);
+	void bufferErase(Buffer const*);
+	void bufferUpdate(Buffer const*, Buffer::Update);
 
 public Q_SLOTS:
 	/**

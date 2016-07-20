@@ -9,26 +9,28 @@ namespace pg
 PanelPlayback::PanelPlayback(QWidget* parent): Panel(parent),
 	buttonPlayPause(new QPushButton)
 {
-	setWindowTitle("Playback");
+	setWindowTitle(tr("Playback"));
 	static QSize const buttonSize(64, 64);
 
+	QHBoxLayout* layoutMain = new QHBoxLayout;
 	QWidget* centralWidget = new QWidget;
 	setWidget(centralWidget);
-	QHBoxLayout* layoutMain = new QHBoxLayout;
+	centralWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	centralWidget->setLayout(layoutMain);
 
 	buttonPlayPause->setIcon(QIcon(":/play.png"));
 	buttonPlayPause->setIconSize(buttonSize);
 	buttonPlayPause->setFixedSize(buttonSize);
 	layoutMain->addWidget(buttonPlayPause);
+	addSubwidget(buttonPlayPause);
 
 	QPushButton* buttonStop = new QPushButton;
 	buttonStop->setIcon(QIcon(":/stop.png"));
 	buttonStop->setIconSize(buttonSize);
 	buttonStop->setFixedSize(buttonSize);
 	layoutMain->addWidget(buttonStop);
+	addSubwidget(buttonStop);
 
-	centralWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	connect(buttonPlayPause, &QPushButton::clicked,
 	        this, &PanelPlayback::playPause);
 	connect(buttonStop, &QPushButton::clicked,

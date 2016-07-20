@@ -144,7 +144,6 @@ void Kernel::createSingular(ChannelLayout channelLayout,
 }
 void Kernel::fromFileImport(std::string fileName) throw(PythonException)
 {
-	// TODO: Prevent user from importing the same file multiple times.
 	std::string error;
 	BufferSingular* buffer = BufferSingular::fromFile(fileName, &error);
 	if (buffer) pushBuffer(buffer);

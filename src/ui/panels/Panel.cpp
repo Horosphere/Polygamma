@@ -22,6 +22,13 @@ void Panel::show()
 	setFloating(true);
 	QWidget::show();
 }
+void Panel::setSubwidgetsEnabled(bool flag)
+{
+	for (auto const& widget: subwidgets)
+	{
+		widget->setEnabled(flag);
+	}
+}
 void Panel::closeEvent(QCloseEvent* event)
 {
 	hide();

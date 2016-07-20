@@ -12,6 +12,7 @@ namespace pg
 {
 
 typedef Interval<std::size_t> IntervalIndex;
+constexpr IntervalIndex const INTERVALINDEX_NULL(std::numeric_limits<std::size_t>::max(), 0);
 
 /**
  * TODO: Use reference counted buffer
@@ -68,13 +69,13 @@ public:
 	 * @brief Export as a project file
 	 */
 	virtual bool saveToFile(std::string fileName,
-	                        std::string* const error) noexcept = 0;
+	                        std::string* const error) const noexcept = 0;
 	/**
 	 * @warning Do not change the dirty flag within this function
 	 * @brief Export as a playable multimedia file
 	 */
 	virtual bool exportToFile(std::string fileName,
-	                          std::string* const error) noexcept = 0;
+	                          std::string* const error) const noexcept = 0;
 	/**
 	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
 	 *  and throws IOError upon failure.

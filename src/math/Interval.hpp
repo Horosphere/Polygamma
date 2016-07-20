@@ -21,11 +21,10 @@ struct Interval
 	 * The default construct shall never be called unless we are allocating new
 	 * memory.
 	 */
-	Interval() noexcept
+	constexpr Interval() noexcept
 	{
 	}
-	Interval(R begin, R end) noexcept:
-		begin(begin), end(end)
+	constexpr Interval(R begin, R end) noexcept: begin(begin), end(end)
 	{
 		// Do not check begin <= end here since begin >= end is sometimes used in
 		// algorithms
@@ -53,6 +52,16 @@ struct Interval
 	}
 
 };
+
+template <typename R> bool
+operator==(Interval<R> const&, Interval<R> const&) noexcept;
+template <typename R> bool
+operator!=(Interval<R> const&, Interval<R> const&) noexcept;
+/**
+ * @brief Union of two intervals
+ */
+template <typename R> Interval<R>
+operator+(Interval<R> const&, Interval<R> const&);
 
 template <typename R> bool
 isEmpty(Interval<R> const&) noexcept;
@@ -83,16 +92,26 @@ clamp(Interval<R> const&, R lower, R upper);
 
 template <typename R> R length(Interval<R> const&);
 
-/**
- * @brief Union of two intervals
- */
-template <typename R> Interval<R>
-operator+(Interval<R> const&, Interval<R> const&);
-
 
 
 // Implementations
 
+template <typename R> inline bool
+operator==(Interval<R> const& i0, Interval<R> const& i1) noexcept
+{
+	return i0.begin == i1.begin && i0.end == i1.end;
+}
+template <typename R> inline bool
+operator!=(Interval<R> const& i0, Interval<R> const& i1) noexcept
+{
+	return i0.begin != i1.begin || i0.end != i1.end;
+}
+template <typename R> inline Interval<R>
+operator+(Interval<R> const& i0, Interval<R> const& i1)
+{
+	return Interval<R>(std::min(i0.begin, i1.begin),
+	                   std::max(i0.end, i1.end));
+}
 template <typename R> inline bool
 isEmpty(Interval<R> const& interval) noexcept
 {
@@ -151,12 +170,6 @@ length(Interval<R> const& interval)
 	return interval.end - interval.begin;
 }
 
-template <typename R> inline Interval<R>
-operator+(Interval<R> const& i0, Interval<R> const& i1)
-{
-	return Interval<R>(std::min(i0.begin, i1.begin),
-	                   std::max(i0.end, i1.end));
-}
 
 } // namespace pg
 

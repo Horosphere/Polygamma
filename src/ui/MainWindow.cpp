@@ -39,10 +39,9 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Dialogs
 	dialogPreferences(new DialogPreferences(config, this)),
-	dialogNewSingular(new DialogNewSingular(this)),
+	dialogNewSingular(new DialogNewSingular(this))
 
 	// Dynamics
-	currentEditor(nullptr)
 {
 	setFocusPolicy(Qt::NoFocus);
 	setWindowIcon(QIcon(":/icon.png"));
@@ -89,11 +88,6 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Menu Edit
 	QMenu* menuEdit = menuBar()->addMenu(tr("Edit"));
-
-	ActionScripted* actionEditSummon = new ActionScripted("print('summon')", "Summon", this);
-	connect(actionEditSummon, &ActionScripted::execute,
-	        this, &MainWindow::onExecute);
-	menuEdit->addAction(actionEditSummon);
 
 	ActionScripted* actionEditSilence = new ActionScripted("pg.silence({CU})", "Silence", this);
 	ADD_ACTIONSCRIPTED(menuEdit, actionEditSilence, Buffer::Singular);
@@ -166,7 +160,12 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	connect(panelPlayback, &PanelPlayback::playPause,
-	        panelMultimedia, &PanelMultimedia::onPlayPause);
+	        this, [this]()
+	{
+		assert(currentEditor);
+		this->panelMultimedia->play(currentEditor->getBuffer());
+	});
+
 	// Script line
 	connect(lineEditScript, &LineEditScript::execute,
 	        terminal, &Terminal::onExecute);
@@ -200,8 +199,12 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	updateUIElements();
 	reloadMenuWindows();
 
+	// These settings are loaded at startup only
+	panelMultimedia->setCachingDirectory(config->cacheDirPlayback);
+
 	// Set default states
 	setBaseSize(QSize(300, 500));
+	setCurrentEditor(nullptr);
 	lineEditLog->setStyleSheet(lineEditLog_stylesheetOut);
 	terminal->setBaseSize(QSize(300, 500));
 	// Disable all actions since nothing is loaded
@@ -237,11 +240,11 @@ void MainWindow::updateUIElements()
 	  "}");
 }
 
-void MainWindow::onBufferNew(Buffer* buffer)
+void MainWindow::onBufferNew(Buffer const* buffer)
 {
 	Editor* editor;
 
-	if (BufferSingular* b = dynamic_cast<BufferSingular*>(buffer))
+	if (auto const* b = dynamic_cast<BufferSingular const*>(buffer))
 	{
 		editor = new EditorSingular(kernel, b, this);
 	}
@@ -253,7 +256,6 @@ void MainWindow::onBufferNew(Buffer* buffer)
 	editor->show();
 	//editor->setFloating(true);
 	editors.insert(editor);
-	panelMultimedia->editorAdd(editor);
 
 	connect(editor, &Editor::execute,
 	        terminal, &Terminal::onExecute);
@@ -264,36 +266,36 @@ void MainWindow::onBufferNew(Buffer* buffer)
 
 		this->editors.erase(editor);
 		if (this->currentEditor == editor)
-			this->currentEditor = nullptr;
+			this->setCurrentEditor(nullptr);
 		QString index = QString::number(kernel->bufferIndex(buffer));
 		this->onExecute(PYTHON_KERNEL + QString(".eraseBuffer(") +
 		                index + ')');
 	});
+
+	panelMultimedia->bufferAdd(buffer);
 	reloadMenuWindows();
 }
-void MainWindow::onBufferErase(Buffer* buffer)
+void MainWindow::onBufferErase(Buffer const* buffer)
 {
-	for (auto editor: editors)
+	if (Editor* editor = editorFromBuffer(buffer))
 	{
-		if (editor->getBuffer() != buffer) continue;
-
 		if (editor == currentEditor)
-			currentEditor = nullptr;
+			setCurrentEditor(nullptr);
 		delete editor;
 		editors.erase(editor);
-		panelMultimedia->editorErase(editor);
+		panelMultimedia->bufferErase(buffer);
 		reloadMenuWindows();
-		break;
 	}
 	// Do not place an assert(false) here since the routine will reach this point
 	// if the editor is closed using the close button
 }
-void MainWindow::onBufferUpdate(Buffer* buffer, Buffer::Update update)
+void MainWindow::onBufferUpdate(Buffer const* buffer, Buffer::Update update)
 {
-	for (auto& editor: editors)
+	if (Editor* editor = editorFromBuffer(buffer))
 	{
-		if (editor->getBuffer() != buffer) continue;
 		editor->update(update);
+		if (update.level == Buffer::Update::Data)
+			panelMultimedia->bufferUpdate(buffer, update.indices);
 	}
 }
 
@@ -319,6 +321,7 @@ void MainWindow::onFocusChanged(QWidget* old, QWidget* now)
 	if (Editor* editor = dynamic_cast<Editor*>(now))
 	{
 		currentEditor = editor;
+		panelPlayback->setEnabled(true);
 		Buffer::Type type = editor->getBuffer()->getType();
 		for (auto& action: actionsFlagged)
 		{

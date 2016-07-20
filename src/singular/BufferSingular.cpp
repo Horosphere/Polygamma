@@ -522,7 +522,7 @@ writeAudioStream(std::FILE* const file, std::vector<Vector<real>> const& channel
 	return true;
 }
 bool BufferSingular::saveToFile(std::string fileName,
-                                std::string* const error) noexcept
+                                std::string* const error) const noexcept
 {
 	boost::timer::auto_cpu_timer timer;
 

@@ -30,9 +30,9 @@ private Q_SLOTS:
 
 	// Triggered upon configuration change
 	void updateUIElements();
-	void onBufferNew(Buffer*);
-	void onBufferErase(Buffer*);
-	void onBufferUpdate(Buffer*, Buffer::Update);
+	void onBufferNew(Buffer const*);
+	void onBufferErase(Buffer const*);
+	void onBufferUpdate(Buffer const*, Buffer::Update);
 
 	/**
 	 * The following combinations will be replaced
@@ -50,6 +50,14 @@ private:
 	 * @brief Update menuWindows so its actions match the editors
 	 */
 	void reloadMenuWindows();
+	// Utility functions
+	/**
+	 * @brief Find the Editor* object in editors corresponding to the given
+	 *	buffer.
+	 * @return nullptr if not found.
+	 */
+	Editor* editorFromBuffer(Buffer const* const) const noexcept;
+	void setCurrentEditor(Editor* const) noexcept;
 
 	// Handlers
 	Kernel* const kernel;
@@ -88,6 +96,27 @@ private:
 	std::set<Editor*> editors;
 };
 
+
+// Implementations
+
+inline Editor*
+MainWindow::editorFromBuffer(Buffer const* const buffer) const noexcept
+{
+	for (auto& editor: editors)
+		if (editor->getBuffer() == buffer)
+			return editor;
+	return nullptr;
+}
+
+inline void
+MainWindow::setCurrentEditor(Editor* const editor) noexcept
+{
+	currentEditor = editor;
+	if (editor)
+		panelPlayback->setEnabled(true);
+	else
+		panelPlayback->setEnabled(false);
+}
 } // namespace pg
 
 

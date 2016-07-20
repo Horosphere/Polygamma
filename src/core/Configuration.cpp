@@ -10,7 +10,7 @@ namespace pg
 {
 
 Configuration::Configuration():
-	cacheDirPlayback(),
+	cacheDirPlayback("."),
 	uiBG(0xFFFFFFFF), uiTerminalBG(0xFFFFFFFF), uiScriptLevelMin(Script::UI),
 	uiWaveformBG(0xFF000000), uiWaveformCore(0xFFFFFFFF), uiWaveformEdge(0xFFFFAA88)
 {

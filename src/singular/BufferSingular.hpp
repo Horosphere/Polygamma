@@ -58,9 +58,9 @@ public:
 	virtual std::size_t duration() const noexcept override;
 	virtual std::size_t timeBase() const noexcept override;
 	virtual bool saveToFile(std::string fileName,
-	                        std::string* const error) noexcept override;
+	                        std::string* const error) const noexcept override;
 	virtual bool exportToFile(std::string fileName,
-	                          std::string* const error) noexcept override;
+	                          std::string* const error) const noexcept override;
 
 	/**
 	 * Exposed to Python
@@ -154,7 +154,7 @@ BufferSingular::timeBase() const noexcept
 }
 inline bool
 BufferSingular::exportToFile(std::string fileName, std::string* const error)
-noexcept
+const noexcept
 {
 	return saveToFile(fileName, error);
 }

@@ -1,6 +1,8 @@
 #ifndef _POLYGAMMA_UI_PANELS_PANEL_HPP__
 #define _POLYGAMMA_UI_PANELS_PANEL_HPP__
 
+#include <vector>
+
 #include <QActionGroup>
 #include <QDockWidget>
 
@@ -28,10 +30,16 @@ public:
 
 public Q_SLOTS:
 	void show();
+	void setSubwidgetsEnabled(bool);
 
 protected:
 	virtual void closeEvent(QCloseEvent*) final override;
 
+	/**
+	 * @brief setEnabled(bool) of the widget will be called by
+	 *	setSubwidgetsEnabled(bool)
+	 */
+	void addSubwidget(QWidget*) noexcept;
 	/**
 	 * @brief addDockActions Called by subclasses to add dock options to their
 	 *        custom context menus.
@@ -41,15 +49,23 @@ protected Q_SLOTS:
 	void onContextMenuRequest(QPoint);
 
 private Q_SLOTS:
-
+	
 	void onDockLeft();
 	void onDockRight();
 	void onDockTop();
 	void onDockBottom();
 
 private:
-
+	std::vector<QWidget*> subwidgets;
 };
+
+
+// Implementations
+
+inline void Panel::addSubwidget(QWidget* widget) noexcept
+{
+	subwidgets.push_back(widget);
+}
 
 } // namespace pg
 

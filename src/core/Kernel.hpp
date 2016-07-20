@@ -60,7 +60,7 @@ public:
 				/*
 				 * Valid for: BufferNew, BufferErase
 				 */
-				Buffer* buffer;
+				Buffer const* buffer;
 				/*
 				 * Valid for: BufferUpdate
 				 */
