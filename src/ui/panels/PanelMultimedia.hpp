@@ -3,9 +3,6 @@
 
 #include <map>
 
-#include <QtAV>
-#include <QtAVWidgets>
-
 #include "Panel.hpp"
 #include "../../core/Buffer.hpp"
 
@@ -50,13 +47,8 @@ private:
 
 	std::string cachingDirectory;
 
-	// Widgets
-	QtAV::VideoOutput* const videoOutput;
-	QtAV::AVPlayer* const avPlayer;
-
 	// Dynamic
 	std::string error;
-	uint64_t cacheIndex; // Index of caching
 	std::map<Buffer const*, PlaybackCache> caches;
 };
 

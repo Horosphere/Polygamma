@@ -12,7 +12,6 @@
 #include <QPushButton>
 #include <QResource>
 #include <QVBoxLayout>
-#include <QtAVWidgets>
 
 #include "ui.hpp"
 #include "Terminal.hpp"
@@ -47,8 +46,7 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	setWindowIcon(QIcon(":/icon.png"));
 	setDockOptions(dockOptions() |
 	               QMainWindow::AnimatedDocks |
-	               QMainWindow::AllowTabbedDocks |
-	               QMainWindow::GroupedDragging);
+	               QMainWindow::AllowTabbedDocks);
 	//setTabPosition(Qt::RightDockWidgetArea, QTabWidget::East);
 	setWindowTitle("Polygamma");
 
@@ -159,12 +157,14 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	});
 
 	// Panels
+	panelPlayback->hide();
 	connect(panelPlayback, &PanelPlayback::playPause,
 	        this, [this]()
 	{
 		assert(currentEditor);
 		this->panelMultimedia->play(currentEditor->getBuffer());
 	});
+	panelMultimedia->hide();
 
 	// Script line
 	connect(lineEditScript, &LineEditScript::execute,

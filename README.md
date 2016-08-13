@@ -6,7 +6,8 @@ An open source audio editing software.
 
 #### Dependencies
 Polygamma dependes on Qt 5, Python 3.5, Boost 1.61, avcodec, avformat,
-avutil, and swscale. Boost.Python must be compiled with Python 3 support.
+avutil, swresample, and SDL2. Boost.Python must be compiled with Python 3
+support.
 
 #### Compilation
 It is best to do an out of source build at `build/` directory. Create a

@@ -1,6 +1,5 @@
 #include "DialogPreferences.hpp"
 
-#include <QAudioDeviceInfo>
 #include <QCloseEvent>
 #include <QDialogButtonBox>
 #include <QHBoxLayout>

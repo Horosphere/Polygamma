@@ -7,6 +7,7 @@
 extern "C"
 {
 #include <libavutil/channel_layout.h>
+#include <libavutil/samplefmt.h>
 }
 
 #include "../core/python.hpp"
@@ -22,6 +23,7 @@ constexpr std::size_t const SAMPLE_RATES[] = {44100, 72000};
 class BufferSingular final: public Buffer
 {
 public:
+	static constexpr enum AVSampleFormat const SAMPLE_FORMAT = AV_SAMPLE_FMT_DBLP;
 	/**
 	 * This factory method is not directly exposed to Python, as it is required
 	 * (in Python) to throw exceptions upon failure.
@@ -66,6 +68,7 @@ public:
 	 * Exposed to Python
 	 */
 	std::size_t nAudioChannels() const noexcept;
+	ChannelLayout getChannelLayout() const noexcept;
 
 	/**
 	 * TODO: Will be exposed to Python
@@ -162,6 +165,11 @@ inline std::size_t
 BufferSingular::nAudioChannels() const noexcept
 {
 	return audio.size();
+}
+inline ChannelLayout
+BufferSingular::getChannelLayout() const noexcept
+{
+	return channelLayout;
 }
 
 inline Vector<real>*

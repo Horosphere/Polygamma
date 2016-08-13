@@ -4,15 +4,16 @@
 #include <QMessageBox>
 #include <QDebug>
 
+extern "C"
+{
+#include "../../media/playback.h"
+}
 #include "../../singular/BufferSingular.hpp"
 
 namespace pg
 {
 
-
-PanelMultimedia::PanelMultimedia(QWidget* parent): Panel(parent),
-	videoOutput(new QtAV::VideoOutput), avPlayer(new QtAV::AVPlayer(this)),
-	cacheIndex(0)
+PanelMultimedia::PanelMultimedia(QWidget* parent): Panel(parent)
 {
 	setWindowTitle(tr("Video"));
 
@@ -21,20 +22,6 @@ PanelMultimedia::PanelMultimedia(QWidget* parent): Panel(parent),
 	setWidget(centralWidget);
 	centralWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	centralWidget->setLayout(layoutMain);
-
-	if (videoOutput->widget())
-	{
-		avPlayer->setRenderer(videoOutput);
-		layoutMain->addWidget(videoOutput->widget());
-	}
-	else
-	{
-		QMessageBox::warning(0, tr("QtAV error"),
-		                     tr("Unable to create video renderer"));
-		// Do not return here
-	}
-
-
 }
 PanelMultimedia::~PanelMultimedia() noexcept
 {
@@ -51,46 +38,33 @@ void PanelMultimedia::play(Buffer const* const buffer)
 	PlaybackCache* cache = &caches[buffer];
 	if (cache->dirty != INTERVALINDEX_NULL)
 		updateCache(buffer);
-	if (!error.empty())
+	if (auto const* const b = dynamic_cast<BufferSingular const* const>(buffer))
 	{
-		QMessageBox::warning(0, tr("Playback error"), tr(error.c_str()));
-		return;
+		double const** samples = new double const*[b->nAudioChannels()];
+		for (size_t i = 0; i < b->nAudioChannels(); ++i)
+		{
+			samples[i] = b->audioChannel(i)->getData();
+		}
+		struct Media* media = new Media;
+		media->samples = (uint8_t const**) samples;
+		media->sampleFormat = BufferSingular::SAMPLE_FORMAT;
+		media->channelLayout = b->getChannelLayout();
+		media->nChannels = b->nAudioChannels();
+		media->sampleRate = b->timeBase();
+		media->nSamples = b->duration();
+		media->cursor = 0;
+		audio_play(media);
 	}
-	if (cache->cacheFile.empty())
-	{
-		return;
-	}
-	qDebug() << "[UI] Playback started";
-	avPlayer->play(QString::fromStdString(cache->cacheFile));
 }
 
 void PanelMultimedia::updateCache(Buffer const* const buffer) noexcept
 {
+	// Currently doesn't need to have a cache
 	assert(caches.find(buffer) != caches.end());
 	PlaybackCache* cache = &caches[buffer];
 
 	if (isEmpty(cache->dirty)) return; // No update needs to be done
-
-	if (auto const* b = dynamic_cast<BufferSingular const*>(buffer))
-	{
-		cache->cacheFile = cachingDirectory + "/cache_" +
-		                   std::to_string(cacheIndex) + ".avi";
-		bool flag = b->exportToFile(cache->cacheFile, &error);
-		if (flag)
-			error.clear();
-		else
-		{
-			cache->cacheFile = "";
-			return;
-		}
-	}
-	else
-	{
-		qDebug() << "[UI] Unrecognised Buffer Type";
-		assert(false && "Buffer type unrecognised by PanelMultimedia");
-	}
-
-	cache->dirty = INTERVALINDEX_NULL;
+	return;
 }
 
 } // namespace pg

@@ -1,6 +1,6 @@
 project(Polygamma)
 # Pre-requisites:
-# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, Qt 5, QtAV
+# Python3, Boost 1.61.0, avcodec, avformat, avutil, swscale, SDL2, Qt 5
 cmake_minimum_required(VERSION 3.5)
 
 set(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -8,12 +8,21 @@ set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
-# Enable C++ 14
-add_compile_options(-std=c++14)
-
+set(StdFeatures
+	cxx_range_for
+	cxx_noexcept
+	cxx_rvalue_references
+	cxx_override
+	cxx_lambdas
+	cxx_final
+	cxx_deleted_functions
+	cxx_delegating_constructors
+	cxx_auto_type
+	cxx_constexpr
+	)
 # Include Python
 set(Python_ADDITIONAL_VERSIONS 3.5)
-find_package(PythonLibs)
+find_package(PythonLibs 3.5 REQUIRED)
 if (${PYTHONLIBS_FOUND})
 	include_directories(${PYTHON_INCLUDE_DIRS})
 	link_directories(${PYTHON_LIBRARIES})
@@ -28,8 +37,6 @@ endif()
 
 # Qt
 find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Multimedia REQUIRED)
-#find_package(QtAV REQUIRED) # QtAV does not have a cmake file
 
 #add_definitions(-DQT_CONSOLE)
 add_definitions(-DQT_NO_KEYWORDS)
@@ -70,6 +77,7 @@ set(SourceFiles
     src/singular/BufferSingular.cpp
     src/singular/audio.cpp
     src/math/fourier.cpp
+    src/media/playback.c
    )
 set(QObjectHeaders
     src/ui/mainWindowAccessories.hpp
@@ -102,8 +110,10 @@ add_executable(Polygamma
 	${QtCompiledResources})
 target_link_libraries(Polygamma ${PYTHON_LIBRARIES})
 target_link_libraries(Polygamma ${Boost_LIBRARIES})
-target_link_libraries(Polygamma Qt5::Widgets Qt5::Multimedia Qt5::Core)
-target_link_libraries(Polygamma QtAV)
-target_link_libraries(Polygamma avcodec avformat avutil swscale)
 target_link_libraries(Polygamma ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Polygamma Qt5::Widgets Qt5::Core)
+target_link_libraries(Polygamma avcodec avformat avutil swscale swresample)
+target_link_libraries(Polygamma SDL2)
+target_compile_features(Polygamma PRIVATE ${StdFeatures})
+
 
