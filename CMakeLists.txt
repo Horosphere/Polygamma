@@ -65,7 +65,6 @@ set(SourceFiles
     src/ui/editors/EditorSingular.cpp
     src/ui/editors/Editor.cpp
     src/ui/panels/Panel.cpp
-    src/ui/panels/PanelMultimedia.cpp
     src/ui/panels/PanelPlayback.cpp
     src/ui/util/Axis.cpp
     src/ui/util/SyntaxHighlighterPython.cpp
@@ -78,6 +77,7 @@ set(SourceFiles
     src/singular/audio.cpp
     src/math/fourier.cpp
     src/media/playback.c
+    src/media/audio.c
    )
 set(QObjectHeaders
     src/ui/mainWindowAccessories.hpp
@@ -89,7 +89,6 @@ set(QObjectHeaders
     src/ui/graphics/Cursor.hpp
     src/ui/editors/EditorSingular.hpp
     src/ui/editors/Editor.hpp
-    src/ui/panels/PanelMultimedia.hpp
     src/ui/panels/Panel.hpp
     src/ui/panels/PanelPlayback.hpp
     src/ui/util/ColourButton.hpp

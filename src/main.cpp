@@ -29,7 +29,11 @@ int main(int argc, char* argv[])
 		std::cerr << "[SDL]" << SDL_GetError() << std::endl;
 		return -1;
 	}
-	pg::initPython();
+	if (!pg::initPython())
+	{
+		std::cerr << "Python initialisation failed" << std::endl;
+		return -1;
+	}
 
 
 	// Load config file

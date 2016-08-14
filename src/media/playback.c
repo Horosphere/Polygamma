@@ -4,7 +4,7 @@
 
 #include <libavutil/channel_layout.h>
 
-void audio_callback(struct Media* m, uint8_t* stream, int len)
+void audio_callback(struct Audio* m, uint8_t* stream, int len)
 {
 	size_t spc = len / (m->nChannels * sizeof(short)); // Samples/Channel
 	swr_convert(m->swrContext,
@@ -17,7 +17,7 @@ void audio_callback(struct Media* m, uint8_t* stream, int len)
 	}
 	m->cursor += batchSize;
 }
-bool audio_play(struct Media* const m)
+bool audio_play(struct Audio* const m)
 {
 	struct SDL_AudioSpec specTarget;
 	specTarget.freq = m->sampleRate;
@@ -59,7 +59,7 @@ bool audio_play(struct Media* const m)
 
 	return true;
 }
-void audio_stop(struct Media* const m)
+void audio_stop(struct Audio* const m)
 {
 	swr_free(&m->swrContext);
 	SDL_CloseAudioDevice(m->audioDevice);

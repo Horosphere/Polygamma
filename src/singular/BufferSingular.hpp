@@ -8,6 +8,7 @@ extern "C"
 {
 #include <libavutil/channel_layout.h>
 #include <libavutil/samplefmt.h>
+#include "../media/audio.h"
 }
 
 #include "../core/python.hpp"
@@ -23,6 +24,8 @@ constexpr std::size_t const SAMPLE_RATES[] = {44100, 72000};
 class BufferSingular final: public Buffer
 {
 public:
+	~BufferSingular();
+
 	static constexpr enum AVSampleFormat const SAMPLE_FORMAT = AV_SAMPLE_FMT_DBLP;
 	/**
 	 * This factory method is not directly exposed to Python, as it is required
@@ -63,6 +66,8 @@ public:
 	                        std::string* const error) const noexcept override;
 	virtual bool exportToFile(std::string fileName,
 	                          std::string* const error) const noexcept override;
+	virtual void play() throw(PythonException) override;
+	virtual bool playable() const noexcept override;
 
 	/**
 	 * Exposed to Python
@@ -122,19 +127,22 @@ private:
 	// These two vectors must have the same length.
 	std::vector<Vector<real>> audio;
 	std::vector<IntervalIndex> selections;
+
+	struct Audio* playdata;
 };
 
 
 
 // Implementations
 
-inline BufferSingular::BufferSingular()
+inline BufferSingular::BufferSingular(): playdata(nullptr)
 {
 }
 inline BufferSingular::BufferSingular(ChannelLayout channelLayout):
 	channelLayout(channelLayout),
 	audio(av_get_channel_layout_nb_channels(channelLayout)),
-	selections(audio.size())
+	selections(audio.size()),
+	playdata(nullptr)
 {
 	for (auto& selection: selections)
 		selection.begin = selection.end = 0;
@@ -160,6 +168,11 @@ BufferSingular::exportToFile(std::string fileName, std::string* const error)
 const noexcept
 {
 	return saveToFile(fileName, error);
+}
+inline bool
+BufferSingular::playable() const noexcept
+{
+	return true;
 }
 inline std::size_t
 BufferSingular::nAudioChannels() const noexcept

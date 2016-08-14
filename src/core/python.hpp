@@ -8,7 +8,7 @@ namespace pg
 {
 
 
-void initPython();
+bool initPython();
 
 /**
  * @warning This function uses global functions from the python library and is
@@ -21,6 +21,7 @@ struct PythonException
 {
 	enum Type
 	{
+		Exception,
 		IndexError,
 		ValueError,
 		RuntimeError,

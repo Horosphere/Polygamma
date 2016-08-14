@@ -25,6 +25,9 @@ void exceptionTranslator(pg::PythonException const& exc)
 {
 	switch (exc.type)
 	{
+	case pg::PythonException::Exception:
+		PyErr_SetString(PyExc_Exception, exc.str.c_str());
+		break;
 	case pg::PythonException::IndexError:
 		PyErr_SetString(PyExc_IndexError, exc.str.c_str());
 		break;
@@ -47,6 +50,11 @@ void exceptionTranslator(pg::PythonException const& exc)
 
 }
 } // namespace pg::wrap
+
+/**
+ * Set to true by the python initialisation routine
+ */
+bool initialised;
 
 BOOST_PYTHON_MODULE(pg)
 {
@@ -87,6 +95,8 @@ BOOST_PYTHON_MODULE(pg)
 	     &pg::Buffer::saveToFile)
 	.def("exportToFile", (void (pg::Buffer::*)(std::string))
 	     &pg::Buffer::exportToFile)
+	.def("play", &pg::Buffer::play)
+	.def("playable", &pg::Buffer::playable)
 	.add_property("title", &pg::Buffer::getTitle)
 	.add_property("dirty", &pg::Buffer::isDirty)
 	.add_property("cursor", &pg::Buffer::getCursor, &pg::Buffer::setCursor);
@@ -109,7 +119,7 @@ BOOST_PYTHON_MODULE(pg)
 	.def("getSelection", &pg::BufferSingular::getSelection);
 
 	// BufferSingular associated functions
-	def("silence", (void (*)(pg::BufferSingular*)) &pg::silence);
+	def("silence", +[](pg::BufferSingular* b){ pg::silence(b); });
 
 	class_<pg::Kernel, boost::noncopyable>("Kernel", no_init)
 	.def_readonly("buffers", &pg::Kernel::getBuffers)
@@ -117,18 +127,21 @@ BOOST_PYTHON_MODULE(pg)
 	.def("eraseBuffer", &pg::Kernel::eraseBuffer)
 	.def("createSingular", &pg::Kernel::createSingular);
 
-	// If this line does not show, then the above code has thrown an exception
-	std::cout << "Python module initialisation complete" << std::endl;
+	initialised = true;
 }
 
-void pg::initPython()
+bool pg::initPython()
 {
+	initialised = false;
 	PyImport_AppendInittab("pg", PyInit_pg);
 	Py_Initialize();
+
 
 	using namespace boost::python;
 	object module = import("pg");
 
 	for (auto const& channelName: channelNames)
 		module.attr(boost::get<2>(channelName).c_str()) = boost::get<0>(channelName);
+	if (!initialised) return false;
+	return true;
 }

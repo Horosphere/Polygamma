@@ -77,6 +77,17 @@ public:
 	virtual bool exportToFile(std::string fileName,
 	                          std::string* const error) const noexcept = 0;
 	/**
+	 * Exposed to python
+	 * @brief Plays the given buffer. If playable() returns false, then it will
+	 *  throw an exception. Any subclass implementation must call the parent
+	 *  method.
+	 */
+	virtual void play() throw(PythonException);
+	/**
+	 * Exposed to Python
+	 */
+	virtual bool playable() const noexcept = 0;
+	/**
 	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
 	 *  and throws IOError upon failure.
 	 */
@@ -132,6 +143,12 @@ inline std::string Buffer::getTitle() const noexcept
 inline bool Buffer::isDirty() const noexcept
 {
 	return dirty;
+}
+inline void Buffer::play() throw(PythonException)
+{
+	if (!playable())
+		throw PythonException{"Buffer not playable",
+		                      PythonException::Exception};
 }
 inline std::size_t Buffer::getCursor() const noexcept
 {

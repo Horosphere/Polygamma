@@ -5,12 +5,14 @@
 #include <limits>
 #include <typeinfo>
 
+#include <boost/timer/timer.hpp>
 extern "C"
 {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+
+#include "../media/playback.h"
 }
-#include <boost/timer/timer.hpp>
 
 #include "../core/text.hpp"
 
@@ -269,6 +271,14 @@ readAudioStream(real** const channels, std::size_t* nSamples,
 		}
 	}
 	return true;
+}
+BufferSingular::~BufferSingular()
+{
+	if (playdata)
+	{
+		delete playdata;
+		delete[] playdata->samples;
+	}
 }
 BufferSingular* BufferSingular::fromFile(std::string fileName,
     std::string* const error) noexcept
@@ -679,6 +689,28 @@ bool BufferSingular::saveToFile(std::string fileName,
 	av_free(frame);
 	avcodec_close(codecContext);
 	return flag;
+}
+
+void BufferSingular::play() throw(PythonException)
+{
+	Buffer::play();
+	if (!playdata)
+	{
+		playdata = new Audio;
+		Audio_init(playdata);
+		playdata->nChannels = nAudioChannels();
+		playdata->samples = new uint8_t const*[playdata->nChannels];
+		for (std::size_t i = 0; i < playdata->nChannels; ++i)
+		{
+			playdata->samples[i] = (uint8_t const*) audio[i].getData();
+		}
+		playdata->sampleFormat = SAMPLE_FORMAT;
+		playdata->channelLayout = channelLayout;
+		playdata->sampleRate = timeBase();
+		playdata->nSamples = duration();
+		playdata->cursor = 0;
+	}
+	audio_play(playdata);
 }
 
 } // namespace pg

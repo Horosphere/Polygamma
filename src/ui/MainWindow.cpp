@@ -34,7 +34,6 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	panelPlayback(new PanelPlayback(this)),
-	panelMultimedia(new PanelMultimedia(this)),
 
 	// Dialogs
 	dialogPreferences(new DialogPreferences(config, this)),
@@ -100,7 +99,6 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	menuWindows->addAction(actionWindows##name);
 
 	ADD_ACTIONPANEL(Playback, "Playback");
-	ADD_ACTIONPANEL(Multimedia, "Multimedia");
 #undef ADD_ACTIONPANEL
 
 	menuEditors = menuWindows->addMenu(tr("Buffers"));
@@ -158,13 +156,6 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	panelPlayback->hide();
-	connect(panelPlayback, &PanelPlayback::playPause,
-	        this, [this]()
-	{
-		assert(currentEditor);
-		this->panelMultimedia->play(currentEditor->getBuffer());
-	});
-	panelMultimedia->hide();
 
 	// Script line
 	connect(lineEditScript, &LineEditScript::execute,
@@ -198,9 +189,6 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	updateUIElements();
 	reloadMenuWindows();
-
-	// These settings are loaded at startup only
-	panelMultimedia->setCachingDirectory(config->cacheDirPlayback);
 
 	// Set default states
 	setBaseSize(QSize(300, 500));
@@ -272,7 +260,6 @@ void MainWindow::onBufferNew(Buffer const* buffer)
 		                index + ')');
 	});
 
-	panelMultimedia->bufferAdd(buffer);
 	reloadMenuWindows();
 }
 void MainWindow::onBufferErase(Buffer const* buffer)
@@ -283,7 +270,6 @@ void MainWindow::onBufferErase(Buffer const* buffer)
 			setCurrentEditor(nullptr);
 		delete editor;
 		editors.erase(editor);
-		panelMultimedia->bufferErase(buffer);
 		reloadMenuWindows();
 	}
 	// Do not place an assert(false) here since the routine will reach this point
@@ -294,8 +280,6 @@ void MainWindow::onBufferUpdate(Buffer const* buffer, Buffer::Update update)
 	if (Editor* editor = editorFromBuffer(buffer))
 	{
 		editor->update(update);
-		if (update.level == Buffer::Update::Data)
-			panelMultimedia->bufferUpdate(buffer, update.indices);
 	}
 }
 

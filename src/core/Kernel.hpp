@@ -42,7 +42,6 @@ public:
 		enum Type
 		{
 			Completion, // The previous script execution has finished
-			// TODO: Implement config changing in python.
 			ConfigUpdate, // Configuration has changed
 			BufferNew, // A new buffer has been created
 			BufferErase, // A buffer has been deleted. In this case, the buffer
