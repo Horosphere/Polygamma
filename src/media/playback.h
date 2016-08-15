@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "audio.h"
+#include "media.h"
 
-bool audio_play(struct Audio* const);
-void audio_stop(struct Audio* const);
+bool media_open(struct Media* const);
+bool media_play(struct Media* const);
+void media_close(struct Media* const);
 
 #endif // !_POLYGAMMA_MEDIA_PLAYBACK_H__

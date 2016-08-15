@@ -76,8 +76,8 @@ set(SourceFiles
     src/singular/BufferSingular.cpp
     src/singular/audio.cpp
     src/math/fourier.cpp
+    src/media/media.c
     src/media/playback.c
-    src/media/audio.c
    )
 set(QObjectHeaders
     src/ui/mainWindowAccessories.hpp

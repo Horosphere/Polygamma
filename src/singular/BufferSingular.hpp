@@ -8,7 +8,7 @@ extern "C"
 {
 #include <libavutil/channel_layout.h>
 #include <libavutil/samplefmt.h>
-#include "../media/audio.h"
+#include "../media/media.h"
 }
 
 #include "../core/python.hpp"
@@ -128,7 +128,7 @@ private:
 	std::vector<Vector<real>> audio;
 	std::vector<IntervalIndex> selections;
 
-	struct Audio* playdata;
+	struct Media* playdata;
 };
 
 
