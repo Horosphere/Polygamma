@@ -23,11 +23,5 @@ struct Media
 };
 
 void Media_init(struct Media* const);
-/**
- * @brief Populates the samples and data in a struct Media from a file.
- * The sampleFormat field of media must be filled.
- * @return true if successful.
- */
-bool Media_load_file(struct Media* const, char const* const fileName,
-                     char const** const error);
+
 #endif // !_POLYGAMMA_MEDIA_MEDIA_H__

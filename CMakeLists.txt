@@ -78,6 +78,7 @@ set(SourceFiles
     src/math/fourier.cpp
     src/media/media.c
     src/media/playback.c
+    src/media/io.c
    )
 set(QObjectHeaders
     src/ui/mainWindowAccessories.hpp

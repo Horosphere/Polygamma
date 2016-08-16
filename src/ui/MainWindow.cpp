@@ -144,8 +144,7 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 		QString fileName = QFileDialog::getSaveFileName(this, tr("Import..."));
 		if (fileName.isNull()) return;
 		else
-			this->onExecute(QString(PYTHON_KERNEL) + ".buffers[%1].saveToFile('" +
-			                fileName + "')");
+			this->onExecute("{CU}.saveToFile('" + fileName + "')");
 	});
 	connect(actionEditPreferences, &QAction::triggered,
 	        this, [this]()

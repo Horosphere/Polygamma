@@ -120,6 +120,7 @@ public:
 private:
 	BufferSingular();
 	BufferSingular(ChannelLayout channelLayout);
+	void loadToMedia(struct Media* const) const noexcept;
 
 	std::size_t sampleRate;
 	ChannelLayout channelLayout;
@@ -128,7 +129,7 @@ private:
 	std::vector<Vector<real>> audio;
 	std::vector<IntervalIndex> selections;
 
-	struct Media* playdata;
+	mutable struct Media* playdata;
 };
 
 

@@ -55,6 +55,7 @@ bool media_open(struct Media* const m)
 		SDL_CloseAudioDevice(m->audioDevice);
 		return false;
 	}
+	return true;
 }
 bool media_play(struct Media* const m)
 {

@@ -11,6 +11,15 @@
 #include <complex>
 #include <string>
 
+#ifndef NDEBUG
+#include <boost/timer/timer.hpp>
+#define DEBUG_TIMER_BEGIN boost::timer::cpu_timer debugTimer
+#define DEBUG_TIMER_END(text) std::cout << text << debugTimer.format()
+#else
+#define DEBUG_TIMER_BEGIN
+#define DEBUG_TIMER_END(text)
+#endif
+
 namespace pg
 {
 /** Currently using 64 bits floating point.

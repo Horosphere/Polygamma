@@ -5,13 +5,13 @@
 #include <limits>
 #include <typeinfo>
 
-#include <boost/timer/timer.hpp>
 extern "C"
 {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
 
+#include "../media/io.h"
 #include "../media/playback.h"
 }
 
@@ -35,6 +35,8 @@ BufferSingular::~BufferSingular()
 BufferSingular* BufferSingular::fromFile(std::string fileName,
     std::string* const error) noexcept
 {
+	DEBUG_TIMER_BEGIN;
+
 	char const* errstr = nullptr;
 	struct Media* media = new Media;
 	Media_init(media);
@@ -42,6 +44,7 @@ BufferSingular* BufferSingular::fromFile(std::string fileName,
 	if (!Media_load_file(media, fileName.c_str(), &errstr))
 	{
 		*error = std::string(errstr);
+		delete media;
 		return nullptr;
 	}
 	BufferSingular* buffer = new BufferSingular(media->channelLayout);
@@ -51,6 +54,7 @@ BufferSingular* BufferSingular::fromFile(std::string fileName,
 	{
 		buffer->audio[i] = Vector<double>(media->nSamples, (double*) media->samples[i]);
 	}
+	DEBUG_TIMER_END("[Debug] Time: ");
 	return buffer;
 }
 BufferSingular* BufferSingular::create(ChannelLayout cl,
@@ -84,7 +88,24 @@ noexcept
 bool BufferSingular::saveToFile(std::string fileName,
                                 std::string* const error) const noexcept
 {
-	return false;
+	DEBUG_TIMER_BEGIN;
+
+	if (!playdata)
+	{
+		playdata = new Media;
+		Media_init(playdata);
+		loadToMedia(playdata);
+	}
+	loadToMedia(playdata);
+	char const* errstr = nullptr;
+	if (!Media_save_file(playdata, fileName.c_str(), &errstr))
+	{
+		*error = std::string(errstr);
+		return false;
+	}
+
+	DEBUG_TIMER_END("[Debug] Time: ");
+	return true;
 }
 
 void BufferSingular::play() throw(PythonException)
@@ -94,23 +115,28 @@ void BufferSingular::play() throw(PythonException)
 	{
 		playdata = new Media;
 		Media_init(playdata);
-		playdata->nChannels = nAudioChannels();
-		playdata->samples = new uint8_t*[playdata->nChannels];
-		for (std::size_t i = 0; i < playdata->nChannels; ++i)
-		{
-			playdata->samples[i] = (uint8_t*) audio[i].getData();
-		}
-		playdata->sampleFormat = SAMPLE_FORMAT;
-		playdata->channelLayout = channelLayout;
-		playdata->sampleRate = timeBase();
-		playdata->nSamples = duration();
-		playdata->cursor = 0;
+		loadToMedia(playdata);
 	}
 	if (!media_open(playdata))
 	{
 		std::cout << "Unable to open media" << std::endl;
 	}
 	media_play(playdata);
+}
+
+void BufferSingular::loadToMedia(struct Media* const m) const noexcept
+{
+	m->nChannels = nAudioChannels();
+	m->samples = new uint8_t* [m->nChannels];
+	for (std::size_t i = 0; i < m->nChannels; ++i)
+	{
+		m->samples[i] = (uint8_t*) audio[i].getData();
+	}
+	m->sampleFormat = SAMPLE_FORMAT;
+	m->channelLayout = channelLayout;
+	m->sampleRate = timeBase();
+	m->nSamples = duration();
+	m->cursor = 0;
 }
 
 } // namespace pg
