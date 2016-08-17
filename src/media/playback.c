@@ -1,16 +1,34 @@
 #include "playback.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <libavutil/channel_layout.h>
 
 void audio_callback(struct Media* m, uint8_t* stream, int len)
 {
 	size_t spc = len / (m->nChannels * sizeof(short)); // Samples/Channel
+	// Available sample/channel
+	size_t spcA = spc > m->nSamples - m->cursor ?
+		m->nSamples - m->cursor : spc;
+	assert(spcA <= spc);
+
 	swr_convert(m->swrContext,
-	            (uint8_t**) &stream, spc,
-	            (uint8_t const**) m->samples, spc);
-	size_t batchSize = av_get_bytes_per_sample(m->sampleFormat) * spc;
+	            (uint8_t**) &stream, spcA,
+	            (uint8_t const**) m->samples, spcA);
+
+	// Fill trailing space with zeroes
+	if (spcA < spc)
+	{
+		size_t trailing = spcA * m->nChannels * sizeof(short);
+		assert(trailing <= len);
+		memset(stream + trailing, 0, len - trailing);
+		m->playing = false;
+		SDL_PauseAudioDevice(m->audioDevice, true);
+	}
+
+	// Advance the cursor
+	size_t batchSize = av_get_bytes_per_sample(m->sampleFormat) * spcA;
 	for (size_t j = 0; j < m->nChannels; ++j)
 	{
 		m->samples[j] += batchSize;
@@ -59,7 +77,8 @@ bool media_open(struct Media* const m)
 }
 bool media_play(struct Media* const m)
 {
-	SDL_PauseAudioDevice(m->audioDevice, 0);
+	SDL_PauseAudioDevice(m->audioDevice, false);
+	m->playing = true;
 
 	return true;
 }
@@ -67,4 +86,5 @@ void media_close(struct Media* const m)
 {
 	swr_free(&m->swrContext);
 	SDL_CloseAudioDevice(m->audioDevice);
+	m->playing = false;
 }

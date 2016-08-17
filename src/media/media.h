@@ -20,6 +20,7 @@ struct Media
 	// Initialised by play routine
 	struct SwrContext* swrContext;
 	SDL_AudioDeviceID audioDevice;
+	bool playing;
 };
 
 void Media_init(struct Media* const);

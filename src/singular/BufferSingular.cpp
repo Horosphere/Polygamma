@@ -28,8 +28,9 @@ BufferSingular::~BufferSingular()
 {
 	if (playdata)
 	{
-		delete playdata;
+		media_close(playdata);
 		std::free(playdata->samples);
+		delete playdata;
 	}
 }
 BufferSingular* BufferSingular::fromFile(std::string fileName,
