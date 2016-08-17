@@ -11,6 +11,8 @@ bool Media_load_file(struct Media* const m,
                      char const** const error)
 {
 	assert(m);
+	assert(fileName);
+	assert(error);
 
 	struct AVFormatContext* fc = NULL;
 	uint8_t** sampleOut = NULL;
@@ -148,6 +150,10 @@ bool Media_save_file(struct Media const* const m,
                      char const* const fileName,
                      char const** const error)
 {
+	assert(m);
+	assert(fileName);
+	assert(error);
+
 	bool flag = false;
 	struct AVCodecContext* audioCC = NULL;
 	FILE* file = NULL;
@@ -178,7 +184,6 @@ bool Media_save_file(struct Media const* const m,
 		goto complete;
 	}
 	audioCC->sample_fmt = audioCodec->sample_fmts[0];
-	audioCC->bit_rate = 128000; // TODO: Calculate automatically
 	audioCC->sample_rate = m->sampleRate;
 	audioCC->channels = m->nChannels;
 	audioCC->channel_layout = m->channelLayout;
@@ -262,7 +267,7 @@ bool Media_save_file(struct Media const* const m,
 	// Encode audio into frame
 
 	// Round down. The last frame is encoded separately
-	size_t nAudioFrames = (m->nSamples - 1) / audioCC->frame_size;
+	size_t nAudioFrames = (m->nSamples - 1) / frame->nb_samples;
 
 	size_t iSample = 0;
 
@@ -304,47 +309,41 @@ bool Media_save_file(struct Media const* const m,
 
 		iSample += frame->nb_samples;
 	}
-
 	// Encode last frame
-	av_init_packet(&packet);
-	packet.data = NULL; // Allocated by the encoder
-	packet.size = 0;
-
-	if (planarIn)
 	{
-		for (size_t i = 0; i < m->nChannels; ++i)
+
+		av_init_packet(&packet);
+		packet.data = NULL; // Allocated by the encoder
+		packet.size = 0;
+
+		if (planarIn)
 		{
-			sampleIn[i] = m->samples[i] + iSample * bpsIn;
+			for (size_t i = 0; i < m->nChannels; ++i)
+			{
+				sampleIn[i] = m->samples[i] + iSample * bpsIn;
+			}
 		}
-	}
-	else
-	{
-		sampleIn[0] = m->samples[0] + iSample * bpsIn * m->nChannels;
-	}
+		else
+		{
+			sampleIn[0] = m->samples[0] + iSample * bpsIn * m->nChannels;
+		}
 
-	if (frame->nb_samples > m->nSamples - iSample)
-	{
+		assert(m->nSamples - iSample <= frame->nb_samples);
 		swr_convert(swrContext,
 		            sampleOut, frame->nb_samples,
 		            sampleIn, m->nSamples - iSample);
-	}
-	else
-	{
-		swr_convert(swrContext,
-		            sampleOut, frame->nb_samples,
-		            sampleIn, frame->nb_samples);
-	}
 
-	int gotOutput;
-	if (avcodec_encode_audio2(audioCC, &packet, frame, &gotOutput) < 0)
-	{
-		*error = "Unable to encode audio";
-		goto complete;
-	}
-	if (gotOutput)
-	{
-		fwrite(packet.data, 1, packet.size, file);
-		av_packet_unref(&packet);
+		int gotOutput;
+		if (avcodec_encode_audio2(audioCC, &packet, frame, &gotOutput) < 0)
+		{
+			*error = "Unable to encode audio";
+			goto complete;
+		}
+		if (gotOutput)
+		{
+			fwrite(packet.data, 1, packet.size, file);
+			av_packet_unref(&packet);
+		}
 	}
 
 	flag = true;
