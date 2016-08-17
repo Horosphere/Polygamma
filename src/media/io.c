@@ -156,7 +156,7 @@ bool Media_save_file(struct Media const* const m,
 	uint8_t* buffer = NULL;
 	uint8_t** sampleOut = NULL;
 	uint8_t const** sampleIn = NULL;
-	
+
 
 	struct AVOutputFormat* format = av_guess_format(NULL, fileName, NULL);
 	if (!format)
@@ -260,17 +260,15 @@ bool Media_save_file(struct Media const* const m,
 
 
 	// Encode audio into frame
-	size_t nAudioFrames = m->nSamples / audioCC->frame_size;
 
-	/*
-	 * FIXME: This routine may create a problem if the number of remaining
-	 * samples is a fraction of audioCC->frame_size.
-	 */
-	assert(m->nSamples % audioCC->frame_size == 0);
+	// Round down. The last frame is encoded separately
+	size_t nAudioFrames = (m->nSamples - 1) / audioCC->frame_size;
 
 	size_t iSample = 0;
 
 	struct AVPacket packet;
+
+	// Encode every frame except for the last
 	for (size_t iFrame = 0; iFrame < nAudioFrames; ++iFrame)
 	{
 		av_init_packet(&packet);
@@ -305,6 +303,48 @@ bool Media_save_file(struct Media const* const m,
 		}
 
 		iSample += frame->nb_samples;
+	}
+
+	// Encode last frame
+	av_init_packet(&packet);
+	packet.data = NULL; // Allocated by the encoder
+	packet.size = 0;
+
+	if (planarIn)
+	{
+		for (size_t i = 0; i < m->nChannels; ++i)
+		{
+			sampleIn[i] = m->samples[i] + iSample * bpsIn;
+		}
+	}
+	else
+	{
+		sampleIn[0] = m->samples[0] + iSample * bpsIn * m->nChannels;
+	}
+
+	if (frame->nb_samples > m->nSamples - iSample)
+	{
+		swr_convert(swrContext,
+		            sampleOut, frame->nb_samples,
+		            sampleIn, m->nSamples - iSample);
+	}
+	else
+	{
+		swr_convert(swrContext,
+		            sampleOut, frame->nb_samples,
+		            sampleIn, frame->nb_samples);
+	}
+
+	int gotOutput;
+	if (avcodec_encode_audio2(audioCC, &packet, frame, &gotOutput) < 0)
+	{
+		*error = "Unable to encode audio";
+		goto complete;
+	}
+	if (gotOutput)
+	{
+		fwrite(packet.data, 1, packet.size, file);
+		av_packet_unref(&packet);
 	}
 
 	flag = true;
