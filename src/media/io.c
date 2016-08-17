@@ -3,14 +3,20 @@
 #include <assert.h>
 #include <libavformat/avformat.h>
 
+// All variables that need to be free'd after failure must be declared in the
+// front and initialised with NULL
+
 bool Media_load_file(struct Media* const m,
                      char const* const fileName,
                      char const** const error)
 {
 	assert(m);
-	bool flag = false;
-	struct AVFormatContext* fc = NULL;
 
+	struct AVFormatContext* fc = NULL;
+	uint8_t** sampleOut = NULL;
+	struct AVFrame* frame = NULL;
+
+	bool flag = false;
 	if (avformat_open_input(&fc, fileName, NULL, NULL))
 	{
 		*error = "Unable to open file";
@@ -56,7 +62,6 @@ bool Media_load_file(struct Media* const m,
 	bool planar = av_sample_fmt_is_planar(m->sampleFormat);
 	size_t bps = av_get_bytes_per_sample(m->sampleFormat);
 
-	uint8_t** sampleOut;
 	if (planar)
 	{
 		m->samples = (uint8_t**) calloc(m->nChannels, sizeof(uint8_t const*));
@@ -68,7 +73,7 @@ bool Media_load_file(struct Media* const m,
 		sampleOut = (uint8_t**) malloc(sizeof(uint8_t const*));
 	}
 
-	AVFrame* frame = av_frame_alloc();
+	frame = av_frame_alloc();
 	if (!frame)
 	{
 		goto complete;
@@ -136,7 +141,6 @@ complete:
 		else free(m->samples[0]);
 		free(m->samples);
 	}
-
 	avformat_close_input(&fc);
 	return flag;
 }
@@ -145,6 +149,15 @@ bool Media_save_file(struct Media const* const m,
                      char const** const error)
 {
 	bool flag = false;
+	struct AVCodecContext* audioCC = NULL;
+	FILE* file = NULL;
+	SwrContext* swrContext = NULL;
+	struct AVFrame* frame = NULL;
+	uint8_t* buffer = NULL;
+	uint8_t** sampleOut = NULL;
+	uint8_t const** sampleIn = NULL;
+	
+
 	struct AVOutputFormat* format = av_guess_format(NULL, fileName, NULL);
 	if (!format)
 	{
@@ -158,7 +171,7 @@ bool Media_save_file(struct Media const* const m,
 		goto complete;
 	}
 	assert(audioCodec->sample_fmts);
-	struct AVCodecContext* audioCC = avcodec_alloc_context3(audioCodec);
+	audioCC = avcodec_alloc_context3(audioCodec);
 	if (!audioCC)
 	{
 		*error = "Unable to allocate audio codec context";
@@ -174,7 +187,7 @@ bool Media_save_file(struct Media const* const m,
 		*error = "Unable to open audio codec";
 		goto complete;
 	}
-	SwrContext* swrContext =
+	swrContext =
 	  swr_alloc_set_opts(NULL,
 	                     audioCC->channel_layout, audioCC->sample_fmt, audioCC->sample_rate,
 	                     m->channelLayout, m->sampleFormat, m->sampleRate,
@@ -193,13 +206,13 @@ bool Media_save_file(struct Media const* const m,
 		*error = "Unable to obtain sample buffer size";
 		goto complete;
 	}
-	FILE* file = fopen(fileName, "wb");
+	file = fopen(fileName, "wb");
 	if (!file)
 	{
 		*error = "Unable to write to destination";
 		goto complete;
 	}
-	AVFrame* frame = av_frame_alloc();
+	frame = av_frame_alloc();
 	if (!frame)
 	{
 		*error = "Unable to allocate frame";
@@ -208,7 +221,7 @@ bool Media_save_file(struct Media const* const m,
 	frame->nb_samples = audioCC->frame_size;
 	frame->format = audioCC->sample_fmt;
 	frame->channel_layout = audioCC->channel_layout;
-	uint8_t* buffer = av_malloc(bufferSize);
+	buffer = av_malloc(bufferSize);
 	if (!buffer)
 	{
 		*error = "Unable to allocate samples";
@@ -222,7 +235,6 @@ bool Media_save_file(struct Media const* const m,
 	}
 
 
-	uint8_t** sampleOut;
 	size_t bpsOut = av_get_bytes_per_sample(audioCC->sample_fmt);
 	bool planarOut = av_sample_fmt_is_planar(audioCC->sample_fmt);
 	if (planarOut)
@@ -239,7 +251,6 @@ bool Media_save_file(struct Media const* const m,
 		sampleOut[0] = buffer;
 	}
 
-	uint8_t const** sampleIn;
 	size_t bpsIn = av_get_bytes_per_sample(m->sampleFormat);
 	bool planarIn = av_sample_fmt_is_planar(m->sampleFormat);
 	if (planarIn)
@@ -302,8 +313,8 @@ complete:
 	free(sampleOut);
 	av_free(buffer);
 	av_frame_free(&frame);
-	swr_free(&swrContext);
 	fclose(file);
+	swr_free(&swrContext);
 	avcodec_close(audioCC);
 	return flag;
 }
