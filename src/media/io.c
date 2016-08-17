@@ -60,12 +60,12 @@ bool Media_load_file(struct Media* const m,
 	if (planar)
 	{
 		m->samples = (uint8_t**) calloc(m->nChannels, sizeof(uint8_t const*));
-		sampleOut = (uint8_t**) calloc(m->nChannels, sizeof(uint8_t const*));
+		sampleOut = (uint8_t**) malloc(m->nChannels * sizeof(uint8_t const*));
 	}
 	else
 	{
 		m->samples = (uint8_t**) calloc(1, sizeof(uint8_t const*));
-		sampleOut = (uint8_t**) calloc(1, sizeof(uint8_t const*));
+		sampleOut = (uint8_t**) malloc(sizeof(uint8_t const*));
 	}
 
 	AVFrame* frame = av_frame_alloc();
@@ -223,18 +223,19 @@ bool Media_save_file(struct Media const* const m,
 
 
 	uint8_t** sampleOut;
+	size_t bpsOut = av_get_bytes_per_sample(audioCC->sample_fmt);
 	bool planarOut = av_sample_fmt_is_planar(audioCC->sample_fmt);
 	if (planarOut)
 	{
-		sampleOut = (uint8_t**) calloc(audioCC->channels, sizeof(uint8_t*));
+		sampleOut = (uint8_t**) malloc(audioCC->channels * sizeof(uint8_t*));
 		for (size_t i = 0; i < audioCC->channels; ++i)
 		{
-			sampleOut[i] = buffer + audioCC->frame_size * i;
+			sampleOut[i] = buffer + audioCC->frame_size * i * bpsOut;
 		}
 	}
 	else
 	{
-		sampleOut = (uint8_t**) calloc(1, sizeof(uint8_t*));
+		sampleOut = (uint8_t**) malloc(sizeof(uint8_t*));
 		sampleOut[0] = buffer;
 	}
 

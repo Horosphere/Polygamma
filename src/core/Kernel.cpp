@@ -19,8 +19,10 @@ Kernel::Kernel(Configuration* config): config(config)
 }
 Kernel::~Kernel()
 {
+#ifndef NDEBUG
+	std::cout << "[Ker] Destroying all buffers" << std::endl;
+#endif
 	// Releases all buffers
-	// TODO: Call each buffer's destruction signal
 	for (auto const& buffer: buffers)
 		delete buffer;
 }

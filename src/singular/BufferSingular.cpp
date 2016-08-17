@@ -29,7 +29,7 @@ BufferSingular::~BufferSingular()
 	if (playdata)
 	{
 		delete playdata;
-		delete[] playdata->samples;
+		std::free(playdata->samples);
 	}
 }
 BufferSingular* BufferSingular::fromFile(std::string fileName,
@@ -127,7 +127,7 @@ void BufferSingular::play() throw(PythonException)
 void BufferSingular::loadToMedia(struct Media* const m) const noexcept
 {
 	m->nChannels = nAudioChannels();
-	m->samples = new uint8_t* [m->nChannels];
+	m->samples = (uint8_t**) std::malloc(sizeof(uint8_t*) * m->nChannels);
 	for (std::size_t i = 0; i < m->nChannels; ++i)
 	{
 		m->samples[i] = (uint8_t*) audio[i].getData();
