@@ -77,14 +77,19 @@ public:
 	virtual bool exportToFile(std::string fileName,
 	                          std::string* const error) const noexcept = 0;
 	/**
-	 * Exposed to python
+	 * Exposed to Python
 	 * @brief Plays the given buffer. If playable() returns false, then it will
 	 *  throw an exception. Any subclass implementation must call the parent
-	 *  method.
+	 *  method. If the buffer is already playing, an exception should be thrown.
 	 */
 	virtual void play() throw(PythonException);
 	/**
 	 * Exposed to Python
+	 */
+	virtual void stop() throw(PythonException) = 0;
+	/**
+	 * Exposed to Python
+	 * This should not return false when the buffer is already playing.
 	 */
 	virtual bool playable() const noexcept = 0;
 	/**

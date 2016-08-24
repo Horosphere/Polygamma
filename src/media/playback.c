@@ -7,6 +7,7 @@
 
 void audio_callback(struct Media* m, uint8_t* stream, int len)
 {
+	assert(m);
 	size_t spc = len / (m->nChannels * sizeof(short)); // Samples/Channel
 	// Available sample/channel
 	size_t spcA = spc > m->nSamples - m->cursor ?
@@ -37,6 +38,7 @@ void audio_callback(struct Media* m, uint8_t* stream, int len)
 }
 bool media_open(struct Media* const m)
 {
+	assert(m);
 	struct SDL_AudioSpec specTarget;
 	specTarget.freq = m->sampleRate;
 	specTarget.format = AUDIO_S16SYS;
@@ -75,16 +77,25 @@ bool media_open(struct Media* const m)
 	}
 	return true;
 }
+void media_close(struct Media* const m)
+{
+	if (!m) return;
+	swr_free(&m->swrContext);
+	SDL_CloseAudioDevice(m->audioDevice);
+	m->playing = false;
+}
+
 bool media_play(struct Media* const m)
 {
+	assert(m);
 	SDL_PauseAudioDevice(m->audioDevice, false);
 	m->playing = true;
 
 	return true;
 }
-void media_close(struct Media* const m)
+void media_stop(struct Media* const m)
 {
-	swr_free(&m->swrContext);
-	SDL_CloseAudioDevice(m->audioDevice);
+	if (!m) return;
+	SDL_PauseAudioDevice(m->audioDevice, true);
 	m->playing = false;
 }

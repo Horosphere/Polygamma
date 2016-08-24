@@ -112,7 +112,13 @@ bool BufferSingular::saveToFile(std::string fileName,
 void BufferSingular::play() throw(PythonException)
 {
 	Buffer::play();
-	if (!playdata)
+	if (playdata)
+	{
+		if (playdata->playing)
+			throw PythonException{"Buffer already playing",
+			                      PythonException::Exception};
+	}
+	else
 	{
 		playdata = new Media;
 		Media_init(playdata);
@@ -120,9 +126,19 @@ void BufferSingular::play() throw(PythonException)
 	}
 	if (!media_open(playdata))
 	{
-		std::cout << "Unable to open media" << std::endl;
+		throw PythonException{"Unable to open media",
+		                      PythonException::RuntimeError};
 	}
 	media_play(playdata);
+}
+void BufferSingular::stop() throw(PythonException)
+{
+	if (!playdata || !playdata->playing)
+	{
+		throw PythonException{"Buffer not playing",
+		                      PythonException::Exception};
+	}
+	media_stop(playdata);
 }
 
 void BufferSingular::loadToMedia(struct Media* const m) const noexcept
