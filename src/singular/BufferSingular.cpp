@@ -133,6 +133,7 @@ void BufferSingular::play() throw(PythonException)
 }
 void BufferSingular::stop() throw(PythonException)
 {
+	Buffer::stop();
 	if (!playdata || !playdata->playing)
 	{
 		throw PythonException{"Buffer not playing",

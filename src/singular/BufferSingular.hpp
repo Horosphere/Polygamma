@@ -67,7 +67,8 @@ public:
 	virtual bool exportToFile(std::string fileName,
 	                          std::string* const error) const noexcept override;
 	virtual void play() throw(PythonException) override;
-	virtual bool playable() const noexcept override;
+	virtual void stop() throw(PythonException) override;
+	virtual bool playing() const noexcept override;
 
 	/**
 	 * Exposed to Python
@@ -171,9 +172,9 @@ const noexcept
 	return saveToFile(fileName, error);
 }
 inline bool
-BufferSingular::playable() const noexcept
+BufferSingular::playing() const noexcept
 {
-	return true;
+	return playdata && playdata->playing;
 }
 inline std::size_t
 BufferSingular::nAudioChannels() const noexcept

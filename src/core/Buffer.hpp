@@ -78,20 +78,18 @@ public:
 	                          std::string* const error) const noexcept = 0;
 	/**
 	 * Exposed to Python
-	 * @brief Plays the given buffer. If playable() returns false, then it will
-	 *  throw an exception. Any subclass implementation must call the parent
-	 *  method. If the buffer is already playing, an exception should be thrown.
+	 * @brief Plays the buffer. Subclass implementations should call the parent
 	 */
 	virtual void play() throw(PythonException);
 	/**
 	 * Exposed to Python
+	 * @brief Stops the buffer. Subclass implementations should call the parent
 	 */
-	virtual void stop() throw(PythonException) = 0;
+	virtual void stop() throw(PythonException);
 	/**
 	 * Exposed to Python
-	 * This should not return false when the buffer is already playing.
 	 */
-	virtual bool playable() const noexcept = 0;
+	virtual bool playing() const noexcept = 0;
 	/**
 	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
 	 *  and throws IOError upon failure.
@@ -151,8 +149,14 @@ inline bool Buffer::isDirty() const noexcept
 }
 inline void Buffer::play() throw(PythonException)
 {
-	if (!playable())
-		throw PythonException{"Buffer not playable",
+	if (playing())
+		throw PythonException{"Buffer is already playing",
+		                      PythonException::Exception};
+}
+inline void Buffer::stop() throw(PythonException)
+{
+	if (!playing())
+		throw PythonException{"Buffer is not playing",
 		                      PythonException::Exception};
 }
 inline std::size_t Buffer::getCursor() const noexcept

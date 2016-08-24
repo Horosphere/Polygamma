@@ -97,7 +97,7 @@ BOOST_PYTHON_MODULE(pg)
 	     &pg::Buffer::exportToFile)
 	.def("play", &pg::Buffer::play)
 	.def("stop", &pg::Buffer::stop)
-	.def("playable", &pg::Buffer::playable)
+	.def("playing", &pg::Buffer::playing)
 	.add_property("title", &pg::Buffer::getTitle)
 	.add_property("dirty", &pg::Buffer::isDirty)
 	.add_property("cursor", &pg::Buffer::getCursor, &pg::Buffer::setCursor);

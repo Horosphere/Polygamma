@@ -155,6 +155,21 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 
 	// Panels
 	panelPlayback->hide();
+	connect(panelPlayback, &PanelPlayback::play,
+	        this, [this]()
+	{
+		this->onExecute("{CU}.play()");
+	});
+	connect(panelPlayback, &PanelPlayback::pause,
+	        this, [this]()
+	{
+		this->onExecute("{CU}.stop()");
+	});
+	connect(panelPlayback, &PanelPlayback::stop,
+	        this, [this]()
+	{
+		this->onExecute("{CU}.stop()");
+	});
 
 	// Script line
 	connect(lineEditScript, &LineEditScript::execute,
