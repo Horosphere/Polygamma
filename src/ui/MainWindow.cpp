@@ -168,7 +168,7 @@ MainWindow::MainWindow(Kernel* const kernel, Configuration* const config
 	connect(panelPlayback, &PanelPlayback::stop,
 	        this, [this]()
 	{
-		this->onExecute("{CU}.stop()");
+		this->onExecute("{CU}.stop(); {CU}.cursor = 0");
 	});
 
 	// Script line

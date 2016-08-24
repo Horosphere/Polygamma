@@ -97,7 +97,7 @@ void Kernel::start()
 			{
 				using namespace boost::python;
 
-				object result = eval(((std::string)(*script)).c_str(), dictMain);
+				object result = exec(((std::string)(*script)).c_str(), dictMain);
 				if (!result.is_none())
 					streamOut(ScriptOutput::StdOut, extract<std::string>(str(result))());
 			}

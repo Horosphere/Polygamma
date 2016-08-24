@@ -25,4 +25,7 @@ struct Media
 
 void Media_init(struct Media* const);
 
+void Media_set_cursor(struct Media* const, size_t cursor);
+size_t Media_get_cursor(struct Media* const);
+
 #endif // !_POLYGAMMA_MEDIA_MEDIA_H__

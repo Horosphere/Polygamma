@@ -2,6 +2,7 @@
 #define _POLYGAMMA_CORE_BUFFER_HPP__
 
 #include <cstdint>
+#include <iostream>
 
 #include <boost/signals2.hpp>
 
@@ -102,6 +103,7 @@ public:
 	std::size_t getCursor() const noexcept;
 	/**
 	 * The argument must be less than duration().
+	 * Any subclass implementation must call parent
 	 */
 	void setCursor(std::size_t) throw(PythonException);
 	/**
@@ -116,6 +118,7 @@ public:
 
 protected:
 	std::string title;
+	std::size_t cursor;
 	/**
 	 * Used by Buffers that store references to other buffers
 	 */
@@ -128,7 +131,6 @@ private:
 	bool dirty;
 	std::size_t nReferences; // Used by the Kernel
 
-	std::size_t cursor;
 	friend class Kernel;
 };
 
@@ -166,7 +168,7 @@ inline std::size_t Buffer::getCursor() const noexcept
 inline void Buffer::setCursor(std::size_t c) throw(PythonException)
 {
 	if (c >= duration())
-		throw PythonException{"Cursor index is higher than duration",
+		throw PythonException{"Cursor index out of bounds",
 		                      PythonException::IndexError};
 	cursor = c;
 	notifyUpdate(Update::Surface);

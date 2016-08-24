@@ -28,6 +28,7 @@ BufferSingular::~BufferSingular()
 {
 	if (playdata)
 	{
+		media_stop(playdata);
 		media_close(playdata);
 		std::free(playdata->samples);
 		delete playdata;
@@ -112,13 +113,7 @@ bool BufferSingular::saveToFile(std::string fileName,
 void BufferSingular::play() throw(PythonException)
 {
 	Buffer::play();
-	if (playdata)
-	{
-		if (playdata->playing)
-			throw PythonException{"Buffer already playing",
-			                      PythonException::Exception};
-	}
-	else
+	if (!playdata)	
 	{
 		playdata = new Media;
 		Media_init(playdata);
@@ -129,17 +124,14 @@ void BufferSingular::play() throw(PythonException)
 		throw PythonException{"Unable to open media",
 		                      PythonException::RuntimeError};
 	}
+	Media_set_cursor(playdata, cursor);
 	media_play(playdata);
 }
 void BufferSingular::stop() throw(PythonException)
 {
 	Buffer::stop();
-	if (!playdata || !playdata->playing)
-	{
-		throw PythonException{"Buffer not playing",
-		                      PythonException::Exception};
-	}
 	media_stop(playdata);
+	setCursor(Media_get_cursor(playdata));
 }
 
 void BufferSingular::loadToMedia(struct Media* const m) const noexcept
@@ -154,7 +146,6 @@ void BufferSingular::loadToMedia(struct Media* const m) const noexcept
 	m->channelLayout = channelLayout;
 	m->sampleRate = timeBase();
 	m->nSamples = duration();
-	m->cursor = 0;
 }
 
 } // namespace pg

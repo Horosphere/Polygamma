@@ -26,6 +26,7 @@ void audio_callback(struct Media* m, uint8_t* stream, int len)
 		memset(stream + trailing, 0, len - trailing);
 		m->playing = false;
 		SDL_PauseAudioDevice(m->audioDevice, true);
+		Media_set_cursor(m, 0);
 	}
 
 	// Advance the cursor
