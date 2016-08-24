@@ -43,15 +43,16 @@ private:
 
 };
 
-} // namespace pg
 
 // Implementations
 
-inline pg::BufferSingular const*
-pg::EditorSingular::getBuffer() const noexcept
+inline BufferSingular const*
+EditorSingular::getBuffer() const noexcept
 {
 	return buffer;
 }
+
+} // namespace pg
 
 
 #endif // !_POLYGAMMA_UI_EDITORS_EDITORSINGULAR_HPP__

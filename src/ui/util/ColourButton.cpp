@@ -2,15 +2,18 @@
 
 #include <QColorDialog>
 
-pg::ColourButton::ColourButton(QWidget* parent): QPushButton(parent),
-	enableAlpha(false)	
+namespace pg
+{
+
+ColourButton::ColourButton(QWidget* parent): QPushButton(parent),
+	enableAlpha(false)
 {
 	setFixedSize(50, 20);
 	connect(this, &QPushButton::clicked,
 	        this, &ColourButton::onClicked);
 }
 
-void pg::ColourButton::onColourChanged(QColor c)
+void ColourButton::onColourChanged(QColor c)
 {
 	if (c.isValid())
 	{
@@ -19,13 +22,13 @@ void pg::ColourButton::onColourChanged(QColor c)
 		colour = c;
 	}
 }
-void pg::ColourButton::onClicked()
+void ColourButton::onClicked()
 {
 	QColor c;
 	if (enableAlpha)
 		// The default title is "Select Color"
 		c = QColorDialog::getColor(colour, this, tr("Select Color"),
-				QColorDialog::ShowAlphaChannel);
+		                           QColorDialog::ShowAlphaChannel);
 	else
 		c = QColorDialog::getColor(colour, this);
 	if (c.isValid())
@@ -36,3 +39,5 @@ void pg::ColourButton::onClicked()
 		Q_EMIT colourChanged(c);
 	}
 }
+
+} // namespace pg

@@ -28,18 +28,18 @@ public:
 
 	virtual bool saveAs(QString* const error) = 0;
 	virtual Buffer const* getBuffer() const noexcept = 0;
+	virtual void update(Buffer::Update);
 
 Q_SIGNALS:
-	void execute(Script);
 	/**
-	 * @brief Called in the Kernel thread. Should only be used to relay signal to
-	 *  repaint()
+	 * @warning Do not use this to send close signals
 	 */
-	void graphicsUpdate();
+	void execute(Script);
+	void destroy();
 
 
 protected:
-	virtual void closeEvent(QCloseEvent*) override;
+	virtual void closeEvent(QCloseEvent*) final override;
 
 	Kernel* const kernel;
 

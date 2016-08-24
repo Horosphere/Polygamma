@@ -1,17 +1,18 @@
 /*
- * Main Entry
+ * main.cpp
  */
 
 #include <iostream>
 #include <thread>
 
-#include <QApplication>
-#include <QStandardPaths>
-
 extern "C"
 {
 #include <libavformat/avformat.h>
+#include <SDL2/SDL.h>
 }
+#include <QApplication>
+#include <QStandardPaths>
+
 #include "ui/MainWindow.hpp"
 
 /*
@@ -21,9 +22,21 @@ extern "C"
  */
 int main(int argc, char* argv[])
 {
+	// Initialise
 	av_register_all();
-	pg::initPython();
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
+	{
+		std::cerr << "[SDL]" << SDL_GetError() << std::endl;
+		return -1;
+	}
+	if (!pg::initPython())
+	{
+		std::cerr << "Python initialisation failed" << std::endl;
+		return -1;
+	}
 
+
+	// Load config file
 	pg::Configuration config;
 	std::string configFile = QStandardPaths::writableLocation(QStandardPaths::HomeLocation).toStdString() + "/.polygamma";
 	config.setFileName(configFile);

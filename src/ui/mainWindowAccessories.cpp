@@ -2,12 +2,14 @@
 
 #include <QKeyEvent>
 
+namespace pg
+{
 
 // LineEditScript
-pg::LineEditScript::LineEditScript(QWidget* parent): QLineEdit(parent)
+LineEditScript::LineEditScript(QWidget* parent): QLineEdit(parent)
 {
 }
-void pg::LineEditScript::keyPressEvent(QKeyEvent* event)
+void LineEditScript::keyPressEvent(QKeyEvent* event)
 {
 	if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) &&
 	    event->modifiers() == Qt::ShiftModifier)
@@ -22,7 +24,7 @@ void pg::LineEditScript::keyPressEvent(QKeyEvent* event)
 }
 
 // ActionDialog
-pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog, QObject* parent):
+ActionDialog::ActionDialog(DialogScriptArgs* const dialog, QObject* parent):
 	ActionFlagged(parent), dialog(dialog)
 {
 	connect(this, &QAction::triggered,
@@ -32,8 +34,8 @@ pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog, QObject* parent):
 			Q_EMIT execute(this->dialog->script());
 	});
 }
-pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
-                               QString const& text, QObject* parent):
+ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
+                           QString const& text, QObject* parent):
 	ActionFlagged(text, parent), dialog(dialog)
 {
 	connect(this, &QAction::triggered,
@@ -43,9 +45,9 @@ pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
 			Q_EMIT execute(this->dialog->script());
 	});
 }
-pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
-                               QIcon const& icon, QString const& text,
-                               QObject* parent):
+ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
+                           QIcon const& icon, QString const& text,
+                           QObject* parent):
 	ActionFlagged(icon, text, parent), dialog(dialog)
 {
 	connect(this, &QAction::triggered,
@@ -55,3 +57,5 @@ pg::ActionDialog::ActionDialog(DialogScriptArgs* const dialog,
 			Q_EMIT execute(this->dialog->script());
 	});
 }
+
+} // namespace pg

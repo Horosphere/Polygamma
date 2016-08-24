@@ -8,8 +8,6 @@
 
 #include "../core/Kernel.hpp"
 
-// The classes in this header implements a terminal that can be summoned in
-// Polygamma.
 namespace pg
 {
 
@@ -22,7 +20,6 @@ public:
 public Q_SLOTS:
 	void onStdOutFlush(QString);
 	void onStdErrFlush(QString);
-
 };
 class TerminalInput final: public QPlainTextEdit
 {
@@ -45,31 +42,39 @@ private:
 	friend class Terminal;
 };
 
+/**
+ * Terminal holds the event loop for the gui
+ */
 class Terminal final: public QMainWindow
 {
 	Q_OBJECT
-	Q_PROPERTY(bool showSystemLevel READ getShowSystemLevel WRITE setShowSystemLevel)
 public:
 	explicit Terminal(Kernel* const, QWidget* parent = 0);
 
-	void setShowSystemLevel(bool) noexcept;
-	bool getShowSystemLevel() const noexcept;
+	void setScriptLevelMin(Script::Level) noexcept;
+	bool getScriptLevelMin() const noexcept;
+	void setFontMonospace(QFont, int tabWidth) noexcept;
+
 Q_SIGNALS:
-	/**
-	 * @brief Receive the updated log from the Kernel. This signal is emitted in
-	 * the Kernel thread, so all connections to it must be queued.
-	 */
-	void logUpdate(QString);
+	void stdOutFlush(QString);
+	void stdErrFlush(QString);
 
-protected:
-	virtual void closeEvent(QCloseEvent*) override;
+	void configUpdate();
+	void bufferNew(Buffer const*);
+	void bufferErase(Buffer const*);
+	void bufferUpdate(Buffer const*, Buffer::Update);
 
-private Q_SLOTS:
+public Q_SLOTS:
 	/**
 	 * Sends a script to the Kernel.
 	 */
 	void onExecute(Script const&);
 
+private Q_SLOTS:
+	void eventLoop();
+
+protected:
+	virtual void closeEvent(QCloseEvent*) override;
 
 private:
 	/**
@@ -83,23 +88,36 @@ private:
 	TerminalInput* input;
 	Kernel* kernel;
 
-	bool showSystemLevel;
+	Script::Level scriptLevelMin;
 
-	friend class MainWindow;
+	// Dynamic variables
+	bool acceptingScripts; // Set to false when Kernel is busy
 };
 
-} // namespace pg
 
 // Implementations
 
-inline void
-pg::Terminal::setShowSystemLevel(bool flag) noexcept
+inline void Terminal::setScriptLevelMin(Script::Level level) noexcept
 {
-	showSystemLevel = flag;
+	scriptLevelMin = level;
 }
-inline bool
-pg::Terminal::getShowSystemLevel() const noexcept
+inline bool Terminal::getScriptLevelMin() const noexcept
 {
-	return showSystemLevel;
+	return scriptLevelMin;
 }
+inline void Terminal::setFontMonospace(QFont font, int tabWidth) noexcept
+{
+	log->setFont(font);
+	log->setTabStopWidth(tabWidth);
+	input->setFont(font);
+	input->setTabStopWidth(tabWidth);
+}
+inline void Terminal::closeEvent(QCloseEvent* event)
+{
+	this->hide();
+	event->ignore();
+}
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_UI_TERMINAL_HPP__

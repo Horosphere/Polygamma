@@ -8,11 +8,14 @@
 
 #include "../ui.hpp"
 
-pg::Waveform::Waveform(BufferSingular const* const buffer,
-                       std::size_t channelId,
-                       QWidget* parent): Viewport2(parent),
+namespace pg
+{
+
+Waveform::Waveform(BufferSingular const* const buffer,
+                   std::size_t channelId,
+                   QWidget* parent): Viewport2(parent),
 	buffer(buffer), channelId(channelId),
-	channel(buffer->getAudioChannel(channelId))
+	channel(buffer->audioChannel(channelId))
 {
 	setDragging(true, false);
 	setZoomFac(1.1, 1.0);
@@ -25,15 +28,14 @@ pg::Waveform::Waveform(BufferSingular const* const buffer,
 	maximise();
 }
 
-void pg::Waveform::paintEvent(QPaintEvent* event)
+void Waveform::paintEvent(QPaintEvent* event)
 {
 	Viewport2::paintEvent(event);
 	QPainter painter(this);
 
-	// Decides drawing mode. If the avaliable pixel per sample is less than
-	// 1, then a lolipop diagram is drawn. Otherwise it is a standard waveform
+
 	bool denseDrawing = width() * UI_SAMPLE_DISPLAY_WIDTH * 64 < length(rangeX);
-	if (denseDrawing)
+	if (denseDrawing) // Draw lolipop diagram
 	{
 		std::size_t step = 1 + length(rangeX) / width() / UI_SAMPLE_DISPLAY_WIDTH / 512;
 		for (int x = 0; x < width(); ++x)
@@ -71,7 +73,7 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 			                 x, height() / 2 - (int)(averageMin * 0.5 * height()));
 		}
 	}
-	else
+	else // Connect the dots
 	{
 		painter.setRenderHint(QPainter::Antialiasing);
 		painter.setPen(penCore);
@@ -107,3 +109,5 @@ void pg::Waveform::paintEvent(QPaintEvent* event)
 		painter.fillRect(QRect(begin, 0, end - begin, height()), Qt::white);
 	}
 }
+
+} // namespace pg

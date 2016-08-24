@@ -6,7 +6,8 @@ An open source audio editing software.
 
 #### Dependencies
 Polygamma dependes on Qt 5, Python 3.5, Boost 1.61, avcodec, avformat,
-avutil, and swscale. Boost.Python must be compiled with Python 3 support.
+avutil, swresample, and SDL2. Boost.Python must be compiled with Python 3
+support.
 
 #### Compilation
 It is best to do an out of source build at `build/` directory. Create a
@@ -59,8 +60,6 @@ interactions managed by Qt, and the Kernel thread which contains the function
 `void Kernel::start()`. The Kernel must be halted with `void Kernel::halt()`,
 otherwise segmentation faults occur upon application exit.
 
-Kernel communicates with the GUI through two channels. Kernel sends message
-to the GUI through `Qt::QueuedConnection`s relayed by lambda functions in
-`class MainWindow`. Conversely, GUI sends Kernel commands through
-`boost::lockfree:spsc_queue`s.
-
+Interthread communication is done with `boost::spsc_queue`s. The Kernel
+contains one queue for commands going in and two queues for outputs going
+into the GUI.

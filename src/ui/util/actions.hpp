@@ -42,22 +42,23 @@ Q_SIGNALS:
 	void execute(QString const&);
 };
 
-} // namespace pg
 
 // Implementations
 
-inline pg::ActionFlagged::ActionFlagged(QObject* parent): QAction(parent),
+inline ActionFlagged::ActionFlagged(QObject* parent): QAction(parent),
 	flags(FLAG_FULL)
 {
 }
-inline pg::ActionFlagged::ActionFlagged(QString const& text, QObject* parent):
+inline ActionFlagged::ActionFlagged(QString const& text, QObject* parent):
 	QAction(text, parent), flags(FLAG_FULL)
 {
 }
-inline pg::ActionFlagged::ActionFlagged(QIcon const& icon, QString const& text,
-                                        QObject* parent):
+inline ActionFlagged::ActionFlagged(QIcon const& icon, QString const& text,
+                                    QObject* parent):
 	QAction(icon, text, parent), flags(FLAG_FULL)
 {
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_UI_UTIL_ACTIONS_HPP__

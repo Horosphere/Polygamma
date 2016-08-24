@@ -15,19 +15,18 @@ namespace pg
  * @param modulo
  */
 void dftCT(complex* const spectrum,
-		   real const* const signal,
-		   std::size_t length, std::size_t modulo);
-} // namespace pg
+           real const* const signal,
+           std::size_t length, std::size_t modulo);
 
 
 // Implementations
 
-void pg::windowRect(real* const window, std::size_t length)
+void windowRect(real* const window, std::size_t length)
 {
 	for (std::size_t j = 0; j < length; ++j)
 		window[j] = 1.0;
 }
-void pg::windowGaussian(real* const window, std::size_t length, real sigma)
+void windowGaussian(real* const window, std::size_t length, real sigma)
 {
 	real fac = 2.0 / (sigma * length);
 	for (std::size_t j = 0; j < length; ++j)
@@ -37,9 +36,9 @@ void pg::windowGaussian(real* const window, std::size_t length, real sigma)
 	}
 }
 
-void pg::dftCT(complex* const spectrum,
-			   real const* const signal,
-			   std::size_t length, std::size_t modulo)
+void dftCT(complex* const spectrum,
+           real const* const signal,
+           std::size_t length, std::size_t modulo)
 {
 	// Cooley-Tukey algorithm. See Wikipedia for details
 	if (length == 1) // Terminal case
@@ -50,7 +49,7 @@ void pg::dftCT(complex* const spectrum,
 	{
 		// Base: exp(-2 pi i / n)
 		complex w(std::cos(2 * M_PI / length),
-				  -std::sin(2 * M_PI / length));
+		          -std::sin(2 * M_PI / length));
 		std::size_t mid = length / 2;
 		dftCT(spectrum, signal, mid, 2 * modulo);
 		dftCT(spectrum + mid, signal + modulo, mid, 2 * modulo);
@@ -65,18 +64,18 @@ void pg::dftCT(complex* const spectrum,
 	}
 }
 
-void pg::dft(complex* const spectrum,
-			 real const* const signal, std::size_t length)
+void dft(complex* const spectrum,
+         real const* const signal, std::size_t length)
 {
 	dftCT(spectrum, signal, length, 1);
 }
 
 // The arguments here are renamed
-void pg::dstft(complex* const* const spectrogram,
-			   real const* const signal, std::size_t n,
-			   real const* const window, std::size_t r,
-			   std::size_t p, std::size_t q,
-			   real* const integrand)
+void dstft(complex* const* const spectrogram,
+           real const* const signal, std::size_t n,
+           real const* const window, std::size_t r,
+           std::size_t p, std::size_t q,
+           real* const integrand)
 {
 	assert(p <= q);
 	/*
@@ -237,3 +236,5 @@ void pg::dstft(complex* const* const spectrogram,
 
 
 }
+
+} // namespace pg

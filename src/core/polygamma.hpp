@@ -11,6 +11,15 @@
 #include <complex>
 #include <string>
 
+#ifndef NDEBUG
+#include <boost/timer/timer.hpp>
+#define DEBUG_TIMER_BEGIN boost::timer::cpu_timer debugTimer
+#define DEBUG_TIMER_END(text) std::cout << text << debugTimer.format()
+#else
+#define DEBUG_TIMER_BEGIN
+#define DEBUG_TIMER_END(text)
+#endif
+
 namespace pg
 {
 /** Currently using 64 bits floating point.
@@ -27,16 +36,16 @@ typedef uint64_t ChannelLayout;
 std::string about();
 
 
-} // namespace pg
-
 // Implementations
 
-inline std::string pg::about()
+inline std::string about()
 {
 	return "Polygamma 0.0.1\n"
 	       "Author: Horosphere\n";
 }
 
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_CORE_POLYGAMMA_HPP__
 

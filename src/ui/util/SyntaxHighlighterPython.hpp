@@ -22,6 +22,7 @@ private:
 		QRegExp pattern;
 		QTextCharFormat format;
 	};
+
 	QVector<QRegExp> patternsKeyword;
 	QTextCharFormat formatKeyword;
 
@@ -29,6 +30,6 @@ private:
 	Rule ruleComment;
 };
 
-}
+} // namespace pg
 
 #endif // !_POLYGAMMA_UI_UTIL_SYNTAXHIGHLIGHTERPYTHON_HPP__

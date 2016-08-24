@@ -57,22 +57,21 @@ std::vector<boost::tuple<ChannelLayout, std::string, std::string>> const channel
 std::string channelLayoutName(ChannelLayout const& channelLayout) noexcept;
 
 std::string timePointToString(std::size_t duration,
-                             std::size_t sampleRate) noexcept;
+                              std::size_t sampleRate) noexcept;
 /**
  * @brief Converts a string to samples
  */
 std::size_t stringToTimePoint(std::string string,
-                             std::size_t sampleRate) throw(PythonException);
+                              std::size_t sampleRate) throw(PythonException);
 /**
  * @brief Converts a string to seconds
  */
 std::size_t stringToTimePoint(std::string string) throw(PythonException);
 
-} // namespace pg
 
 // Implementations
 
-inline std::string pg::channelLayoutName(ChannelLayout const& cl) noexcept
+inline std::string channelLayoutName(ChannelLayout const& cl) noexcept
 {
 	for (auto const& channelName: channelNames)
 		if (boost::get<0>(channelName) == cl)
@@ -82,7 +81,7 @@ inline std::string pg::channelLayoutName(ChannelLayout const& cl) noexcept
 	return "";
 }
 inline std::string
-pg::timePointToString(std::size_t duration, std::size_t sampleRate) noexcept
+timePointToString(std::size_t duration, std::size_t sampleRate) noexcept
 {
 	std::string result = std::to_string(duration % sampleRate);
 	duration /= sampleRate;
@@ -101,13 +100,13 @@ pg::timePointToString(std::size_t duration, std::size_t sampleRate) noexcept
 }
 
 inline std::size_t
-pg::stringToTimePoint(std::string string, std::size_t sampleRate) throw(PythonException) 
+stringToTimePoint(std::string string, std::size_t sampleRate) throw(PythonException)
 {
 	std::vector<std::string> tokens;
 
 	boost::algorithm::split(tokens, string, boost::algorithm::is_any_of(":"));
 
-	switch(tokens.size())
+	switch (tokens.size())
 	{
 	case 0:
 		return 0;
@@ -117,25 +116,25 @@ pg::stringToTimePoint(std::string string, std::size_t sampleRate) throw(PythonEx
 		return std::stoul(tokens[1]) + sampleRate * std::stoul(tokens[0]);
 	case 3:
 		return std::stoul(tokens[2]) +
-			sampleRate * std::stoul(tokens[1]) +
-			sampleRate * 60 * std::stoul(tokens[0]);
+		       sampleRate * std::stoul(tokens[1]) +
+		       sampleRate * 60 * std::stoul(tokens[0]);
 	case 4:
 		return std::stoul(tokens[3]) +
-			sampleRate * std::stoul(tokens[2]) +
-			sampleRate * 60 * std::stoul(tokens[1]) +
-			sampleRate * 60 * 60 * std::stoul(tokens[0]);
+		       sampleRate * std::stoul(tokens[2]) +
+		       sampleRate * 60 * std::stoul(tokens[1]) +
+		       sampleRate * 60 * 60 * std::stoul(tokens[0]);
 	default:
 		throw PythonException{"Invalid duration", PythonException::ValueError};
 	}
 }
 inline std::size_t
-pg::stringToTimePoint(std::string string) throw(PythonException) 
+stringToTimePoint(std::string string) throw(PythonException)
 {
 	std::vector<std::string> tokens;
 
 	boost::algorithm::split(tokens, string, boost::algorithm::is_any_of(":"));
 
-	switch(tokens.size())
+	switch (tokens.size())
 	{
 	case 0:
 		return 0;
@@ -145,11 +144,13 @@ pg::stringToTimePoint(std::string string) throw(PythonException)
 		return std::stoul(tokens[1]) + 60 * std::stoul(tokens[0]);
 	case 3:
 		return std::stoul(tokens[2]) +
-			60 * std::stoul(tokens[1]) +
-			60 * 60 * std::stoul(tokens[0]);
+		       60 * std::stoul(tokens[1]) +
+		       60 * 60 * std::stoul(tokens[0]);
 	default:
 		throw PythonException{"Invalid duration", PythonException::ValueError};
 	}
 }
+
+} // namespace pg
 
 #endif // !_POLYGAMMA_CORE_TEXT_HPP__

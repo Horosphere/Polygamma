@@ -18,6 +18,8 @@ class DialogPreferences final: public QDialog
 public:
 	explicit DialogPreferences(Configuration* const, QWidget* parent = 0);
 
+Q_SIGNALS:
+	void configUpdate();
 
 public Q_SLOTS:
 	void onReload();
@@ -31,8 +33,10 @@ private:
 
 	// The naming of the configurations must be consistent with
 	// core/Configuration.hpp
+	/*
 	QComboBox* ioAudioDeviceInput;
 	QComboBox* ioAudioDeviceOutput;
+	*/
 
 	ColourButton* uiBG;
 	ColourButton* uiTerminalBG;

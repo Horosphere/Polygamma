@@ -2,6 +2,7 @@
 #define _POLYGAMMA_CORE_BUFFER_HPP__
 
 #include <cstdint>
+#include <iostream>
 
 #include <boost/signals2.hpp>
 
@@ -12,17 +13,32 @@ namespace pg
 {
 
 typedef Interval<std::size_t> IntervalIndex;
+constexpr IntervalIndex const INTERVALINDEX_NULL(std::numeric_limits<std::size_t>::max(), 0);
 
 /**
  * TODO: Use reference counted buffer
  * This class uses a case pattern. E.g. if getType() == Singular, the instance
  * must be an instance of BufferSingular.
- * All buffers must be registed in the Kernel
+ * It is suggested to use dynamic_cast to determine the buffer type instead of
+ * getType(). getType() is mainly used in the GUI for disabling certain
+ * actions.
  * @brief Each instance of Buffer corresponds to a file or editable content.
  */
 class Buffer
 {
 public:
+	struct Update
+	{
+		enum Level
+		{
+			Data, // The underlying data has been modified
+			Surface // Only the selection/cursor has been modified
+		};
+
+		Level level;
+		IntervalIndex indices;
+	};
+
 	Buffer() noexcept;
 	virtual ~Buffer();
 	enum Type
@@ -37,7 +53,7 @@ public:
 	/**
 	 * Exposed to Python
 	 * @brief duration() / timeBase() should be the duration of this buffer in
-	 *	seconds
+	 *  seconds
 	 */
 	virtual std::size_t duration() const noexcept = 0;
 	/**
@@ -49,52 +65,60 @@ public:
 	 */
 	virtual std::size_t timeBase() const noexcept = 0;
 
-	virtual bool saveToFile(std::string fileName, std::string* const error) = 0;
+	/**
+	 * @warning Do not change the dirty flag within this function
+	 * @brief Export as a project file
+	 */
+	virtual bool saveToFile(std::string fileName,
+	                        std::string* const error) const noexcept = 0;
+	/**
+	 * @warning Do not change the dirty flag within this function
+	 * @brief Export as a playable multimedia file
+	 */
+	virtual bool exportToFile(std::string fileName,
+	                          std::string* const error) const noexcept = 0;
+	/**
+	 * Exposed to Python
+	 * @brief Plays the buffer. Subclass implementations should call the parent
+	 */
+	virtual void play() throw(PythonException);
+	/**
+	 * Exposed to Python
+	 * @brief Stops the buffer. Subclass implementations should call the parent
+	 */
+	virtual void stop() throw(PythonException);
+	/**
+	 * Exposed to Python
+	 */
+	virtual bool playing() const noexcept = 0;
 	/**
 	 * Exposed to Python. Wraps bool saveToFile(std::string, std::string* const)
 	 *  and throws IOError upon failure.
 	 */
 	void saveToFile(std::string fileName) throw(PythonException);
+	void exportToFile(std::string fileName) throw(PythonException);
 	std::string getTitle() const noexcept;
-	bool isDirty() const noexcept; 
+	bool isDirty() const noexcept;
 
-
+	std::size_t getCursor() const noexcept;
+	/**
+	 * The argument must be less than duration().
+	 * Any subclass implementation must call parent
+	 */
+	void setCursor(std::size_t) throw(PythonException);
 	/**
 	 * @brief Sends a notification signal and update timeLastChange.
 	 */
-	void notifyUpdate() noexcept;
+	void notifyUpdate(Update::Level) noexcept;
 	/**
 	 * @brief Sends a notification signal and update timeLastChange.
 	 */
-	void notifyUpdate(IntervalIndex interval) noexcept;
-	/**
-	 * @brief Sends a notification signal but does not update timeLastChange.
-	 *	Triggered when the selection changes;
-	 */
-	void notifyUIUpdate() noexcept;
-	void uiDestroy() noexcept;
+	void notifyUpdate(Update::Level, IntervalIndex interval) noexcept;
 
-	/**
-	 * @brief Registers a listener that is notified (operator()(IntervalIndex))
-	 * when the Buffer requires a graphics update.
-	 */
-	template <typename Listener> void
-	registerUpdateListener(Listener listener) const noexcept;
-	/**
-	 * @brief Registers a listener that is notified (operator()()) when
-	 *  the Buffer requires a graphics update.
-	 */
-	template <typename Listener> void
-	registerUIUpdateListener(Listener listener) const noexcept;
-	/**
-	 * @brief Registers a listener that is notified when the UI corresponding to
-	 *  this buffer needs to be closed.
-	 */
-	template <typename Listener> void
-	registerUIDestroyListener(Listener listener) const noexcept;
 
 protected:
 	std::string title;
+	std::size_t cursor;
 	/**
 	 * Used by Buffers that store references to other buffers
 	 */
@@ -102,75 +126,74 @@ protected:
 	void referenceDecrease() noexcept;
 
 private:
-	boost::signals2::signal<void (IntervalIndex)> signalUpdate;
-	boost::signals2::signal<void ()> signalUIUpdate;
-	boost::signals2::signal<void ()> signalUIDestroy;
+	boost::signals2::signal<void (Update)> signalUpdate;
 
 	bool dirty;
 	std::size_t nReferences; // Used by the Kernel
+
 	friend class Kernel;
 };
 
-} // namespace pg
 
 // Implementations
 
-inline pg::Buffer::Buffer() noexcept:
-	dirty(false),
-	nReferences(0)
+inline Buffer::Buffer() noexcept:
+	dirty(false), nReferences(0), cursor(0)
 {
 }
-inline std::string pg::Buffer::getTitle() const noexcept
+inline std::string Buffer::getTitle() const noexcept
 {
 	return title;
 }
-inline bool pg::Buffer::isDirty() const noexcept
+inline bool Buffer::isDirty() const noexcept
 {
 	return dirty;
 }
-inline void pg::Buffer::notifyUpdate() noexcept
+inline void Buffer::play() throw(PythonException)
 {
-	signalUpdate(IntervalIndex(0, duration()));
-	signalUIUpdate();
+	if (playing())
+		throw PythonException{"Buffer is already playing",
+		                      PythonException::Exception};
+}
+inline void Buffer::stop() throw(PythonException)
+{
+	if (!playing())
+		throw PythonException{"Buffer is not playing",
+		                      PythonException::Exception};
+}
+inline std::size_t Buffer::getCursor() const noexcept
+{
+	return cursor;
+}
+inline void Buffer::setCursor(std::size_t c) throw(PythonException)
+{
+	if (c >= duration())
+		throw PythonException{"Cursor index out of bounds",
+		                      PythonException::IndexError};
+	cursor = c;
+	notifyUpdate(Update::Surface);
+}
+inline void Buffer::notifyUpdate(Update::Level level) noexcept
+{
+	signalUpdate(Update{level, IntervalIndex(0, duration())});
 	dirty = true;
 }
-inline void pg::Buffer::notifyUpdate(IntervalIndex interval) noexcept
+inline void Buffer::notifyUpdate(Update::Level level,
+                                 IntervalIndex interval) noexcept
 {
-	signalUpdate(interval);
-	signalUIUpdate();
+	signalUpdate(Update{level, interval});
 	dirty = true;
-}
-inline void pg::Buffer::notifyUIUpdate() noexcept
-{
-	signalUIUpdate();
-}
-inline void pg::Buffer::uiDestroy() noexcept
-{
-	signalUIDestroy();
-}
-template <typename Listener> inline void
-pg::Buffer::registerUpdateListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void (IntervalIndex)>&>(signalUpdate)
-		.connect(listener);
-}
-template <typename Listener> inline void
-pg::Buffer::registerUIUpdateListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void ()>&>(signalUIUpdate).connect(listener);
-}
-template <typename Listener> inline void
-pg::Buffer::registerUIDestroyListener(Listener listener) const noexcept
-{
-	const_cast<boost::signals2::signal<void ()>&>(signalUIDestroy).connect(listener);
 }
 
-inline void pg::Buffer::referenceIncrease() noexcept
+inline void Buffer::referenceIncrease() noexcept
 {
 	++nReferences;
 }
-inline void pg::Buffer::referenceDecrease() noexcept
+inline void Buffer::referenceDecrease() noexcept
 {
 	if (nReferences) --nReferences;
 }
+
+} // namespace pg
+
 #endif // !_POLYGAMMA_CORE_BUFFER_HPP__
